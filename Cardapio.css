@@ -1,0 +1,143 @@
+:root {
+    --primary: #ff3c3c;
+    --dark: #0d0d0d;
+    --text-large: 1.2rem;
+    --text-xl: 1.6rem;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background-color: var(--dark);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #fff;
+    font-size: 18px; /* Base de fonte aumentada */
+}
+
+header { text-align: center; padding: 40px 10px; }
+header img { width: 140px; border-radius: 50%; border: 4px solid var(--primary); }
+header h1 { font-size: 2.2rem; margin-top: 15px; }
+
+/* Navegação com Botões Gigantes */
+.main-nav, .subnav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    padding: 15px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+button {
+    padding: 22px 10px;
+    font-size: 1.1rem;
+    font-weight: 900;
+    border-radius: 15px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+/* Cards de Itens */
+.item-card {
+    background: rgba(255,255,255,0.05);
+    border-radius: 20px;
+    padding: 25px;
+    margin-bottom: 20px;
+    border-left: 8px solid var(--primary);
+}
+
+.item-card h3 { font-size: var(--text-xl); color: var(--primary); }
+.item-card p { font-size: var(--text-large); color: #ddd; margin: 10px 0; }
+.item-card span { font-size: 1.5rem; font-weight: bold; }
+
+/* Carrinho Flutuante Aumentado */
+#carrinhoToggle {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 90px; /* Aumentado */
+    height: 90px; /* Aumentado */
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 10px 40px rgba(255, 60, 60, 0.6);
+    z-index: 1000;
+    cursor: pointer;
+}
+
+#cart-icon { font-size: 2.5rem; }
+#cart-count { font-size: 1.2rem; font-weight: bold; }
+
+#carrinho {
+    position: fixed;
+    bottom: -100%;
+    left: 0;
+    width: 100%;
+    height: 95vh; /* Quase tela cheia */
+    background: #111;
+    border-radius: 35px 35px 0 0;
+    padding: 40px 25px;
+    transition: 0.5s ease;
+    z-index: 1001;
+    overflow-y: auto;
+}
+
+#carrinho.open { bottom: 0; }
+
+.fechar { font-size: 1.2rem; color: var(--primary); font-weight: bold; }
+
+textarea#pedido {
+    width: 100%;
+    height: 200px; /* Maior */
+    font-size: 1.1rem;
+    background: #222;
+    color: #fff;
+    padding: 20px;
+    border-radius: 15px;
+    margin: 20px 0;
+}
+
+/* Formulário do Carrinho */
+#pedidoDetalhes input, #pedidoDetalhes select {
+    width: 100%;
+    padding: 20px;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    border-radius: 12px;
+}
+
+#enviar {
+    background: #25d366;
+    height: 80px;
+    font-size: 1.4rem;
+}
+
+/* Alertas Aumentados */
+.custom-alert-box {
+    background: #1a1a1a;
+    padding: 50px; /* Muito maior */
+    border-radius: 30px;
+    text-align: center;
+    border: 3px solid var(--primary);
+    max-width: 90%;
+}
+
+.custom-alert-box h3 { font-size: 2rem; color: var(--primary); margin-bottom: 20px; }
+.custom-alert-box p { font-size: 1.5rem; line-height: 1.4; }
+.custom-alert-box button { margin-top: 30px; width: 100%; }
+
+/* Carrossel */
+.carousel-wrapper { overflow: hidden; padding: 40px 0; background: #000; }
+.carousel-track { display: flex; width: 2000px; animation: scroll 20s linear infinite; }
+.carousel-track img { height: 60px; margin: 0 50px; filter: brightness(2); }
+
+@keyframes scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-1000px); }
+}
