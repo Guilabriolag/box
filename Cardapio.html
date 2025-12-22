@@ -2,17 +2,17 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Vetorelli - Cardápio Premium</title>
+    <title>Pizzaria Vetorelli</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="Cardapio.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div class="background-overlay"></div>
+    <div class="bg-fix"></div>
 
     <header>
-        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgIVywerTEx7Qorio908b4OTVv3x2yo2lPl38CVdhCxtJOK23tK_pRTy8-hcSIWtNLZ6ifuzf8WhXOmFqBkr2aOqR78JmGc_Wc5uRLHtLUAYenxGd26uMjEg5E0bMKp03cqXDwXuJ7yA_0LXYoUxIn6ye7Vn6Q5CnTv-oPnLAMz58zVaijoADv3cRQM5T3L/s1600/20250614_012036.png" alt="Logo Vetorelli" class="logo-limpa">
+        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgIVywerTEx7Qorio908b4OTVv3x2yo2lPl38CVdhCxtJOK23tK_pRTy8-hcSIWtNLZ6ifuzf8WhXOmFqBkr2aOqR78JmGc_Wc5uRLHtLUAYenxGd26uMjEg5E0bMKp03cqXDwXuJ7yA_0LXYoUxIn6ye7Vn6Q5CnTv-oPnLAMz58zVaijoADv3cRQM5T3L/s1600/20250614_012036.png" alt="Vetorelli" class="logo-top">
         <h1>VETORELLI</h1>
     </header>
 
@@ -54,18 +54,18 @@
             <button class="btn-fechar" onclick="toggleCarrinho()">VOLTAR [X]</button>
         </div>
         
-        <textarea id="pedido" readonly placeholder="Seu pedido aparecerá aqui..."></textarea>
+        <textarea id="pedido" readonly></textarea>
         
         <div class="entrega-grid">
             <button id="btn-retirar" onclick="mostrarDados('retirar')" class="btn-opcao-gigante">VOU RETIRAR</button>
             <button id="btn-delivery" onclick="mostrarDados('delivery')" class="btn-opcao-gigante">DELIVERY</button>
         </div>
 
-        <div id="pedidoDetalhes" style="display:none; margin-top: 20px;">
+        <div id="pedidoDetalhes" style="display:none; margin-top:20px;">
             <div id="entregaCampos" style="display:none;">
-                <input type="text" id="endereco" class="input-grande" placeholder="Endereço e Número">
+                <input type="text" id="endereco" class="input-grande" placeholder="Rua, Número e Bairro">
                 <select id="bairro" class="input-grande">
-                    <option value="">Selecione o Bairro (Taxa)</option>
+                    <option value="">Selecione o Bairro</option>
                     <option value="Centro">Centro - R$ 3,00</option>
                     <option value="Vila Nova">Vila Nova - R$ 3,00</option>
                     <option value="Morro Branco">Morro Branco - R$ 4,00</option>
