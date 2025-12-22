@@ -31,14 +31,14 @@
     <main id="sabores" class="categoria-container"></main>
 
     <div class="brand-section">
-        <p>QUALIDADE GARANTIDA</p>
+        <p>INGREDIENTES DE PRIMEIRA</p>
         <div class="carousel-wrapper">
             <div class="carousel-track">
-                <img src="https://logodownload.org/wp-content/uploads/2014/10/cocacola-logo-1-1.png" alt="Coca">
-                <img src="https://logodownload.org/wp-content/uploads/2020/06/catupiry-logo.png" alt="Catupiry">
-                <img src="https://logodownload.org/wp-content/uploads/2014/09/heineken-logo-1.png" alt="Heineken">
-                <img src="https://logodownload.org/wp-content/uploads/2014/10/cocacola-logo-1-1.png" alt="Coca">
-                <img src="https://logodownload.org/wp-content/uploads/2020/06/catupiry-logo.png" alt="Catupiry">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgjXm_49v2kv9GDu0Qh9LbdIy5IKpscrD1upAKjjlI8rfcwTOEnbh5OIdv6FaAsYivw-3fmezw3CTE0HmzxMJWPXfEXaMsMhRqsoI_zMWOPy9RSnIli3rvQcuIVqqI_v4L6PH8CCl2H-Udnje7SewB8Wo3KMAR4puwIjJT2eZey6CczVn1cYpAFG8Gwarx6/s560/20251222_094017.jpg" alt="Marca 1">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi2wdXHPA7jMVKb_MnxxmOQu7BbVMPj7aNm8Z2rpF5gGJyrd3YR7NkDCBmuRIdqi1ImcUJe1_0f2tN9rWlGKTnJQMF8masXwLjEurW-xgRI0s-ouu0taKsbFWlZZkMZKouXiNw3ntFzqT3Jeyw7bBdbowXMsFSnfo3f3BiOJnmWYfdf4OaMb6NFpSGlFQQf/s400/images%20(9).jpeg" alt="Marca 2">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhBqgr7__voydKd8RrJmdvBnOwFsoIz1GLwlj0H_uYNYxknpJIEKEJvgaR0dgTSdBGuLCnIV83Q_yWPPVYush41CeUfuVTMBjN9YkSFHWks1stViNDKPI3bW51gFJn9gsVZ2k_5OVsGrsSFEz9Esnl_1kEotSAx4wU0-i_AEuYl26w6mjQoYBrtApjIJDMJ/s735/images%20(41).jpeg" alt="Marca 3">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjtI0dLj6zjKU7BkLTF5lz1UWlStQoVJVzPeBcTvPqX-CxxpohKttLvU9PB5usiqFCIIPmOclIHF246rhXDSRjQEof3SAfPNf2pk0HxIETPsthieLUO2jUz0rN2oxPgwunl7iHb1vSoZacjF1tvniP6HL3bc-uEtsjQUx6nIP5coBtFcuGF-Gw4zYSdKqaO/s600/coca-cola-logo-png_seeklogo-32891.png" alt="Coca">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiEscmMSTWuW11qtlLcZ76mO0IWEqPEF_upeM5isQ37_VEvmrwvJGPnAkE61nkZTEGbsaLgc2lKV91mbSXQ6TOC-71H0Z2xcBkAl7aaP7E_zBVY9PwdIe8i5dobmIgNvq3HThFt2eHHY6wjEjkpi1ld0dw5ckaB9gRVARlRW4TW_i9LN36JYiwg9jGVJKrg/s348/png-clipart-requeijao-catupiry-cream-cheese-food-cheese-food-text-thumbnail.png" alt="Catupiry">
             </div>
         </div>
     </div>
@@ -63,12 +63,19 @@
 
         <div id="pedidoDetalhes" style="display:none; margin-top:20px;">
             <div id="entregaCampos" style="display:none;">
-                <input type="text" id="endereco" class="input-grande" placeholder="Rua, Número e Bairro">
+                <input type="text" id="endereco" class="input-grande" placeholder="Rua e Número">
                 <select id="bairro" class="input-grande">
-                    <option value="">Selecione o Bairro</option>
-                    <option value="Centro" data-taxa="3">Centro - R$ 3,00</option>
-                    <option value="Vila Nova" data-taxa="3">Vila Nova - R$ 3,00</option>
-                    <option value="Morro Branco" data-taxa="4">Morro Branco - R$ 4,00</option>
+                    <option value="">Selecione o Bairro (Taxa)</option>
+                    <option value="CENTRO">CENTRO - R$ 3,00</option>
+                    <option value="CHÁCARA BOAVISTA">CHÁCARA BOAVISTA - R$ 3,00</option>
+                    <option value="GREEN HILLS">GREEN HILLS - R$ 10,00</option>
+                    <option value="JD. BOM JESUS">JD. BOM JESUS - R$ 3,00</option>
+                    <option value="MORRO BRANCO">MORRO BRANCO - R$ 4,00</option>
+                    <option value="PARQUE DAS AVENCAS">PARQUE DAS AVENCAS - R$ 3,00</option>
+                    <option value="PAIOL/ KM 50">PAIOL/ KM 50 - R$ 7,00</option>
+                    <option value="TRAILER CLUB">TRAILER CLUB - R$ 0,00</option>
+                    <option value="GAIVOTA">GAIVOTA - R$ 10,00</option>
+                    <option value="VILA NOVA">VILA NOVA - R$ 3,00</option>
                 </select>
             </div>
             <select id="pagamento" class="input-grande" onchange="mostrarTroco()">
