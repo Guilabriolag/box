@@ -1,28 +1,48 @@
 const sabores = [
-    { nome: "4 Queijos", ingredientes: "Mussarela, parmesão, provolone e gorgonzola", inteira: 47, broto: 37, categoria: "pizza" },
-    { nome: "Calabresa", ingredientes: "Calabresa fatiada, cebola e azeitonas", inteira: 38, broto: 29, categoria: "pizza" },
-    { nome: "Frango Catupiry", ingredientes: "Frango desfiado com Catupiry original", inteira: 47, broto: 37, categoria: "pizza" },
-    { nome: "Portuguesa", ingredientes: "Presunto, ovos, ervilha e mussarela", inteira: 50, broto: 40, categoria: "pizza" },
-    { nome: "Baiana", ingredientes: "Calabresa moída, ovos, pimenta e cebola", inteira: 45, broto: 35, categoria: "pizza" },
-    { nome: "Escarola", ingredientes: "Escarola refogada com bacon e mussarela", inteira: 46, broto: 36, categoria: "pizza" },
-    { nome: "Banana", ingredientes: "Banana fatiada, açúcar e canela", inteira: 41, broto: 31, categoria: "doce" },
-    { nome: "Brigadeiro", ingredientes: "Chocolate ao leite e granulado", inteira: 45, broto: 35, categoria: "doce" },
-    { nome: "Coca-Cola 2L", preco: 18, categoria: "bebidas" },
-    { nome: "Coca-Cola Zero 2L", preco: 18, categoria: "bebidas" },
-    { nome: "Heineken", preco: 10, categoria: "bebidas" }
+    { nome: "4 Queijos", desc: "molho, mussarela, parmesão, provolone, gorgonzola, azeitona e orégano", g: 47, b: 37 },
+    { nome: "5 Queijos", desc: "molho, mussarela, parmesão, provolone, gorgonzola, catupiry, azeitona e orégano", g: 49, b: 39 },
+    { nome: "Abobrinha I", desc: "molho, mussarela, abobrinha, alho frito, azeitona e orégano", g: 41, b: 34 },
+    { nome: "Abobrinha II", desc: "molho, mussarela, abobrinha, pimenta calabresa, azeitona e orégano", g: 41, b: 34 },
+    { nome: "Alho", desc: "molho, mussarela, alho frito, azeitona e orégano", g: 45, b: 35 },
+    { nome: "Aliche", desc: "molho, mussarela, aliche, tomate, azeitona e orégano", g: 49, b: 39 },
+    { nome: "Americana", desc: "molho, mussarela, lombinho, pimentão, champignon, tomate cereja, azeitona sem caroço e orégano", g: 50, b: 40 },
+    { nome: "Atum I", desc: "molho, atum, cebola, azeitona e orégano", g: 46, b: 36 },
+    { nome: "Atum I (com mussarela)", desc: "molho, mussarela, atum, cebola, azeitona e orégano", g: 48, b: 38 },
+    { nome: "Bacon", desc: "molho, mussarela, bacon, azeitona e orégano", g: 44, b: 34 },
+    { nome: "Brócolis", desc: "molho, brócolis, mussarela, bacon, azeitona e orégano", g: 47, b: 38 },
+    { nome: "Calabresa I", desc: "molho, calabresa, tomate, cebola, azeitona e orégano", g: 38, b: 29 },
+    { nome: "Calabresa II", desc: "molho, mussarela, calabresa, cebola, azeitona e orégano", g: 43, b: 34 },
+    { nome: "Frango Catupiry", desc: "molho, frango, catupiry, azeitona e orégano", g: 47, b: 37 },
+    { nome: "Gênova", desc: "molho, mussarela, provolone, presunto, molho pesto e azeitona", g: 48, b: 37 },
+    { nome: "Lombinho", desc: "molho, mussarela, lombinho, provolone, azeitona e orégano", g: 46, b: 36 },
+    { nome: "Marguerita", desc: "molho, mussarela, parmesão, tomate, azeitona e manjericão", g: 40, b: 30 },
+    { nome: "Mussarela", desc: "molho, mussarela, tomate, azeitona e orégano", g: 38, b: 29 },
+    { nome: "Peperonni", desc: "molho, mussarela, peperonni e azeitona", g: 49, b: 39 },
+    { nome: "Pomodoro", desc: "molho, parmesão, alho frito, tomate e orégano", g: 44, b: 34 },
+    { nome: "Potatosa", desc: "molho, batata, parmesão, calabresa, catupiry, azeitona sem caroço e orégano", g: 45, b: 35 },
+    { nome: "Portuguesa", desc: "molho, mussarela, presunto, ovo cozido, ervilha, tomate, azeitona sem caroço e orégano", g: 50, b: 40 },
+    { nome: "Rúcula e Tomate Seco", desc: "molho, mussarela, rúcula, tomate seco, azeitona e orégano", g: 46, b: 36 },
+    { nome: "Toscana", desc: "molho, mussarela, linguiça calabresa moída, tomate, azeitona e orégano", g: 45, b: 35 },
+    { nome: "Anita e Garibaldi", desc: "parmesão e goiabada", g: 45, b: 35, doce: true },
+    { nome: "Banana", desc: "banana, açúcar, doce de leite e canela", g: 41, b: 31, doce: true }
 ];
 
-let categoriaAtual = 'pizza';
-let modoMeia = false;
-let selecionadosMeia = [];
-let totalItens = 0;
+const bebidas = [
+    { nome: "Coca-Cola 2L", preco: 18 },
+    { nome: "Coca-Cola Zero 2L", preco: 18 },
+    { nome: "Guaraná Kuat 2L", preco: 12 },
+    { nome: "HEINEKEN", preco: 8 }
+];
 
-function selecionar(cat) {
-    categoriaAtual = cat;
+let catAtual = 'pizza';
+let modoMeia = false;
+let meiaLista = [];
+
+function selecionar(c) {
+    catAtual = c;
     document.querySelectorAll('.btn-nav').forEach(b => b.classList.remove('active'));
-    document.getElementById('btn-' + cat).classList.add('active');
-    
-    document.getElementById('subnav').style.display = (cat === 'pizza' || cat === 'broto') ? 'flex' : 'none';
+    document.getElementById('btn-'+c).classList.add('active');
+    document.getElementById('subnav').style.display = (c==='bebidas') ? 'none' : 'flex';
     mostrar('inteira');
 }
 
@@ -30,75 +50,78 @@ function mostrar(tipo) {
     modoMeia = (tipo === 'meia');
     document.getElementById('btn-inteira').classList.toggle('active', tipo === 'inteira');
     document.getElementById('btn-meia').classList.toggle('active', tipo === 'meia');
-    
     const container = document.getElementById('sabores');
     container.innerHTML = '';
-    
-    const filtrados = sabores.filter(s => {
-        if (categoriaAtual === 'calzone') return s.categoria === 'pizza';
-        if (categoriaAtual === 'bebidas') return s.categoria === 'bebidas';
-        return s.categoria === 'pizza' || s.categoria === 'doce';
-    });
 
-    filtrados.forEach(s => {
-        let preco = (categoriaAtual === 'pizza') ? s.inteira : s.broto;
-        if (categoriaAtual === 'calzone') preco = s.broto;
-        if (categoriaAtual === 'bebidas') preco = s.preco;
-
-        const card = document.createElement('div');
-        card.className = 'item-card';
-        card.innerHTML = `
-            <h3>${s.nome}</h3>
-            <p>${s.ingredientes || ''}</p>
-            <div class="price-row">
-                <span style="font-size: 1.4rem; font-weight: 900;">R$ ${preco.toFixed(2)}</span>
-                <button class="btn-add" onclick="adicionar('${s.nome}', ${preco})">ADD +</button>
-            </div>
-        `;
-        container.appendChild(card);
-    });
+    if(catAtual === 'bebidas') {
+        bebidas.forEach(b => {
+            container.innerHTML += createCard(b.nome, 'Refrigerante/Cerveja', b.preco, b.preco);
+        });
+    } else {
+        sabores.forEach(s => {
+            let p = (catAtual === 'pizza') ? s.g : s.b;
+            container.innerHTML += createCard(s.nome, s.desc, p, p);
+        });
+    }
 }
 
-function adicionar(nome, preco) {
+function createCard(n, d, p) {
+    return `<div class="item-card">
+        <h3>${n}</h3><p>${d}</p>
+        <div class="price-row">
+            <span style="font-weight:900; font-size:1.3rem">R$ ${p.toFixed(2)}</span>
+            <button class="btn-add" onclick="adicionar('${n}', ${p})">ADD +</button>
+        </div>
+    </div>`;
+}
+
+function adicionar(n, p) {
     const cart = document.getElementById('pedido');
-    if (modoMeia && (categoriaAtual === 'pizza' || categoriaAtual === 'broto')) {
-        selecionadosMeia.push({nome, preco});
-        showCustomAlert("METADE 1/2", "Selecione o segundo sabor.");
-        if (selecionadosMeia.length === 2) {
-            const pFinal = Math.max(selecionadosMeia[0].preco, selecionadosMeia[1].preco);
-            cart.value += `1/2 ${selecionadosMeia[0].nome} + 1/2 ${selecionadosMeia[1].nome} - R$ ${pFinal.toFixed(2)}\n`;
-            selecionadosMeia = [];
-            totalItens++;
-            document.getElementById('cart-count').innerText = totalItens;
+    if(modoMeia && catAtual !== 'bebidas') {
+        meiaLista.push({n, p});
+        showCustomAlert("1/2 SELECIONADA", "Escolha a outra metade.");
+        if(meiaLista.length === 2) {
+            let finalP = Math.max(meiaLista[0].p, meiaLista[1].p);
+            let label = catAtual === 'pizza' ? "Pizza" : (catAtual === 'broto' ? "Broto" : "Calzone");
+            cart.value += `${label} Meia: ${meiaLista[0].n} & ${meiaLista[1].n} - R$ ${finalP.toFixed(2)}\n`;
+            meiaLista = [];
+            atualizarContador();
         }
     } else {
-        cart.value += `${categoriaAtual.toUpperCase()}: ${nome} - R$ ${preco.toFixed(2)}\n`;
-        totalItens++;
-        document.getElementById('cart-count').innerText = totalItens;
-        showCustomAlert("ADICIONADO", nome + " no carrinho!");
+        let label = catAtual === 'bebidas' ? "Bebida" : (catAtual === 'pizza' ? "Pizza" : (catAtual === 'broto' ? "Broto" : "Calzone"));
+        cart.value += `${label}: ${n} - R$ ${p.toFixed(2)}\n`;
+        atualizarContador();
+        showCustomAlert("ADICIONADO", n + " no carrinho!");
     }
+}
+
+function atualizarContador() {
+    let count = parseInt(document.getElementById('cart-count').innerText);
+    document.getElementById('cart-count').innerText = count + 1;
 }
 
 function toggleCarrinho() { document.getElementById('carrinho').classList.toggle('open'); }
 
-function mostrarDados(tipo) {
+function mostrarDados(t) {
     document.getElementById('pedidoDetalhes').style.display = 'block';
-    document.getElementById('entregaCampos').style.display = (tipo === 'delivery') ? 'block' : 'none';
-    document.getElementById('btn-retirar').classList.toggle('active', tipo === 'retirar');
-    document.getElementById('btn-delivery').classList.toggle('active', tipo === 'delivery');
+    document.getElementById('entregaCampos').style.display = (t==='delivery') ? 'block' : 'none';
+    document.getElementById('btn-retirar').classList.toggle('active', t==='retirar');
+    document.getElementById('btn-delivery').classList.toggle('active', t==='delivery');
 }
 
 function mostrarTroco() {
-    const p = document.getElementById('pagamento').value;
-    document.getElementById('trocoArea').style.display = (p === 'Dinheiro') ? 'block' : 'none';
+    const pag = document.getElementById('pagamento').value;
+    document.getElementById('trocoArea').style.display = (pag === 'Dinheiro') ? 'block' : 'none';
 }
 
 function enviarPedido() {
     const itens = document.getElementById('pedido').value;
     const pag = document.getElementById('pagamento').value;
-    if (!itens || !pag) return showCustomAlert("OPS", "Complete o pedido!");
-    const msg = encodeURIComponent(`*PEDIDO VETORELLI*\n\n${itens}\nPagamento: ${pag}`);
-    window.open(`https://wa.me/5511993407322?text=${msg}`);
+    if(!itens || !pag) return showCustomAlert("ERRO", "Preencha tudo!");
+    const local = document.getElementById('entregaCampos').style.display === 'block' ? 
+                  `Entrega: ${document.getElementById('endereco').value} - ${document.getElementById('bairro').value}` : "Retirada Balcão";
+    const msg = `*PEDIDO VETORELLI*\n\n${itens}\n📍 ${local}\n💳 Pagamento: ${pag}`;
+    window.open(`https://wa.me/5511993407322?text=${encodeURIComponent(msg)}`);
 }
 
 function showCustomAlert(t, m) {
@@ -108,5 +131,4 @@ function showCustomAlert(t, m) {
 }
 function hideCustomAlert() { document.getElementById('custom-alert-overlay').style.display = 'none'; }
 
-// Inicializa
 selecionar('pizza');
