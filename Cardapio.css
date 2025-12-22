@@ -1,102 +1,86 @@
-:root {
-    --primary: #ff3c3c;
-    --dark: #0a0a0a;
-}
+:root { --primary: #ff3c3c; --dark: #0a0a0a; }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-body {
+body { 
     background-color: var(--dark);
-    background-image: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgtlAIqbNWtq6dQL3X3N_TgGBe8Eul0udZm-YlzXxTFbkbo3sBrpMm6RJ3Pm76fv5PV7rgEGEYSkA_1l_8bJ6AA-YnRZWrtHW1m1PjLsH_Wpjb-FCto68f_a-bJc-sysKvbkXIkASwWP6N3PffP1QDwRY97RHrYiFj_cD2O1MorFgqpYwojgAZeks8pws0O/s2400/20250927_014811.jpg');
-    background-size: cover;
-    background-attachment: fixed;
-    background-position: center;
     font-family: 'Montserrat', sans-serif;
     color: #fff;
 }
 
-.background-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.85); z-index: -1;
+.bg-fix {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    background-image: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgtlAIqbNWtq6dQL3X3N_TgGBe8Eul0udZm-YlzXxTFbkbo3sBrpMm6RJ3Pm76fv5PV7rgEGEYSkA_1l_8bJ6AA-YnRZWrtHW1m1PjLsH_Wpjb-FCto68f_a-bJc-sysKvbkXIkASwWP6N3PffP1QDwRY97RHrYiFj_cD2O1MorFgqpYwojgAZeks8pws0O/w288-h640/20250927_014811.jpg');
+    background-size: cover; background-position: center;
+    filter: brightness(0.3); z-index: -1;
 }
 
-header { text-align: center; padding: 30px 0; }
-.logo-limpa { width: 130px; border: none; }
-header h1 { font-size: 2.5rem; font-weight: 900; letter-spacing: 2px; }
+header { text-align: center; padding: 25px 0; }
+.logo-top { width: 110px; border: none; filter: drop-shadow(0 0 10px rgba(0,0,0,0.8)); }
+header h1 { font-size: 2.2rem; font-weight: 900; letter-spacing: 3px; }
 
-/* Botões de Navegação */
-.main-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
+/* Navegação */
+.main-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; }
 .btn-nav { 
-    background: rgba(255,255,255,0.1); color: white; border: 1px solid #444; 
-    padding: 20px 5px; font-weight: 900; border-radius: 12px; font-size: 1rem;
+    background: rgba(0,0,0,0.6); color: white; border: 1px solid #444; 
+    padding: 18px 5px; font-weight: 900; border-radius: 12px; font-size: 0.9rem;
 }
 .btn-nav.active { background: var(--primary); border-color: var(--primary); }
 
-.subnav { display: flex; justify-content: center; gap: 10px; padding: 10px; }
+.subnav { display: flex; justify-content: center; gap: 8px; padding: 5px 10px 15px; }
 .subnav button { 
-    flex: 1; padding: 15px; border-radius: 10px; border: 1px solid #555; 
-    background: #222; color: white; font-weight: bold; font-size: 0.9rem;
+    flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #555; 
+    background: rgba(255,255,255,0.1); color: white; font-weight: bold;
 }
-.subnav button.active { background: white; color: black; border-color: white; }
+.subnav button.active { background: #fff; color: #000; border-color: #fff; }
 
-/* Cards de Sabores */
-.categoria-container { padding: 15px; margin-bottom: 120px; }
+/* Sabores */
+.categoria-container { padding: 10px; margin-bottom: 120px; }
 .item-card { 
-    background: rgba(0,0,0,0.7); border-radius: 20px; padding: 20px; 
-    margin-bottom: 15px; border-left: 6px solid var(--primary);
+    background: rgba(0,0,0,0.8); border-radius: 15px; padding: 20px; 
+    margin-bottom: 15px; border: 1px solid #333;
 }
-.item-card h3 { font-size: 1.6rem; color: var(--primary); }
-.item-card p { font-size: 1.1rem; color: #ccc; margin: 8px 0; }
-.price-row { display: flex; justify-content: space-between; align-items: center; }
-.btn-add { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 900; }
+.item-card h3 { font-size: 1.5rem; color: var(--primary); margin-bottom: 5px; }
+.item-card p { font-size: 1rem; color: #bbb; margin-bottom: 15px; line-height: 1.3; }
+.price-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #222; padding-top: 10px; }
+.btn-add { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: 900; }
 
-/* Carrinho Flutuante */
+/* Carrinho */
 #carrinhoToggle {
-    position: fixed; bottom: 25px; right: 25px; width: 85px; height: 85px;
+    position: fixed; bottom: 20px; right: 20px; width: 80px; height: 80px;
     background: var(--primary); border-radius: 50%; display: flex;
-    flex-direction: column; justify-content: center; align-items: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 999;
+    flex-direction: column; justify-content: center; align-items: center; z-index: 999;
 }
-.cart-icon { font-size: 2.5rem; }
-#cart-count { font-weight: 900; font-size: 1.1rem; }
-
-/* Carrinho Aberto */
 #carrinho {
     position: fixed; top: 100%; left: 0; width: 100%; height: 100%;
-    background: #0f0f0f; z-index: 2000; padding: 25px; transition: 0.4s; overflow-y: auto;
+    background: #0d0d0d; z-index: 2000; padding: 20px; transition: 0.4s; overflow-y: auto;
 }
 #carrinho.open { top: 0; }
-.carrinho-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
-.btn-fechar { background: #333; color: white; border: none; padding: 10px 15px; border-radius: 8px; }
-
 textarea#pedido {
     width: 100%; height: 180px; background: #1a1a1a; color: white;
-    border-radius: 15px; padding: 15px; font-size: 1.2rem; border: 1px solid #333; margin-bottom: 20px;
+    border-radius: 10px; padding: 15px; font-size: 1.1rem; border: none; margin-bottom: 20px; font-family: monospace;
 }
 
-/* BOTOES GIGANTES NO CARRINHO */
-.entrega-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+/* BOTÕES GIGANTES PEDIDO */
+.entrega-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .btn-opcao-gigante { 
-    padding: 30px 10px; font-size: 1.2rem; font-weight: 900; 
-    border-radius: 15px; border: 2px solid #444; background: #222; color: white;
+    padding: 35px 5px; font-size: 1.1rem; font-weight: 900; 
+    border-radius: 15px; border: 2px solid #333; background: #222; color: white;
 }
-.btn-opcao-gigante.active { border-color: var(--primary); background: var(--primary); }
+.btn-opcao-gigante.active { background: var(--primary); border-color: #fff; }
 
-.input-grande { width: 100%; padding: 22px; font-size: 1.2rem; border-radius: 12px; margin-bottom: 15px; border: none; }
-#enviar { width: 100%; padding: 25px; background: #25d366; color: white; font-size: 1.4rem; font-weight: 900; border-radius: 15px; border: none; margin-top: 10px; }
+.input-grande { width: 100%; padding: 20px; font-size: 1.1rem; border-radius: 10px; margin-bottom: 10px; border: none; }
+#enviar { width: 100%; padding: 22px; background: #25d366; color: white; font-size: 1.3rem; font-weight: 900; border-radius: 10px; border: none; }
 
-/* Alert Gigante */
+/* Alerta */
 .alert-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    position: fixed; top:0; left:0; width:100%; height:100%;
     background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 3000;
 }
-.alert-box { background: #1a1a1a; padding: 40px; border-radius: 30px; text-align: center; border: 2px solid var(--primary); width: 85%; }
-.alert-box h3 { font-size: 2rem; color: var(--primary); margin-bottom: 10px; }
-.alert-box p { font-size: 1.4rem; margin-bottom: 25px; }
-.btn-alert { width: 100%; padding: 20px; background: var(--primary); color: white; border: none; border-radius: 15px; font-weight: 900; font-size: 1.2rem; }
+.alert-box { background: #222; padding: 30px; border-radius: 20px; text-align: center; border: 2px solid var(--primary); width: 80%; }
+.btn-alert { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 900; margin-top: 20px; }
 
 /* Carrossel */
-.carousel-wrapper { overflow: hidden; padding: 20px 0; }
+.carousel-wrapper { overflow: hidden; padding: 20px 0; background: rgba(0,0,0,0.5); }
 .carousel-track { display: flex; animation: scroll 20s linear infinite; }
-.carousel-track img { height: 50px; margin: 0 30px; filter: grayscale(1) invert(1); }
+.carousel-track img { height: 40px; margin: 0 30px; filter: grayscale(1) brightness(2); }
 @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-500px); } }
