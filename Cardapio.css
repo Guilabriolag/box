@@ -6,6 +6,7 @@ body {
     font-family: 'Montserrat', sans-serif;
     color: #fff;
     font-size: 18px;
+    overflow-x: hidden;
 }
 
 .background-fix {
@@ -17,9 +18,8 @@ body {
 
 header { text-align: center; padding: 30px 0; }
 .logo-top { width: 120px; border: none; }
-header h1 { font-size: 2.5rem; font-weight: 900; letter-spacing: 3px; }
+header h1 { font-size: 2.5rem; font-weight: 900; letter-spacing: 3px; color: #fff; }
 
-/* Botões de Categoria */
 .main-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
 .btn-nav { 
     background: rgba(255,255,255,0.1); color: white; border: 1px solid #444; 
@@ -34,63 +34,56 @@ header h1 { font-size: 2.5rem; font-weight: 900; letter-spacing: 3px; }
 }
 .subnav button.active { background: #fff; color: #000; border-color: #fff; }
 
-/* Lista de Itens */
 .categoria-container { padding: 15px; margin-bottom: 150px; }
 .item-card { 
-    background: rgba(0,0,0,0.75); border-radius: 20px; padding: 25px; 
+    background: rgba(0,0,0,0.8); border-radius: 20px; padding: 25px; 
     margin-bottom: 20px; border: 1px solid #333;
 }
-.item-card h3 { font-size: 1.8rem; color: var(--primary); margin-bottom: 10px; }
-.item-card p { font-size: 1.2rem; color: #ccc; margin-bottom: 20px; line-height: 1.4; }
+.item-card h3 { font-size: 1.8rem; color: var(--primary); margin-bottom: 5px; }
+.item-card p { font-size: 1.1rem; color: #ccc; margin-bottom: 20px; line-height: 1.4; }
 .price-row { display: flex; justify-content: space-between; align-items: center; }
-.btn-add { background: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 12px; font-weight: 900; font-size: 1.1rem; }
+.btn-add { background: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 12px; font-weight: 900; }
 
-/* Carrinho Flutuante */
 #carrinhoToggle {
     position: fixed; bottom: 25px; right: 25px; width: 90px; height: 90px;
     background: var(--primary); border-radius: 50%; display: flex;
     flex-direction: column; justify-content: center; align-items: center; z-index: 999;
 }
-.cart-icon { font-size: 3rem; }
-#cart-count { font-weight: 900; font-size: 1.3rem; }
+.cart-icon { font-size: 2.8rem; }
+#cart-count { font-weight: 900; font-size: 1.2rem; }
 
-/* Modal do Carrinho */
 #carrinho {
     position: fixed; top: 100%; left: 0; width: 100%; height: 100%;
     background: #0d0d0d; z-index: 2000; padding: 25px; transition: 0.4s; overflow-y: auto;
 }
 #carrinho.open { top: 0; }
-.carrinho-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
-.btn-fechar { background: #333; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; }
-
 textarea#pedido {
-    width: 100%; height: 220px; background: #1a1a1a; color: white;
-    border-radius: 15px; padding: 15px; font-size: 1.25rem; border: 1px solid #333; margin-bottom: 25px;
+    width: 100%; height: 200px; background: #1a1a1a; color: white;
+    border-radius: 15px; padding: 15px; font-size: 1.2rem; border: 1px solid #333; margin-bottom: 20px;
 }
 
-/* BOTÕES GIGANTES DE ENTREGA */
 .entrega-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .btn-opcao-gigante { 
-    padding: 35px 10px; font-size: 1.2rem; font-weight: 900; 
+    padding: 38px 10px; font-size: 1.2rem; font-weight: 900; 
     border-radius: 15px; border: 2px solid #444; background: #222; color: white;
 }
 .btn-opcao-gigante.active { background: var(--primary); border-color: #fff; }
 
-.input-grande { width: 100%; padding: 22px; font-size: 1.3rem; border-radius: 12px; margin-bottom: 15px; border: none; }
+.input-grande { width: 100%; padding: 22px; font-size: 1.3rem; border-radius: 12px; margin-bottom: 12px; border: none; background: #eee; color: #000; }
 #enviar { width: 100%; padding: 28px; background: #25d366; color: white; font-size: 1.5rem; font-weight: 900; border-radius: 15px; border: none; margin-top: 15px; }
 
-/* Alertas Customizados Gigantes */
 .alert-overlay {
     position: fixed; top:0; left:0; width:100%; height:100%;
     background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 3000;
 }
-.alert-box { background: #1a1a1a; padding: 45px 30px; border-radius: 30px; text-align: center; border: 2px solid var(--primary); width: 85%; }
-.alert-box h3 { font-size: 2.2rem; color: var(--primary); margin-bottom: 15px; }
-.alert-box p { font-size: 1.5rem; margin-bottom: 30px; }
-.btn-alert { width: 100%; padding: 20px; background: var(--primary); color: white; border: none; border-radius: 15px; font-weight: 900; font-size: 1.3rem; }
+.alert-box { background: #1a1a1a; padding: 40px; border-radius: 30px; text-align: center; border: 2px solid var(--primary); width: 85%; }
+.alert-box h3 { font-size: 2.2rem; color: var(--primary); margin-bottom: 10px; }
+.alert-box p { font-size: 1.5rem; }
+.btn-alert { width: 100%; padding: 20px; background: var(--primary); color: white; border: none; border-radius: 15px; font-weight: 900; margin-top: 25px; }
 
-/* Carrossel */
-.carousel-wrapper { overflow: hidden; padding: 25px 0; background: rgba(0,0,0,0.4); }
-.carousel-track { display: flex; animation: scroll 25s linear infinite; }
-.carousel-track img { height: 45px; margin: 0 40px; filter: grayscale(1) brightness(2.5); }
-@keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-600px); } }
+.brand-section { text-align: center; padding: 30px 0; background: rgba(0,0,0,0.6); }
+.brand-section p { font-size: 0.9rem; letter-spacing: 2px; color: #888; margin-bottom: 15px; }
+.carousel-wrapper { overflow: hidden; }
+.carousel-track { display: flex; animation: scroll 20s linear infinite; align-items: center; }
+.carousel-track img { height: 60px; margin: 0 35px; border-radius: 10px; }
+@keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-800px); } }
