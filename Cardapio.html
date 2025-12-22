@@ -2,17 +2,17 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Pizzaria Vetorelli</title>
+    <title>Pizzaria Vetorelli - Cardápio</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="Cardapio.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div class="bg-imagem-fixa"></div>
+    <div class="background-fix"></div>
 
     <header>
-        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgIVywerTEx7Qorio908b4OTVv3x2yo2lPl38CVdhCxtJOK23tK_pRTy8-hcSIWtNLZ6ifuzf8WhXOmFqBkr2aOqR78JmGc_Wc5uRLHtLUAYenxGd26uMjEg5E0bMKp03cqXDwXuJ7yA_0LXYoUxIn6ye7Vn6Q5CnTv-oPnLAMz58zVaijoADv3cRQM5T3L/s1600/20250614_012036.png" alt="Logo" class="logo-limpa">
+        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgIVywerTEx7Qorio908b4OTVv3x2yo2lPl38CVdhCxtJOK23tK_pRTy8-hcSIWtNLZ6ifuzf8WhXOmFqBkr2aOqR78JmGc_Wc5uRLHtLUAYenxGd26uMjEg5E0bMKp03cqXDwXuJ7yA_0LXYoUxIn6ye7Vn6Q5CnTv-oPnLAMz58zVaijoADv3cRQM5T3L/s1600/20250614_012036.png" alt="Logo" class="logo-top">
         <h1>VETORELLI</h1>
     </header>
 
@@ -54,7 +54,7 @@
             <button class="btn-fechar" onclick="toggleCarrinho()">VOLTAR [X]</button>
         </div>
         
-        <textarea id="pedido" readonly></textarea>
+        <textarea id="pedido" readonly placeholder="Seu carrinho está vazio..."></textarea>
         
         <div class="entrega-grid">
             <button id="btn-retirar" onclick="mostrarDados('retirar')" class="btn-opcao-gigante">VOU RETIRAR</button>
@@ -66,9 +66,9 @@
                 <input type="text" id="endereco" class="input-grande" placeholder="Rua, Número e Bairro">
                 <select id="bairro" class="input-grande">
                     <option value="">Selecione o Bairro</option>
-                    <option value="Centro">Centro - R$ 3,00</option>
-                    <option value="Vila Nova">Vila Nova - R$ 3,00</option>
-                    <option value="Morro Branco">Morro Branco - R$ 4,00</option>
+                    <option value="Centro" data-taxa="3">Centro - R$ 3,00</option>
+                    <option value="Vila Nova" data-taxa="3">Vila Nova - R$ 3,00</option>
+                    <option value="Morro Branco" data-taxa="4">Morro Branco - R$ 4,00</option>
                 </select>
             </div>
             <select id="pagamento" class="input-grande" onchange="mostrarTroco()">
