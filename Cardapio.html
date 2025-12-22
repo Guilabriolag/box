@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Vetorelli - Cardápio Grande</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="Cardapio.css">
+</head>
+<body>
+
+  <header>
+    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgIVywerTEx7Qorio908b4OTVv3x2yo2lPl38CVdhCxtJOK23tK_pRTy8-hcSIWtNLZ6ifuzf8WhXOmFqBkr2aOqR78JmGc_Wc5uRLHtLUAYenxGd26uMjEg5E0bMKp03cqXDwXuJ7yA_0LXYoUxIn6ye7Vn6Q5CnTv-oPnLAMz58zVaijoADv3cRQM5T3L/s1600/20250614_012036.png" alt="Logo">
+    <h1>Pizzaria Vetorelli</h1>
+  </header>
+
+  <nav class="main-nav">
+    <button onclick="selecionar('pizza')">PIZZAS</button>
+    <button onclick="selecionar('broto')">BROTOS</button>
+    <button onclick="selecionar('calzone')">CALZONES</button>
+    <button onclick="selecionar('bebidas')">BEBIDAS</button>
+  </nav>
+
+  <div class="subnav" id="subnav" style="display:none;">
+    <button onclick="mostrar('inteira')">Inteira</button>
+    <button onclick="mostrar('meia')">Meia-Meia</button>
+  </div>
+
+  <section id="sabores" class="categoria-container"></section>
+
+  <div class="brand-carousel-title">Ingredientes de Qualidade</div>
+  <div class="carousel-wrapper">
+    <div class="carousel-track">
+      <img src="https://logodownload.org/wp-content/uploads/2014/10/cocacola-logo-1-1.png" alt="Coca">
+      <img src="https://logodownload.org/wp-content/uploads/2020/06/catupiry-logo.png" alt="Catupiry">
+      <img src="https://logodownload.org/wp-content/uploads/2014/09/heineken-logo-1.png" alt="Heineken">
+      <img src="https://logodownload.org/wp-content/uploads/2014/10/cocacola-logo-1-1.png" alt="Coca">
+      <img src="https://logodownload.org/wp-content/uploads/2020/06/catupiry-logo.png" alt="Catupiry">
+    </div>
+  </div>
+
+  <div id="carrinhoToggle" onclick="toggleCarrinho()">
+    <span id="cart-icon">🛒</span>
+    <span id="cart-count">0</span>
+  </div>
+
+  <section id="carrinho">
+    <span class="fechar" onclick="toggleCarrinho()">FECHAR [X]</span>
+    <h2>Seu Pedido</h2>
+    <textarea id="pedido" placeholder="Seu carrinho está vazio..." readonly></textarea>
+    
+    <div class="botoes-opcao">
+      <button onclick="mostrarDados('retirar')">Vou Retirar</button>
+      <button onclick="mostrarDados('delivery')">Delivery</button>
+    </div>
+
+    <div id="pedidoDetalhes" style="display:none;">
+      <div id="entregaCampos" style="display:none;">
+        <input type="text" id="endereco" placeholder="Endereço e Número">
+        <select id="bairro">
+          <option value="">Selecione o Bairro</option>
+          <option value="Centro">Centro - R$ 3,00</option>
+          <option value="Vila Nova">Vila Nova - R$ 3,00</option>
+          <option value="Morro Branco">Morro Branco - R$ 4,00</option>
+        </select>
+      </div>
+      <select id="pagamento" onchange="mostrarTroco()">
+        <option value="">Forma de Pagamento</option>
+        <option value="Cartão">Cartão</option>
+        <option value="Pix">Pix</option>
+        <option value="Dinheiro">Dinheiro</option>
+      </select>
+      <div id="trocoArea" style="display:none;">
+        <input type="number" id="valorTroco" placeholder="Troco para quanto?">
+      </div>
+      <button id="enviar" onclick="enviarPedido()">FINALIZAR NO WHATSAPP</button>
+    </div>
+  </section>
+
+  <div id="custom-alert-overlay" class="custom-alert-overlay" onclick="hideCustomAlert()">
+    <div class="custom-alert-box">
+      <h3 id="custom-alert-title"></h3>
+      <p id="custom-alert-message"></p>
+      <button onclick="hideCustomAlert()">OK, ENTENDI</button>
+    </div>
+  </div>
+
+  <script src="Cardapio.js"></script>
+</body>
+</html>
