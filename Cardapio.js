@@ -43,8 +43,16 @@ function selecionar(c) {
     catAtual = c;
     document.querySelectorAll('.btn-nav').forEach(b => b.classList.remove('active'));
     document.getElementById('btn-'+c).classList.add('active');
-    document.getElementById('subnav').style.display = (c==='bebidas') ? 'none' : 'flex';
-    mostrar('inteira');
+    
+    const subnav = document.getElementById('subnav');
+    // REMOVE MEIA-MEIA SE FOR CALZONE OU BEBIDA
+    if (c === 'calzone' || c === 'bebidas') {
+        subnav.style.display = 'none';
+        mostrar('inteira');
+    } else {
+        subnav.style.display = 'flex';
+        mostrar('inteira');
+    }
 }
 
 function mostrar(tipo) {
@@ -53,15 +61,13 @@ function mostrar(tipo) {
     document.getElementById('btn-meia').classList.toggle('active', tipo === 'meia');
     const container = document.getElementById('sabores');
     container.innerHTML = '';
-
     const lista = (catAtual === 'bebidas') ? bebidas : sabores;
 
     lista.forEach(s => {
         let preco = (catAtual === 'bebidas') ? s.p : (catAtual === 'pizza' ? s.g : s.b);
         container.innerHTML += `
             <div class="item-card">
-                <h3>${s.n}</h3>
-                <p>${s.d}</p>
+                <h3>${s.n}</h3><p>${s.d}</p>
                 <div class="price-row">
                     <span style="font-weight:900; font-size:1.5rem">R$ ${preco.toFixed(2)}</span>
                     <button class="btn-add" onclick="adicionar('${s.n}', ${preco})">ADD +</button>
@@ -72,61 +78,43 @@ function mostrar(tipo) {
 
 function adicionar(n, p) {
     const cart = document.getElementById('pedido');
-    if(modoMeia && catAtual !== 'bebidas') {
+    if(modoMeia) {
         meiaLista.push({n, p});
-        showCustomAlert("METADE 1/2", `Sabor: ${n}. Escolha a segunda metade.`);
+        showCustomAlert("METADE 1/2", `Sabor: ${n}. Escolha a segunda.`);
         if(meiaLista.length === 2) {
             let finalP = Math.max(meiaLista[0].p, meiaLista[1].p);
-            let label = catAtual === 'pizza' ? "Pizza Meia-a-meia" : (catAtual === 'broto' ? "Broto Meia-a-meia" : "Calzone Meia-a-meia");
+            let label = catAtual === 'pizza' ? "Pizza Meia-a-meia" : "Broto Meia-a-meia";
             cart.value += `${label}: ${meiaLista[0].n} & ${meiaLista[1].n} - R$ ${finalP.toFixed(2)}\n`;
             meiaLista = [];
-            confirmarItem();
+            finalizar();
         }
     } else {
         let label = catAtual === 'bebidas' ? "Bebida" : (catAtual === 'pizza' ? "Pizza Inteira" : (catAtual === 'broto' ? "Broto Inteira" : "Calzone"));
         cart.value += `${label}: ${n} - R$ ${p.toFixed(2)}\n`;
-        confirmarItem();
+        finalizar();
         showCustomAlert("SUCESSO", n + " adicionado!");
     }
 }
 
-function confirmarItem() {
-    contador++;
-    document.getElementById('cart-count').innerText = contador;
-}
-
+function finalizar() { contador++; document.getElementById('cart-count').innerText = contador; }
 function toggleCarrinho() { document.getElementById('carrinho').classList.toggle('open'); }
-
 function mostrarDados(t) {
     document.getElementById('pedidoDetalhes').style.display = 'block';
     document.getElementById('entregaCampos').style.display = (t==='delivery') ? 'block' : 'none';
     document.getElementById('btn-retirar').classList.toggle('active', t==='retirar');
     document.getElementById('btn-delivery').classList.toggle('active', t==='delivery');
 }
-
-function mostrarTroco() {
-    document.getElementById('trocoArea').style.display = (document.getElementById('pagamento').value === 'Dinheiro') ? 'block' : 'none';
-}
+function mostrarTroco() { document.getElementById('trocoArea').style.display = (document.getElementById('pagamento').value === 'Dinheiro') ? 'block' : 'none'; }
 
 function enviarPedido() {
     const itens = document.getElementById('pedido').value;
     const pag = document.getElementById('pagamento').value;
-    if(!itens || !pag) return showCustomAlert("ATENÇÃO", "Preencha os itens e o pagamento!");
-
-    let localMsg = "Vou Retirar no Balcão";
-    if(document.getElementById('entregaCampos').style.display === 'block') {
-        localMsg = `Delivery: ${document.getElementById('endereco').value} - Bairro: ${document.getElementById('bairro').value}`;
-    }
-
-    const textoFinal = `*PEDIDO VETORELLI*\n\n${itens}\n📍 ${localMsg}\n💳 Pagamento: ${pag}`;
-    window.open(`https://wa.me/5511993407322?text=${encodeURIComponent(textoFinal)}`);
+    if(!itens || !pag) return showCustomAlert("ATENÇÃO", "Preencha itens e pagamento!");
+    let local = document.getElementById('entregaCampos').style.display === 'block' ? `Delivery: ${document.getElementById('endereco').value} - ${document.getElementById('bairro').value}` : "Retirada Balcão";
+    window.open(`https://wa.me/5511993407322?text=${encodeURIComponent("*PEDIDO VETORELLI*\n\n"+itens+"\n📍 "+local+"\n💳 Pagamento: "+pag)}`);
 }
 
-function showCustomAlert(t, m) {
-    document.getElementById('custom-alert-title').innerText = t;
-    document.getElementById('custom-alert-message').innerText = m;
-    document.getElementById('custom-alert-overlay').style.display = 'flex';
-}
+function showCustomAlert(t, m) { document.getElementById('custom-alert-title').innerText = t; document.getElementById('custom-alert-message').innerText = m; document.getElementById('custom-alert-overlay').style.display = 'flex'; }
 function hideCustomAlert() { document.getElementById('custom-alert-overlay').style.display = 'none'; }
 
 selecionar('pizza');
