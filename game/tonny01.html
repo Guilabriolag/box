@@ -3,27 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>McTonny - Rota dos Romeiros</title>
+  <title>McTonny - Rota dos Romeiros v0.2</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
     body { background: #0f0f11; color: #fff; font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
     #game-container { position: relative; width: 100%; max-width: 420px; height: 100vh; max-height: 750px; background: #1a1a1e; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #333; }
     
-    /* 🏛️ TOPO: HUD DE OBJETIVO E STATUS */
     .top-hud { background: #111115; border-bottom: 2px solid #2a2a30; padding: 12px 15px; display: flex; flex-direction: column; gap: 6px; text-align: center; }
     .top-hud .title { font-size: 14px; font-weight: 800; letter-spacing: 1px; color: #FFCC00; text-transform: uppercase; }
     .top-hud .counters { display: flex; justify-content: space-around; font-size: 15px; font-weight: bold; background: #22222a; padding: 6px; border-radius: 6px; }
     .top-hud .target { font-size: 12px; color: #aaa; font-weight: 500; }
 
-    /* 🗺️ CENTRO: CANVAS & MENSAGENS IN-GAME */
     .canvas-wrapper { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; background: #18181c; }
     canvas { width: 100%; height: 100%; touch-action: none; }
     
-    /* Toast de Onboarding / Orientação */
     #action-toast { position: absolute; top: 15px; background: rgba(0, 119, 182, 0.95); color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: none; text-align: center; pointer-events: none; animation: pulse 1.5s infinite; }
     @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
 
-    /* 🎮 BOTTOM: PAINEL DE AÇÕES */
     .bottom-hud { background: #111115; border-top: 2px solid #2a2a30; padding: 12px 10px; display: flex; flex-direction: column; gap: 8px; }
     .abilities-grid { display: flex; justify-content: space-around; gap: 8px; }
     .btn-ability { flex: 1; background: #22222a; border: 2px solid #3a3a45; color: #fff; padding: 8px 4px; border-radius: 8px; font-weight: bold; font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }
@@ -32,7 +28,6 @@
     .btn-ability .count { font-size: 11px; color: #888; }
     .btn-ability.active .count { color: #FFCC00; }
 
-    /* Modal Fim de Jogo */
     #end-modal { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.9); flex-direction: column; justify-content: center; align-items: center; gap: 15px; text-align: center; padding: 20px; z-index: 10; }
     #end-modal h2 { color: #FFCC00; font-size: 24px; }
     #end-modal p { font-size: 15px; line-height: 1.6; color: #ddd; }
@@ -43,7 +38,6 @@
 
 <div id="game-container">
   
-  <!-- 🏛️ TOPO: HUD DE METAS -->
   <div class="top-hud">
     <div class="title">ROTA DOS ROMEIROS</div>
     <div class="counters">
@@ -54,13 +48,11 @@
     <div class="target">Meta: <b id="c-target" style="color: #fff;">10</b> chegarem ao restaurante</div>
   </div>
 
-  <!-- 🗺️ CENTRO: CANVAS DE JOGO -->
   <div class="canvas-wrapper">
     <div id="action-toast">👆 TOQUE EM UM ROMEIRO</div>
     <canvas id="gameCanvas"></canvas>
   </div>
 
-  <!-- 🎮 BOTTOM: PAINEL DE CONTROLE -->
   <div class="bottom-hud">
     <div class="abilities-grid">
       <button class="btn-ability active" id="btn-BLOCKER" onclick="selectAbility('BLOCKER')">
@@ -68,20 +60,19 @@
         <span>Bloquear</span>
         <span class="count" id="count-BLOCKER">x3</span>
       </button>
-      <button class="btn-ability" style="opacity: 0.3;" disabled>
+      <button class="btn-ability" id="btn-BUILDER" onclick="selectAbility('BUILDER')">
         <span class="icon">🪜</span>
         <span>Rampa</span>
-        <span class="count">x0</span>
+        <span class="count" id="count-BUILDER">x2</span>
       </button>
-      <button class="btn-ability" style="opacity: 0.3;" disabled>
+      <button class="btn-ability" id="btn-FLOAT" onclick="selectAbility('FLOAT')">
         <span class="icon">☂️</span>
         <span>Chuva</span>
-        <span class="count">x0</span>
+        <span class="count" id="count-FLOAT">x3</span>
       </button>
     </div>
   </div>
 
-  <!-- MODAL DE FINALIZAÇÃO -->
   <div id="end-modal">
     <h2 id="modal-title">FASE CONCLUÍDA!</h2>
     <p id="modal-summary"></p>
@@ -91,9 +82,6 @@
 </div>
 
 <script>
-// ==========================================
-// GAME ENGINE (LOGICA AG NÓSTICA)
-// ==========================================
 class Engine {
   constructor(canvas) {
     this.canvas = canvas;
@@ -115,7 +103,7 @@ class Engine {
   }
 
   loadLevel(config) {
-    this.mapData = config;
+    this.mapData = JSON.parse(JSON.stringify(config)); // Cópia profunda para evitar mutação
     this.abilities = { ...config.abilities };
     this.totalEntities = config.totalEntities;
     this.minRequired = config.minRequired;
@@ -126,7 +114,22 @@ class Engine {
     this.isRunning = true;
     
     this.updateHUD();
-    this.showToast("OS ROMEIROS ESTÃO CHEGANDO!", 3000);
+    this.selectAbility('BLOCKER');
+    this.showToast("OS ROMEIROS ESTÃO CHEGANDO!", 2500);
+  }
+
+  selectAbility(type) {
+    this.selectedAbility = type;
+    document.querySelectorAll('.btn-ability').forEach(b => b.classList.remove('active'));
+    const activeBtn = document.getElementById(`btn-${type}`);
+    if (activeBtn) activeBtn.classList.add('active');
+
+    const names = { BLOCKER: 'BLOQUEADOR', BUILDER: 'CONSTRUTOR', FLOAT: 'GUARDA-CHUVA' };
+    if (this.abilities[type] > 0) {
+      this.showToast(`${names[type]} ATIVO\n👆 Toque em um Romeiro`, 2000);
+    } else {
+      this.showToast(`SEM ESTOQUE DE ${names[type]}!`, 1500);
+    }
   }
 
   start() {
@@ -145,7 +148,6 @@ class Engine {
   }
 
   update(currentTime, dt) {
-    // Spawner dos Romeiros (Cadência de Entrada)
     if (this.spawnCount < this.totalEntities && currentTime - this.lastSpawn > this.mapData.spawnRate) {
       this.entities.push(new Entity(this.mapData.spawn.x, this.mapData.spawn.y));
       this.spawnCount++;
@@ -153,10 +155,8 @@ class Engine {
       this.updateHUD();
     }
 
-    // Processar Entidades
     this.entities.forEach(ent => ent.update(dt, this.mapData, this.entities));
 
-    // Atualização de Estados e HUD
     const newSaved = this.entities.filter(e => e.state === 'REACHED').length;
     const newLost = this.entities.filter(e => e.state === 'DEAD').length;
 
@@ -166,7 +166,6 @@ class Engine {
       this.updateHUD();
     }
 
-    // Checagem de Fim de Jogo
     if (this.savedCount + this.lostCount === this.totalEntities && this.isRunning) {
       this.isRunning = false;
       setTimeout(() => this.onLevelComplete(), 500);
@@ -176,27 +175,27 @@ class Engine {
   render() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // 1. Cenário e Chão (Avanços / Buracos)
+    // Plataformas
     this.mapData.platforms.forEach(p => {
-      this.ctx.fillStyle = p.color || "#444450";
+      this.ctx.fillStyle = p.color || "#555565";
       this.ctx.fillRect(p.x, p.y, p.w, p.h);
     });
 
-    // 2. Pontos Narrativos: PORTAL DOS ROMEIROS
+    // Portal
     this.ctx.fillStyle = "#888899";
-    this.ctx.fillRect(this.mapData.spawn.x - 15, this.mapData.spawn.y - 35, 30, 35);
+    this.ctx.fillRect(this.mapData.spawn.x - 15, this.mapData.spawn.y - 30, 30, 30);
     this.ctx.fillStyle = "#FFCC00";
     this.ctx.font = "bold 10px sans-serif";
     this.ctx.textAlign = "center";
-    this.ctx.fillText("PORTAL", this.mapData.spawn.x, this.mapData.spawn.y - 40);
+    this.ctx.fillText("PORTAL", this.mapData.spawn.x, this.mapData.spawn.y - 35);
 
-    // 3. Pontos Narrativos: McTONNY
+    // McTonny
     this.ctx.fillStyle = "#0077B6";
-    this.ctx.fillRect(this.mapData.target.x - 20, this.mapData.target.y - 45, 40, 45);
+    this.ctx.fillRect(this.mapData.target.x - 20, this.mapData.target.y - 40, 40, 40);
     this.ctx.fillStyle = "#fff";
-    this.ctx.fillText("🍔 McTONNY", this.mapData.target.x, this.mapData.target.y - 50);
+    this.ctx.fillText("🍔 McTONNY", this.mapData.target.x, this.mapData.target.y - 45);
 
-    // 4. Renderizar Romeiros
+    // Entidades
     this.entities.forEach(ent => ent.render(this.ctx));
   }
 
@@ -208,14 +207,27 @@ class Engine {
       const clickX = (touch.clientX - rect.left) * (this.canvas.width / rect.width);
       const clickY = (touch.clientY - rect.top) * (this.canvas.height / rect.height);
 
-      // Aplicação da Habilidade no Romeiro selecionado
       this.entities.forEach(ent => {
         if (ent.state === 'WALKING' && Math.hypot(ent.x - clickX, ent.y - clickY) < 22) {
-          if (this.selectedAbility === 'BLOCKER' && this.abilities.BLOCKER > 0) {
-            ent.state = 'BLOCKING';
-            this.abilities.BLOCKER--;
+          const type = this.selectedAbility;
+          if (this.abilities[type] > 0) {
+            
+            if (type === 'BLOCKER') {
+              ent.state = 'BLOCKING';
+              this.showToast("🛑 ROMEIRO PARADO!", 1500);
+            } 
+            else if (type === 'BUILDER') {
+              ent.state = 'BUILDING';
+              ent.buildProgress = 0;
+              this.showToast("🪜 CONSTRUINDO RAMPA...", 1500);
+            } 
+            else if (type === 'FLOAT') {
+              ent.hasUmbrella = true;
+              this.showToast("☂️ GUARDA-CHUVA ATIVADO!", 1500);
+            }
+
+            this.abilities[type]--;
             this.updateHUD();
-            this.showToast("🛑 ROMEIRO PARADO!", 1500);
           }
         }
       });
@@ -231,8 +243,9 @@ class Engine {
     document.getElementById('c-lost').innerText = this.lostCount;
     document.getElementById('c-target').innerText = this.minRequired;
 
-    // Atualiza Botões
     document.getElementById('count-BLOCKER').innerText = `x${this.abilities.BLOCKER}`;
+    document.getElementById('count-BUILDER').innerText = `x${this.abilities.BUILDER}`;
+    document.getElementById('count-FLOAT').innerText = `x${this.abilities.FLOAT}`;
   }
 
   showToast(msg, duration = 2000) {
@@ -259,9 +272,6 @@ class Engine {
   }
 }
 
-// ==========================================
-// ENTITY: ROMEIRO
-// ==========================================
 class Entity {
   constructor(x, y) {
     this.x = x;
@@ -269,7 +279,10 @@ class Entity {
     this.vx = 35;
     this.vy = 0;
     this.radius = 7;
-    this.state = 'WALKING';
+    this.state = 'WALKING'; // WALKING, BLOCKING, BUILDING, FALLING, REACHED, DEAD
+    this.hasUmbrella = false;
+    this.fallHeight = 0;
+    this.buildProgress = 0;
   }
 
   update(dt, map, allEntities) {
@@ -278,7 +291,7 @@ class Entity {
     if (this.state === 'WALKING') {
       let nextX = this.x + this.vx * dt;
 
-      // Colisão com Romeiros Bloqueadores
+      // Colisão com Bloqueadores
       let isBlocked = allEntities.some(other => 
         other !== this && other.state === 'BLOCKING' && Math.hypot(other.x - nextX, other.y - this.y) < 14
       );
@@ -289,32 +302,54 @@ class Entity {
         this.x = nextX;
       }
 
-      // Detecção de Chão
+      // Detecção Rigorosa de Chão (Pés da Entidade)
+      let feetY = this.y + this.radius;
       let onGround = map.platforms.some(p => 
-        this.x >= p.x && this.x <= p.x + p.w && Math.abs((this.y + this.radius) - p.y) < 4
+        this.x >= p.x && this.x <= p.x + p.w && feetY >= p.y && feetY <= p.y + p.h + 2
       );
 
       if (!onGround) {
         this.state = 'FALLING';
+        this.fallHeight = 0;
       }
 
-      // Chegada ao McTonny
+      // Chegada ao Alvo
       if (Math.hypot(this.x - map.target.x, this.y - map.target.y) < 20) {
         this.state = 'REACHED';
       }
     } 
-    else if (this.state === 'FALLING') {
-      this.vy = 110;
-      this.y += this.vy * dt;
+    else if (this.state === 'BUILDING') {
+      // Cria uma rampa/ponte de 50px à sua frente
+      this.buildProgress += dt * 25; 
+      const dir = this.vx > 0 ? 1 : -1;
+      const bridgeX = dir > 0 ? this.x : this.x - this.buildProgress;
 
+      map.platforms.push({ x: bridgeX, y: this.y + this.radius - 2, w: this.buildProgress, h: 6, color: '#0077B6' });
+
+      if (this.buildProgress >= 50) {
+        this.state = 'WALKING';
+      }
+    }
+    else if (this.state === 'FALLING') {
+      // Se tem guarda-chuva, cai devagar (30px/s); senão cai rápido (120px/s)
+      this.vy = this.hasUmbrella ? 35 : 130;
+      this.y += this.vy * dt;
+      this.fallHeight += this.vy * dt;
+
+      let feetY = this.y + this.radius;
       let landed = map.platforms.find(p => 
-        this.x >= p.x && this.x <= p.x + p.w && (this.y + this.radius) >= p.y && (this.y + this.radius) <= p.y + p.h
+        this.x >= p.x && this.x <= p.x + p.w && feetY >= p.y && feetY <= p.y + p.h
       );
 
       if (landed) {
-        this.y = landed.y - this.radius;
-        this.vy = 0;
-        this.state = 'WALKING';
+        // Se caiu sem guarda-chuva de uma altura > 110px = Morte por Queda
+        if (!this.hasUmbrella && this.fallHeight > 110) {
+          this.state = 'DEAD';
+        } else {
+          this.y = landed.y - this.radius;
+          this.vy = 0;
+          this.state = 'WALKING';
+        }
       }
 
       if (this.y > map.height) {
@@ -329,22 +364,24 @@ class Entity {
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
 
-    if (this.state === 'WALKING') ctx.fillStyle = '#FFCC00';  // Romeiro (Amarelo)
-    if (this.state === 'BLOCKING') ctx.fillStyle = '#F44336'; // Bloqueador (Vermelho)
-    if (this.state === 'FALLING') ctx.fillStyle = '#FF9800';  // Caindo (Laranja)
+    if (this.state === 'WALKING') ctx.fillStyle = '#FFCC00';
+    if (this.state === 'BLOCKING') ctx.fillStyle = '#F44336';
+    if (this.state === 'BUILDING') ctx.fillStyle = '#0077B6';
+    if (this.state === 'FALLING') ctx.fillStyle = this.hasUmbrella ? '#0288D1' : '#FF9800';
 
     ctx.fill();
     ctx.closePath();
+
+    // Ícone visual sobre a entidade se tiver Guarda-Chuva
+    if (this.hasUmbrella) {
+      ctx.font = "10px sans-serif";
+      ctx.fillText("☂️", this.x, this.y - 8);
+    }
   }
 }
 
-// ==========================================
-// INICIALIZAÇÃO DA FASE
-// ==========================================
+// Inicialização da Fase Ajustada
 const canvas = document.getElementById('gameCanvas');
-const wrapper = document.querySelector('.canvas-wrapper');
-
-// Ajusta o Canvas à tela do celular dinamicamente
 canvas.width = 360;
 canvas.height = 460;
 
@@ -353,14 +390,14 @@ const mcTonnyLevel1 = {
   height: 460,
   totalEntities: 15,
   minRequired: 10,
-  spawnRate: 2200,
-  spawn: { x: 40, y: 100 },
+  spawnRate: 2000,
+  spawn: { x: 40, y: 92 }, // Ajustado: Nascem exatamente SOBRE a pista superior
   target: { x: 310, y: 380 },
-  abilities: { BLOCKER: 3 },
+  abilities: { BLOCKER: 3, BUILDER: 2, FLOAT: 3 },
   platforms: [
-    { x: 10, y: 100, w: 220, h: 10 }, // Superior (Buraco à direita)
-    { x: 90, y: 240, w: 260, h: 10 }, // Intermediário (Buraco à esquerda)
-    { x: 10, y: 380, w: 340, h: 10 }  // Inferior (Até o McTonny)
+    { x: 10, y: 100, w: 200, h: 10 }, // Pista 1 Superior
+    { x: 90, y: 240, w: 260, h: 10 }, // Pista 2 Intermediária
+    { x: 10, y: 380, w: 340, h: 10 }  // Pista 3 Inferior
   ]
 };
 
@@ -369,10 +406,7 @@ game.loadLevel(mcTonnyLevel1);
 game.start();
 
 function selectAbility(type) {
-  game.selectedAbility = type;
-  if (game.abilities[type] > 0) {
-    game.showToast("BLOQUEADOR ATIVO\n👆 Toque em um Romeiro", 2500);
-  }
+  game.selectAbility(type);
 }
 
 function restartLevel() {
