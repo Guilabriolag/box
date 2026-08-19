@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>McTonny - Rota dos Romeiros</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body { background: #0f0f11; color: #fff; font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+    #game-container { position: relative; width: 100%; max-width: 420px; height: 100vh; max-height: 750px; background: #1a1a1e; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #333; }
+    
+    /* 🏛️ TOPO: HUD DE OBJETIVO E STATUS */
+    .top-hud { background: #111115; border-bottom: 2px solid #2a2a30; padding: 12px 15px; display: flex; flex-direction: column; gap: 6px; text-align: center; }
+    .top-hud .title { font-size: 14px; font-weight: 800; letter-spacing: 1px; color: #FFCC00; text-transform: uppercase; }
+    .top-hud .counters { display: flex; justify-content: space-around; font-size: 15px; font-weight: bold; background: #22222a; padding: 6px; border-radius: 6px; }
+    .top-hud .target { font-size: 12px; color: #aaa; font-weight: 500; }
+
+    /* 🗺️ CENTRO: CANVAS & MENSAGENS IN-GAME */
+    .canvas-wrapper { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; background: #18181c; }
+    canvas { width: 100%; height: 100%; touch-action: none; }
+    
+    /* Toast de Onboarding / Orientação */
+    #action-toast { position: absolute; top: 15px; background: rgba(0, 119, 182, 0.95); color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: none; text-align: center; pointer-events: none; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+
+    /* 🎮 BOTTOM: PAINEL DE AÇÕES */
+    .bottom-hud { background: #111115; border-top: 2px solid #2a2a30; padding: 12px 10px; display: flex; flex-direction: column; gap: 8px; }
+    .abilities-grid { display: flex; justify-content: space-around; gap: 8px; }
+    .btn-ability { flex: 1; background: #22222a; border: 2px solid #3a3a45; color: #fff; padding: 8px 4px; border-radius: 8px; font-weight: bold; font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }
+    .btn-ability.active { border-color: #FFCC00; background: #FFCC0022; color: #FFCC00; }
+    .btn-ability .icon { font-size: 18px; }
+    .btn-ability .count { font-size: 11px; color: #888; }
+    .btn-ability.active .count { color: #FFCC00; }
+
+    /* Modal Fim de Jogo */
+    #end-modal { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.9); flex-direction: column; justify-content: center; align-items: center; gap: 15px; text-align: center; padding: 20px; z-index: 10; }
+    #end-modal h2 { color: #FFCC00; font-size: 24px; }
+    #end-modal p { font-size: 15px; line-height: 1.6; color: #ddd; }
+    #end-modal button { background: #0077B6; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<div id="game-container">
+  
+  <!-- 🏛️ TOPO: HUD DE METAS -->
+  <div class="top-hud">
+    <div class="title">ROTA DOS ROMEIROS</div>
+    <div class="counters">
+      <span>👣 <span id="c-total">15</span></span>
+      <span style="color: #4CAF50;">✅ <span id="c-saved">0</span></span>
+      <span style="color: #F44336;">❌ <span id="c-lost">0</span></span>
+    </div>
+    <div class="target">Meta: <b id="c-target" style="color: #fff;">10</b> chegarem ao restaurante</div>
+  </div>
+
+  <!-- 🗺️ CENTRO: CANVAS DE JOGO -->
+  <div class="canvas-wrapper">
+    <div id="action-toast">👆 TOQUE EM UM ROMEIRO</div>
+    <canvas id="gameCanvas"></canvas>
+  </div>
+
+  <!-- 🎮 BOTTOM: PAINEL DE CONTROLE -->
+  <div class="bottom-hud">
+    <div class="abilities-grid">
+      <button class="btn-ability active" id="btn-BLOCKER" onclick="selectAbility('BLOCKER')">
+        <span class="icon">🛑</span>
+        <span>Bloquear</span>
+        <span class="count" id="count-BLOCKER">x3</span>
+      </button>
+      <button class="btn-ability" style="opacity: 0.3;" disabled>
+        <span class="icon">🪜</span>
+        <span>Rampa</span>
+        <span class="count">x0</span>
+      </button>
+      <button class="btn-ability" style="opacity: 0.3;" disabled>
+        <span class="icon">☂️</span>
+        <span>Chuva</span>
+        <span class="count">x0</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL DE FINALIZAÇÃO -->
+  <div id="end-modal">
+    <h2 id="modal-title">FASE CONCLUÍDA!</h2>
+    <p id="modal-summary"></p>
+    <button onclick="restartLevel()">Tentar Novamente</button>
+  </div>
+
+</div>
+
+<script>
+// ==========================================
+// GAME ENGINE (LOGICA AG NÓSTICA)
+// ==========================================
+class Engine {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext("2d");
+    this.entities = [];
+    this.mapData = null;
+    this.selectedAbility = 'BLOCKER';
+    this.abilities = {};
+    
+    this.spawnCount = 0;
+    this.totalEntities = 15;
+    this.minRequired = 10;
+    this.savedCount = 0;
+    this.lostCount = 0;
+    this.lastSpawn = 0;
+    
+    this.isRunning = false;
+    this.bindEvents();
+  }
+
+  loadLevel(config) {
+    this.mapData = config;
+    this.abilities = { ...config.abilities };
+    this.totalEntities = config.totalEntities;
+    this.minRequired = config.minRequired;
+    this.spawnCount = 0;
+    this.savedCount = 0;
+    this.lostCount = 0;
+    this.entities = [];
+    this.isRunning = true;
+    
+    this.updateHUD();
+    this.showToast("OS ROMEIROS ESTÃO CHEGANDO!", 3000);
+  }
+
+  start() {
+    let lastTime = performance.now();
+    const loop = (currentTime) => {
+      const dt = (currentTime - lastTime) / 1000;
+      lastTime = currentTime;
+
+      if (this.isRunning) {
+        this.update(currentTime, dt);
+        this.render();
+      }
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  }
+
+  update(currentTime, dt) {
+    // Spawner dos Romeiros (Cadência de Entrada)
+    if (this.spawnCount < this.totalEntities && currentTime - this.lastSpawn > this.mapData.spawnRate) {
+      this.entities.push(new Entity(this.mapData.spawn.x, this.mapData.spawn.y));
+      this.spawnCount++;
+      this.lastSpawn = currentTime;
+      this.updateHUD();
+    }
+
+    // Processar Entidades
+    this.entities.forEach(ent => ent.update(dt, this.mapData, this.entities));
+
+    // Atualização de Estados e HUD
+    const newSaved = this.entities.filter(e => e.state === 'REACHED').length;
+    const newLost = this.entities.filter(e => e.state === 'DEAD').length;
+
+    if (newSaved !== this.savedCount || newLost !== this.lostCount) {
+      this.savedCount = newSaved;
+      this.lostCount = newLost;
+      this.updateHUD();
+    }
+
+    // Checagem de Fim de Jogo
+    if (this.savedCount + this.lostCount === this.totalEntities && this.isRunning) {
+      this.isRunning = false;
+      setTimeout(() => this.onLevelComplete(), 500);
+    }
+  }
+
+  render() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // 1. Cenário e Chão (Avanços / Buracos)
+    this.mapData.platforms.forEach(p => {
+      this.ctx.fillStyle = p.color || "#444450";
+      this.ctx.fillRect(p.x, p.y, p.w, p.h);
+    });
+
+    // 2. Pontos Narrativos: PORTAL DOS ROMEIROS
+    this.ctx.fillStyle = "#888899";
+    this.ctx.fillRect(this.mapData.spawn.x - 15, this.mapData.spawn.y - 35, 30, 35);
+    this.ctx.fillStyle = "#FFCC00";
+    this.ctx.font = "bold 10px sans-serif";
+    this.ctx.textAlign = "center";
+    this.ctx.fillText("PORTAL", this.mapData.spawn.x, this.mapData.spawn.y - 40);
+
+    // 3. Pontos Narrativos: McTONNY
+    this.ctx.fillStyle = "#0077B6";
+    this.ctx.fillRect(this.mapData.target.x - 20, this.mapData.target.y - 45, 40, 45);
+    this.ctx.fillStyle = "#fff";
+    this.ctx.fillText("🍔 McTONNY", this.mapData.target.x, this.mapData.target.y - 50);
+
+    // 4. Renderizar Romeiros
+    this.entities.forEach(ent => ent.render(this.ctx));
+  }
+
+  bindEvents() {
+    const handleAction = (e) => {
+      if (!this.isRunning) return;
+      const rect = this.canvas.getBoundingClientRect();
+      const touch = e.touches ? e.touches[0] : e;
+      const clickX = (touch.clientX - rect.left) * (this.canvas.width / rect.width);
+      const clickY = (touch.clientY - rect.top) * (this.canvas.height / rect.height);
+
+      // Aplicação da Habilidade no Romeiro selecionado
+      this.entities.forEach(ent => {
+        if (ent.state === 'WALKING' && Math.hypot(ent.x - clickX, ent.y - clickY) < 22) {
+          if (this.selectedAbility === 'BLOCKER' && this.abilities.BLOCKER > 0) {
+            ent.state = 'BLOCKING';
+            this.abilities.BLOCKER--;
+            this.updateHUD();
+            this.showToast("🛑 ROMEIRO PARADO!", 1500);
+          }
+        }
+      });
+    };
+
+    this.canvas.addEventListener('touchstart', handleAction);
+    this.canvas.addEventListener('mousedown', handleAction);
+  }
+
+  updateHUD() {
+    document.getElementById('c-total').innerText = this.totalEntities - this.spawnCount;
+    document.getElementById('c-saved').innerText = this.savedCount;
+    document.getElementById('c-lost').innerText = this.lostCount;
+    document.getElementById('c-target').innerText = this.minRequired;
+
+    // Atualiza Botões
+    document.getElementById('count-BLOCKER').innerText = `x${this.abilities.BLOCKER}`;
+  }
+
+  showToast(msg, duration = 2000) {
+    const toast = document.getElementById('action-toast');
+    toast.innerText = msg;
+    toast.style.display = 'block';
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => { toast.style.display = 'none'; }, duration);
+  }
+
+  onLevelComplete() {
+    const passed = this.savedCount >= this.minRequired;
+    const title = document.getElementById('modal-title');
+    title.innerText = passed ? "FASE CONCLUÍDA! 🎉" : "OPS! FALTOU POUCO... 😅";
+    title.style.color = passed ? "#4CAF50" : "#F44336";
+
+    document.getElementById('modal-summary').innerHTML = `
+      <b>${this.totalEntities}</b> Romeiros saíram do Portal<br>
+      <span style="color:#4CAF50"><b>${this.savedCount}</b> chegaram ao McTonny</span><br>
+      <span style="color:#F44336"><b>${this.lostCount}</b> caíram pelo caminho</span><br><br>
+      ${passed ? '<b>Objetivo alcançado com sucesso!</b>' : `Você precisava de pelo menos <b>${this.minRequired}</b> romeiros.`}
+    `;
+    document.getElementById('end-modal').style.display = 'flex';
+  }
+}
+
+// ==========================================
+// ENTITY: ROMEIRO
+// ==========================================
+class Entity {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.vx = 35;
+    this.vy = 0;
+    this.radius = 7;
+    this.state = 'WALKING';
+  }
+
+  update(dt, map, allEntities) {
+    if (this.state === 'REACHED' || this.state === 'DEAD') return;
+
+    if (this.state === 'WALKING') {
+      let nextX = this.x + this.vx * dt;
+
+      // Colisão com Romeiros Bloqueadores
+      let isBlocked = allEntities.some(other => 
+        other !== this && other.state === 'BLOCKING' && Math.hypot(other.x - nextX, other.y - this.y) < 14
+      );
+
+      if (isBlocked) {
+        this.vx *= -1;
+      } else {
+        this.x = nextX;
+      }
+
+      // Detecção de Chão
+      let onGround = map.platforms.some(p => 
+        this.x >= p.x && this.x <= p.x + p.w && Math.abs((this.y + this.radius) - p.y) < 4
+      );
+
+      if (!onGround) {
+        this.state = 'FALLING';
+      }
+
+      // Chegada ao McTonny
+      if (Math.hypot(this.x - map.target.x, this.y - map.target.y) < 20) {
+        this.state = 'REACHED';
+      }
+    } 
+    else if (this.state === 'FALLING') {
+      this.vy = 110;
+      this.y += this.vy * dt;
+
+      let landed = map.platforms.find(p => 
+        this.x >= p.x && this.x <= p.x + p.w && (this.y + this.radius) >= p.y && (this.y + this.radius) <= p.y + p.h
+      );
+
+      if (landed) {
+        this.y = landed.y - this.radius;
+        this.vy = 0;
+        this.state = 'WALKING';
+      }
+
+      if (this.y > map.height) {
+        this.state = 'DEAD';
+      }
+    }
+  }
+
+  render(ctx) {
+    if (this.state === 'REACHED' || this.state === 'DEAD') return;
+
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+
+    if (this.state === 'WALKING') ctx.fillStyle = '#FFCC00';  // Romeiro (Amarelo)
+    if (this.state === 'BLOCKING') ctx.fillStyle = '#F44336'; // Bloqueador (Vermelho)
+    if (this.state === 'FALLING') ctx.fillStyle = '#FF9800';  // Caindo (Laranja)
+
+    ctx.fill();
+    ctx.closePath();
+  }
+}
+
+// ==========================================
+// INICIALIZAÇÃO DA FASE
+// ==========================================
+const canvas = document.getElementById('gameCanvas');
+const wrapper = document.querySelector('.canvas-wrapper');
+
+// Ajusta o Canvas à tela do celular dinamicamente
+canvas.width = 360;
+canvas.height = 460;
+
+const mcTonnyLevel1 = {
+  width: 360,
+  height: 460,
+  totalEntities: 15,
+  minRequired: 10,
+  spawnRate: 2200,
+  spawn: { x: 40, y: 100 },
+  target: { x: 310, y: 380 },
+  abilities: { BLOCKER: 3 },
+  platforms: [
+    { x: 10, y: 100, w: 220, h: 10 }, // Superior (Buraco à direita)
+    { x: 90, y: 240, w: 260, h: 10 }, // Intermediário (Buraco à esquerda)
+    { x: 10, y: 380, w: 340, h: 10 }  // Inferior (Até o McTonny)
+  ]
+};
+
+const game = new Engine(canvas);
+game.loadLevel(mcTonnyLevel1);
+game.start();
+
+function selectAbility(type) {
+  game.selectedAbility = type;
+  if (game.abilities[type] > 0) {
+    game.showToast("BLOQUEADOR ATIVO\n👆 Toque em um Romeiro", 2500);
+  }
+}
+
+function restartLevel() {
+  document.getElementById('end-modal').style.display = 'none';
+  game.loadLevel(mcTonnyLevel1);
+}
+</script>
+</body>
+</html>
