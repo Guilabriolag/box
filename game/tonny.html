@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Core Engine - Prototype v0.1</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body { background: #121212; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+    #game-container { position: relative; width: 100%; max-width: 480px; height: 100vh; max-height: 800px; background: #1e1e1e; display: flex; flex-direction: column; }
+    canvas { background: #222; width: 100%; flex: 1; touch-action: none; }
+    
+    /* UI Overlay */
+    .ui-panel { height: 80px; background: #111; display: flex; justify-content: space-around; align-items: center; border-top: 2px solid #333; padding: 0 10px; }
+    .btn-ability { background: #2c2c2c; border: 2px solid #555; color: #fff; padding: 10px 16px; border-radius: 8px; font-weight: bold; font-size: 14px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .btn-ability.active { border-color: #0077B6; background: #0077B633; color: #0077B6; }
+    .btn-ability span { font-size: 10px; opacity: 0.8; }
+    
+    /* End Screen Modal */
+    #end-modal { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.85); flex-direction: column; justify-content: center; align-items: center; gap: 15px; text-align: center; padding: 20px; }
+    #end-modal h2 { color: #FFCC00; font-size: 24px; }
+    #end-modal p { font-size: 16px; line-height: 1.5; }
+    #end-modal button { background: #0077B6; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<div id="game-container">
+  <canvas id="gameCanvas"></canvas>
+  
+  <div class="ui-panel">
+    <button class="btn-ability active" id="btn-blocker" onclick="selectAbility('BLOCKER')">
+      🛑 Bloquear
+      <span id="count-blocker">x3</span>
+    </button>
+    <button class="btn-ability" style="opacity: 0.4;" disabled>🪜 Rampa <span>(v0.2)</span></button>
+    <button class="btn-ability" style="opacity: 0.4;" disabled>☂️ Guarda-Chuva <span>(v0.2)</span></button>
+  </div>
+
+  <div id="end-modal">
+    <h2>FASE CONCLUÍDA</h2>
+    <p id="summary-text"></p>
+    <button onclick="restartLevel()">Jogar Novamente</button>
+  </div>
+</div>
+
+<script>
+// ==========================================
+// 1. GAME ENGINE CORE (Agnóstico de Tema)
+// ==========================================
+class Engine {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext("2d");
+    this.entities = [];
+    this.mapData = null;
+    this.selectedAbility = 'BLOCKER';
+    this.abilities = { BLOCKER: 3 };
+    
+    this.spawnCount = 0;
+    this.totalEntities = 15;
+    this.savedCount = 0;
+    this.lostCount = 0;
+    this.spawnInterval = 1800;
+    this.lastSpawn = 0;
+    
+    this.isRunning = false;
+    this.bindEvents();
+  }
+
+  loadLevel(levelConfig) {
+    this.mapData = levelConfig;
+    this.abilities = { ...levelConfig.abilities };
+    this.spawnCount = 0;
+    this.savedCount = 0;
+    this.lostCount = 0;
+    this.entities = [];
+    this.isRunning = true;
+    this.updateUI();
+  }
+
+  start() {
+    let lastTime = performance.now();
+    const loop = (currentTime) => {
+      const dt = (currentTime - lastTime) / 1000;
+      lastTime = currentTime;
+
+      if (this.isRunning) {
+        this.update(currentTime, dt);
+        this.render();
+      }
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  }
+
+  update(currentTime, dt) {
+    // Spawner
+    if (this.spawnCount < this.totalEntities && currentTime - this.lastSpawn > this.spawnInterval) {
+      this.entities.push(new Entity(this.mapData.spawn.x, this.mapData.spawn.y));
+      this.spawnCount++;
+      this.lastSpawn = currentTime;
+    }
+
+    // Processamento de Entidades
+    this.entities.forEach(ent => ent.update(dt, this.mapData, this.entities));
+
+    // Contadores & Fim de Jogo
+    this.savedCount = this.entities.filter(e => e.state === 'REACHED').length;
+    this.lostCount = this.entities.filter(e => e.state === 'DEAD').length;
+
+    if (this.savedCount + this.lostCount === this.totalEntities && this.isRunning) {
+      this.isRunning = false;
+      this.onLevelComplete();
+    }
+  }
+
+  render() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Desenha Cenário (Plataformas & Buracos)
+    this.mapData.platforms.forEach(p => {
+      this.ctx.fillStyle = p.color || "#555";
+      this.ctx.fillRect(p.x, p.y, p.w, p.h);
+    });
+
+    // Desenha Ponto de Entrada (Portal) e Saída (McTonny)
+    this.ctx.fillStyle = "#FFCC00";
+    this.ctx.fillRect(this.mapData.spawn.x - 10, this.mapData.spawn.y - 30, 20, 30); // Portal
+    this.ctx.fillStyle = "#0077B6";
+    this.ctx.fillRect(this.mapData.target.x - 15, this.mapData.target.y - 40, 30, 40); // Target
+
+    // Desenha Entidades
+    this.entities.forEach(ent => ent.render(this.ctx));
+  }
+
+  bindEvents() {
+    const handleTouch = (e) => {
+      if (!this.isRunning) return;
+      const rect = this.canvas.getBoundingClientRect();
+      const touch = e.touches ? e.touches[0] : e;
+      const clickX = (touch.clientX - rect.left) * (this.canvas.width / rect.width);
+      const clickY = (touch.clientY - rect.top) * (this.canvas.height / rect.height);
+
+      // Clique em Entidade
+      this.entities.forEach(ent => {
+        if (ent.state === 'WALKING' && Math.hypot(ent.x - clickX, ent.y - clickY) < 20) {
+          if (this.selectedAbility === 'BLOCKER' && this.abilities.BLOCKER > 0) {
+            ent.state = 'BLOCKING';
+            this.abilities.BLOCKER--;
+            this.updateUI();
+          }
+        }
+      });
+    };
+
+    this.canvas.addEventListener('touchstart', handleTouch);
+    this.canvas.addEventListener('mousedown', handleTouch);
+  }
+
+  updateUI() {
+    document.getElementById('count-blocker').innerText = `x${this.abilities.BLOCKER}`;
+  }
+
+  onLevelComplete() {
+    document.getElementById('summary-text').innerHTML = `
+      ${this.totalEntities} Romeiros enviados<br>
+      <strong style="color:#4CAF50">${this.savedCount} chegaram ao McTonny</strong><br>
+      <strong style="color:#F44336">${this.lostCount} ficaram pelo caminho</strong>
+    `;
+    document.getElementById('end-modal').style.display = 'flex';
+  }
+}
+
+// ==========================================
+// 2. ENTITY SYSTEM (O "Romeiro")
+// ==========================================
+class Entity {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.vx = 40; // Velocidade em px/sec
+    this.vy = 0;
+    this.radius = 6;
+    this.state = 'WALKING'; // WALKING, BLOCKING, FALLING, REACHED, DEAD
+    this.fallDistance = 0;
+  }
+
+  update(dt, map, allEntities) {
+    if (this.state === 'REACHED' || this.state === 'DEAD') return;
+
+    if (this.state === 'WALKING') {
+      // 1. Move Horizontalmente
+      let nextX = this.x + this.vx * dt;
+
+      // Colisão com Colisores/Bloqueadores
+      let blocked = allEntities.some(other => 
+        other !== this && other.state === 'BLOCKING' && Math.hypot(other.x - nextX, other.y - this.y) < 12
+      );
+
+      if (blocked) {
+        this.vx *= -1; // Inverte Direção
+      } else {
+        this.x = nextX;
+      }
+
+      // 2. Checa Chão sob a Entidade
+      let onGround = map.platforms.some(p => 
+        this.x >= p.x && this.x <= p.x + p.w && Math.abs((this.y + this.radius) - p.y) < 3
+      );
+
+      if (!onGround) {
+        this.state = 'FALLING';
+        this.fallDistance = 0;
+      }
+
+      // 3. Checa Ponto Final (McTonny)
+      if (Math.hypot(this.x - map.target.x, this.y - map.target.y) < 15) {
+        this.state = 'REACHED';
+      }
+    } 
+    else if (this.state === 'FALLING') {
+      this.vy = 120; // Gravidade simples
+      this.y += this.vy * dt;
+      this.fallDistance += this.vy * dt;
+
+      // Colisão com Chão durante Queda
+      let landedPlatform = map.platforms.find(p => 
+        this.x >= p.x && this.x <= p.x + p.w && (this.y + this.radius) >= p.y && (this.y + this.radius) <= p.y + p.h
+      );
+
+      if (landedPlatform) {
+        this.y = landedPlatform.y - this.radius;
+        this.vy = 0;
+        this.state = 'WALKING';
+      }
+
+      // Morte fora da Tela (Buraco Sem Fundo)
+      if (this.y > map.height) {
+        this.state = 'DEAD';
+      }
+    }
+  }
+
+  render(ctx) {
+    if (this.state === 'REACHED' || this.state === 'DEAD') return;
+
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    
+    // Cor por Estado
+    if (this.state === 'WALKING') ctx.fillStyle = '#4CAF50';  // Romeiro Andando (Verde)
+    if (this.state === 'BLOCKING') ctx.fillStyle = '#F44336'; // Bloqueador (Vermelho)
+    if (this.state === 'FALLING') ctx.fillStyle = '#FF9800';  // Caindo (Laranja)
+
+    ctx.fill();
+    ctx.closePath();
+  }
+}
+
+// ==========================================
+// 3. THEME / LEVEL SPECIFIC (McTonny)
+// ==========================================
+const canvas = document.getElementById('gameCanvas');
+canvas.width = 360;
+canvas.height = 500;
+
+const mcTonnyLevel1 = {
+  width: 360,
+  height: 500,
+  spawn: { x: 30, y: 120 },
+  target: { x: 330, y: 400 },
+  abilities: { BLOCKER: 3 },
+  platforms: [
+    { x: 10, y: 120, w: 200, h: 12, color: '#888' }, // Plataforma Superior (Com buraco na direita)
+    { x: 100, y: 260, w: 250, h: 12, color: '#888' }, // Plataforma Intermediária
+    { x: 20, y: 400, w: 330, h: 12, color: '#888' }   // Plataforma Inferior (Até o McTonny)
+  ]
+};
+
+const game = new Engine(canvas);
+game.loadLevel(mcTonnyLevel1);
+game.start();
+
+function selectAbility(type) {
+  game.selectedAbility = type;
+}
+
+function restartLevel() {
+  document.getElementById('end-modal').style.display = 'none';
+  game.loadLevel(mcTonnyLevel1);
+}
+</script>
+</body>
+</html>
