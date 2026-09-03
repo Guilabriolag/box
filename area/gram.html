@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A GramÃ¡tica do Mundo â€” ZYRO Engine v4</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap');
+
+  :root{
+    --bg: #eef1f3;
+    --paper: #ffffff;
+    --ink: #1c2530;
+    --muted: #5c6774;
+    --line: #d7dde2;
+    --amber: #b9772f;
+    --teal: #2f7d76;
+    --teal-bg: #e6f0ee;
+    --amber-bg: #f5ece0;
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family:'Source Sans 3', sans-serif;
+    font-size:16px;
+    line-height:1.6;
+  }
+  h1,h2,h3{ font-family:'Space Grotesk', sans-serif; margin:0; letter-spacing:-0.01em; }
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+  .wrap{ max-width: 900px; margin:0 auto; padding: 0 32px; }
+
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    text-transform:uppercase;
+    letter-spacing:0.12em;
+    font-size:11.5px;
+    color: var(--teal);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom: 14px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:16px; height:1px;
+    background: var(--teal);
+    display:inline-block;
+  }
+
+  header{
+    padding: 80px 0 56px;
+    border-bottom: 1px solid var(--line);
+  }
+  header h1{
+    font-size: clamp(32px, 5vw, 46px);
+    font-weight:700;
+    max-width: 700px;
+  }
+  header h1 em{ font-style:normal; color: var(--amber); }
+  header p.lede{
+    max-width: 580px;
+    color: var(--muted);
+    font-size: 17px;
+    margin-top: 18px;
+  }
+
+  /* flat formula strip */
+  .formula{
+    margin-top: 44px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 22px 24px;
+    display:flex;
+    flex-wrap:wrap;
+    gap: 10px 6px;
+    align-items:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13.5px;
+  }
+  .formula .term{ color: var(--ink); font-weight:500; }
+  .formula .op{ color: var(--muted); }
+  .formula .verb{ color: var(--teal); }
+
+  section{ padding: 56px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type{ border-bottom:none; }
+  section h2{ font-size: clamp(24px, 3.4vw, 30px); margin-bottom: 12px; }
+  section > .wrap > p.intro{
+    color: var(--muted);
+    max-width: 620px;
+    font-size: 15.5px;
+    margin-bottom: 34px;
+  }
+
+  /* two-card duo */
+  .duo{ display:grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width:700px){ .duo{ grid-template-columns:1fr; } }
+  .card{
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 24px;
+  }
+  .card h3{ font-size:18px; margin-bottom:10px; }
+  .card p{ color: var(--muted); font-size:14.5px; }
+  .card ul{ margin:14px 0 0; padding-left:18px; color: var(--muted); font-size:14px; }
+  .card ul li{ margin-bottom:5px; }
+
+  /* pipeline - flat */
+  .pipeline{
+    display:flex; flex-wrap:wrap;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow:hidden;
+    background: var(--paper);
+  }
+  .pstep{
+    flex:1 1 110px;
+    padding: 18px 14px;
+    border-right:1px solid var(--line);
+    text-align:center;
+  }
+  .pstep:last-child{ border-right:none; background: var(--amber-bg); }
+  .pstep .n{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; color:var(--muted); display:block; margin-bottom:6px; }
+  .pstep .label{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px; }
+  .pstep:last-child .label{ color: var(--amber); }
+
+  /* estado callout */
+  .callout{
+    background: var(--teal-bg);
+    border-left: 3px solid var(--teal);
+    border-radius: 2px;
+    padding: 18px 22px;
+    margin-top: 26px;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .callout strong{ color: var(--teal); }
+
+  /* hierarchy - flat rows */
+  .tree{ display:flex; flex-direction:column; gap:1px; background: var(--line); border:1px solid var(--line); border-radius:4px; overflow:hidden; }
+  .root-row{ display:grid; grid-template-columns: 190px 1fr; background: var(--paper); }
+  @media (max-width:640px){ .root-row{ grid-template-columns: 1fr; } }
+  .root-label{
+    padding: 16px 18px;
+    border-right: 1px solid var(--line);
+    display:flex; flex-direction:column; justify-content:center;
+    background: #fbfbfa;
+  }
+  @media (max-width:640px){ .root-label{ border-right:none; border-bottom:1px solid var(--line); } }
+  .root-label .idx{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; color: var(--amber); }
+  .root-label .name{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:15.5px; margin-top:2px; }
+  .sub-box{ padding: 14px 18px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .sub-box .plain{ color: var(--muted); font-size:14px; }
+  .chip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    padding:4px 10px;
+    border-radius:20px;
+    border:1px solid var(--teal);
+    color: var(--teal);
+    white-space:nowrap;
+  }
+  .chip.amber{ border-color: var(--amber); color: var(--amber); }
+
+  /* example tables */
+  .example-block{ margin-bottom: 42px; }
+  .example-block:last-child{ margin-bottom:0; }
+  .example-block h3{
+    font-size: 16px;
+    margin-bottom: 6px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .example-block h3 .tagnum{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--paper);
+    background: var(--teal);
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+  .example-block p.desc{ color: var(--muted); font-size: 14px; margin: 6px 0 16px; max-width: 600px; }
+
+  .table-scroll{ overflow-x:auto; border:1px solid var(--line); border-radius:4px; }
+  table.ex-table{ width:100%; border-collapse:collapse; font-size:13.5px; background: var(--paper); }
+  table.ex-table th{
+    font-family:'IBM Plex Mono', monospace;
+    text-transform:uppercase; letter-spacing:0.05em;
+    font-size: 10.5px; color: var(--amber);
+    background: var(--amber-bg);
+    padding: 10px 12px; text-align:left;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  table.ex-table td{
+    padding: 12px; border-bottom:1px solid var(--line);
+    border-right: 1px solid var(--line);
+    vertical-align:top; color: var(--ink);
+  }
+  table.ex-table td:last-child, table.ex-table th:last-child{ border-right:none; }
+  table.ex-table tr:last-child td{ border-bottom:none; }
+  table.ex-table td.muted{ color: var(--muted); font-size:12.5px; }
+
+  .closing p{ color: var(--muted); max-width: 580px; }
+  .tag-row{ margin-top: 24px; display:flex; gap:8px; flex-wrap:wrap; }
+  .tag-row span{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px;
+    color: var(--muted); border:1px solid var(--line);
+    padding:5px 11px; border-radius:20px;
+  }
+  footer{
+    padding: 26px 0 44px; text-align:center;
+    color: var(--muted); font-family:'IBM Plex Mono', monospace; font-size:11px;
+  }
+
+  /* layer stack */
+  .layers{ display:flex; flex-direction:column; gap:1px; background: var(--line); border:1px solid var(--line); border-radius:4px; overflow:hidden; margin-bottom: 44px; }
+  .layer-row{ display:grid; grid-template-columns: 160px 1fr; background: var(--paper); }
+  @media (max-width:640px){ .layer-row{ grid-template-columns:1fr; } }
+  .layer-row .lname{
+    padding:16px 18px; background:#fbfbfa;
+    border-right:1px solid var(--line);
+    display:flex; flex-direction:column; justify-content:center;
+  }
+  @media (max-width:640px){ .layer-row .lname{ border-right:none; border-bottom:1px solid var(--line); } }
+  .layer-row .lname .idx{ font-family:'IBM Plex Mono', monospace; font-size:10px; color:var(--teal); }
+  .layer-row .lname .name{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:15px; margin-top:2px; }
+  .layer-row .ldesc{ padding:14px 18px; display:flex; align-items:center; color:var(--muted); font-size:14px; }
+
+  /* hub diagram */
+  .hub-wrap{ background: var(--paper); border:1px solid var(--line); border-radius:4px; padding: 36px 24px 28px; }
+  .motor-row{ display:flex; flex-wrap:wrap; justify-content:center; gap: 10px 8px; margin-bottom: 0; }
+  .motor-chip{
+    font-family:'IBM Plex Mono', monospace; font-size:12px;
+    padding: 8px 14px; border:1px solid var(--line); border-radius:4px;
+    color: var(--ink); background:#fbfbfa; position:relative;
+  }
+  .motor-chip::after{
+    content:""; position:absolute; left:50%; bottom:-22px;
+    width:1px; height:22px; background: var(--line);
+    transform: translateX(-50%);
+  }
+  .hub-lines{ height: 22px; }
+  .hub-bar{
+    margin-top: 0;
+    background: var(--teal-bg);
+    border: 1px solid var(--teal);
+    border-radius: 4px;
+    padding: 16px 20px;
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--teal);
+  }
+  .hub-bar .cap{
+    display:block; font-family:'Space Grotesk', sans-serif;
+    font-weight:600; font-size:14px; color: var(--ink); margin-bottom:6px;
+  }
+
+  /* vertical flow (eventos -> merkle -> raiz -> pulso -> ancora) */
+  .flow-vertical{
+    display:flex; flex-direction:column; align-items:center; gap:0;
+    background: var(--paper); border:1px solid var(--line); border-radius:4px;
+    padding: 26px 20px;
+  }
+  .flow-box{
+    font-family:'IBM Plex Mono', monospace; font-size:13px;
+    padding: 10px 20px; border:1px solid var(--line); border-radius:4px;
+    background:#fbfbfa; color:var(--ink); min-width:200px; text-align:center;
+  }
+  .flow-box.final{ border-color: var(--amber); color: var(--amber); background: var(--amber-bg); }
+  .flow-arrow-v{ color: var(--muted); font-family:'IBM Plex Mono', monospace; padding: 4px 0; }
+
+  /* two chains diagram */
+  .chains{ display:grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items:center; background: var(--paper); border:1px solid var(--line); border-radius:4px; padding: 26px 20px; }
+  @media (max-width:640px){ .chains{ grid-template-columns:1fr; } }
+  .chain-col{ display:flex; flex-direction:column; gap:8px; align-items:center; }
+  .chain-col .clabel{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:13.5px; color: var(--teal); margin-bottom:4px; }
+  .chain-node{ font-family:'IBM Plex Mono', monospace; font-size:12px; border:1px solid var(--line); border-radius:4px; padding:7px 14px; background:#fbfbfa; width:100%; text-align:center; }
+  .chain-mid{ display:flex; flex-direction:column; align-items:center; color: var(--muted); font-family:'IBM Plex Mono', monospace; font-size:11.5px; text-align:center; gap:4px; }
+
+  /* five-layer meaning stack reuses .layers but with question column */
+  .lname .q{ display:block; font-size:11.5px; color: var(--muted); margin-top:2px; font-style:italic; }
+
+  /* branch diagram: Gramatica Zero -> 3 branches -> converge */
+  .branch{ background: var(--paper); border:1px solid var(--line); border-radius:4px; padding: 30px 20px; display:flex; flex-direction:column; align-items:center; gap:0; }
+  .branch-top{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:15px; color:var(--ink); border:1px solid var(--teal); background: var(--teal-bg); padding:10px 22px; border-radius:4px; }
+  .branch-mid{ display:flex; justify-content:center; gap: 30px; margin: 18px 0; flex-wrap:wrap; }
+  .branch-node{ font-family:'IBM Plex Mono', monospace; font-size:12.5px; border:1px solid var(--line); border-radius:4px; padding:9px 16px; background:#fbfbfa; }
+  .branch-chain{ display:flex; flex-direction:column; align-items:center; gap:0; margin-top: 6px; }
+  .branch-chain .flow-box{ min-width:160px; margin: 3px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">ZYRO Engine â€” Documento de Arquitetura, v4</div>
+    <h1>A gramÃ¡tica que faz <em>o mundo</em> se encaixar sozinho.</h1>
+    <p class="lede">Motores genÃ©ricos nÃ£o sabem o que Ã© um panfleto, um copo de suco ou um pagamento em sats. Eles sÃ³ sabem ler frases. Quem dÃ¡ sentido Ã s frases Ã© a biblioteca de conhecimento.</p>
+
+    <div class="formula">
+      <span class="term">Entidade + Verbo + Objeto</span>
+      <span class="op">â†’</span>
+      <span class="verb">verificar</span> <span class="term">CondiÃ§Ã£o</span>
+      <span class="op">â†’</span>
+      <span class="verb">consultar</span> <span class="term">Estado</span>
+      <span class="op">â†’</span>
+      <span class="verb">executar</span> <span class="term">AÃ§Ã£o Resultante</span>
+      <span class="op">â†’</span>
+      <span class="verb">aplicar</span> <span class="term">Escala + Tempo</span>
+      <span class="op">â†’</span>
+      <span class="verb">atualizar</span> <span class="term">Estado</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">00 â€” A posiÃ§Ã£o da gramÃ¡tica</div>
+    <h2>Uma lÃ­ngua comum, nÃ£o um motor central</h2>
+    <p class="intro">A GramÃ¡tica Zero nÃ£o executa nada e nÃ£o substitui motor nenhum. Ela garante que todos os motores descrevam o mundo da mesma forma â€” cada um continua especialista no seu prÃ³prio domÃ­nio.</p>
+
+    <div class="layers">
+      <div class="layer-row">
+        <div class="lname"><span class="idx">CAMADA 01</span><span class="name">GramÃ¡tica Zero</span></div>
+        <div class="ldesc">Define como uma situaÃ§Ã£o Ã© descrita â€” a sintaxe comum entre todos os motores.</div>
+      </div>
+      <div class="layer-row">
+        <div class="lname"><span class="idx">CAMADA 02</span><span class="name">Bibliotecas</span></div>
+        <div class="ldesc">Definem o vocabulÃ¡rio: conhecimento, componentes, estados, aÃ§Ãµes e regras disponÃ­veis.</div>
+      </div>
+      <div class="layer-row">
+        <div class="lname"><span class="idx">CAMADA 03</span><span class="name">Motores</span></div>
+        <div class="ldesc">Executam as regras â€” cada um especialista no seu domÃ­nio, mundo, interaÃ§Ã£o, transporte, IA.</div>
+      </div>
+      <div class="layer-row">
+        <div class="lname"><span class="idx">CAMADA 04</span><span class="name">Entidades do mundo</span></div>
+        <div class="ldesc">Usam essas peÃ§as pra formar situaÃ§Ãµes concretas no momento do jogo.</div>
+      </div>
+    </div>
+
+    <div class="hub-wrap">
+      <div class="motor-row">
+        <span class="motor-chip">Motor de Mundo</span>
+        <span class="motor-chip">Motor de Entidades</span>
+        <span class="motor-chip">Motor de InteraÃ§Ã£o</span>
+        <span class="motor-chip">Motor de InventÃ¡rio</span>
+        <span class="motor-chip">Motor de IA</span>
+        <span class="motor-chip">Motor de Transporte</span>
+        <span class="motor-chip">Motor de Smartphone</span>
+      </div>
+      <div class="hub-lines"></div>
+      <div class="hub-bar">
+        <span class="cap">GramÃ¡tica Zero â€” a lÃ­ngua comum</span>
+        Entidade + Verbo + Objeto + CondiÃ§Ã£o + Estado â†’ Efeito + Escala + Tempo
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">01 â€” O princÃ­pio</div>
+    <h2>Dois tipos de peÃ§a, nunca confundidas</h2>
+    <p class="intro">Um motor processa. Uma biblioteca sabe. Nenhum dos dois faz o trabalho do outro.</p>
+
+    <div class="duo">
+      <div class="card">
+        <h3>Motores</h3>
+        <p>Executam. NÃ£o sabem nada sobre o conteÃºdo especÃ­fico do jogo â€” sÃ³ sabem seguir uma estrutura de frase.</p>
+        <ul>
+          <li>Mundo</li>
+          <li>Entidades</li>
+          <li>InteraÃ§Ãµes</li>
+          <li>InventÃ¡rio</li>
+          <li>IA de NPCs</li>
+          <li>Economia</li>
+          <li>Eventos</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Bibliotecas de conhecimento</h3>
+        <p>Sabem. Guardam as regras, os arquÃ©tipos e as combinaÃ§Ãµes possÃ­veis que os motores consultam antes de agir.</p>
+        <ul>
+          <li>ArquÃ©tipos</li>
+          <li>Atributos</li>
+          <li>Estados</li>
+          <li>AÃ§Ãµes</li>
+          <li>Regras</li>
+          <li>Componentes</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">02 â€” O fluxo</div>
+    <h2>Um ciclo fechado</h2>
+    <p class="intro">O estado que sai de uma execuÃ§Ã£o Ã© o estado que entra na prÃ³xima consulta.</p>
+
+    <div class="pipeline">
+      <div class="pstep"><span class="n">01</span><span class="label">Entidade+Verbo+Objeto</span></div>
+      <div class="pstep"><span class="n">02</span><span class="label">Verificar CondiÃ§Ã£o</span></div>
+      <div class="pstep"><span class="n">03</span><span class="label">Consultar Estado</span></div>
+      <div class="pstep"><span class="n">04</span><span class="label">Executar AÃ§Ã£o</span></div>
+      <div class="pstep"><span class="n">05</span><span class="label">Aplicar Escala+Tempo</span></div>
+      <div class="pstep"><span class="n">06</span><span class="label">Atualizar Estado</span></div>
+    </div>
+
+    <div class="callout">
+      <strong>Estado</strong> nÃ£o Ã© memÃ³ria. Ã‰ a representaÃ§Ã£o da situaÃ§Ã£o atual de uma entidade ou objeto no mundo. MemÃ³ria e progresso persistente sÃ£o sÃ³ uma das formas que esse estado pode assumir â€” junto de posiÃ§Ã£o, disponibilidade, condiÃ§Ã£o fÃ­sica, ou qualquer outra fotografia do "agora".
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">03 â€” A gramÃ¡tica</div>
+    <h2>Colunas raiz e seus sub-campos</h2>
+    <p class="intro">Cada linha da biblioteca monta uma frase vÃ¡lida. Oito colunas raiz, independentes entre si â€” o resto vive dentro delas, pra nenhuma disputar o mesmo papel.</p>
+
+    <div class="tree">
+      <div class="root-row">
+        <div class="root-label"><span class="idx">RAIZ 01</span><span class="name">Entidade</span></div>
+        <div class="sub-box"><span class="plain">Quem executa a aÃ§Ã£o â€” jogador, NPC, comerciante, sistema, ou um objeto do mundo.</span></div>
+      </div>
+      <div class="root-row">
+        <div class="root-label"><span class="idx">RAIZ 02</span><span class="name">Verbo</span></div>
+        <div class="sub-box"><span class="plain">O catÃ¡logo base:</span> <span class="chip">pegar</span><span class="chip">pagar</span><span class="chip">beber</span><span class="chip">entrar</span><span class="chip">andar</span></div>
+      </div>
+      <div class="root-row">
+        <div class="root-label"><span class="idx">RAIZ 03</span><span class="name">Objeto</span></div>
+        <div class="sub-box"><span class="plain">O alvo â€” item, pessoa, lugar, missÃ£o, evento abstrato.</span></div>
+      </div>
+      <div class="root-row">
+        <div class="root-label"><span class="idx">RAIZ 04</span><span class="name">CondiÃ§Ã£o</span></div>
+        <div class="sub-box"><span class="plain">O que precisa ser satisfeito.</span> <span class="chip amber">sub-campo: custo</span></div>
+      </div>
+      <div class="root-row">
+        <div class="root-label"><span class="idx">RAIZ 05</span><span class="name">Estado</span></div>
+        <div class="sub-box"><span class="plain">A situaÃ§Ã£o atual da entidade/objeto.</span> <span class="chip amber">sub-campo: persistente</span><span class="chip amber">sub-campo: autoridade</span></div>
+      </div>
+      <div class="root-row">
+        <div class="root-label"><span class="idx">RAIZ 06</span><span class="name">AÃ§Ã£o resultante</span></div>
+        <div class="sub-box"><span class="plain">O que acontece quando a condiÃ§Ã£o bate.</span></div>
+      </div>
+      <div class="root-row">
+        <div class="root-label"><span class="idx">RAIZ 07</span><span class="name">Escala</span></div>
+        <div class="sub-box"><span class="plain">O raio de efeito.</span> <span class="chip">entidade</span><span class="chip">Ã¡rea</span><span class="chip">mundo</span></div>
+      </div>
+      <div class="root-row">
+        <div class="root-label"><span class="idx">RAIZ 08</span><span class="name">Tempo</span></div>
+        <div class="sub-box"><span class="plain">A natureza temporal.</span> <span class="chip">instantÃ¢nea</span><span class="chip">diferida</span><span class="chip">com prazo</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">04 â€” Exemplos aplicados</div>
+    <h2>Mesmo mecanismo, resultados diferentes</h2>
+    <p class="intro">Um copo, um NPC, uma Ã¡rvore ou um pagamento em sats entram na mesma estrutura. O que muda sÃ£o os componentes e atributos ligados Ã  entidade â€” nunca o motor.</p>
+
+    <div class="example-block">
+      <h3><span class="tagnum">01</span>O panfleto do comerciante</h3>
+      <p class="desc">Progresso persistente como forma de estado â€” a condiÃ§Ã£o sÃ³ Ã© satisfeita depois de vÃ¡rias execuÃ§Ãµes da mesma aÃ§Ã£o.</p>
+      <div class="table-scroll">
+        <table class="ex-table">
+          <thead>
+            <tr><th>Entidade</th><th>Verbo</th><th>Objeto</th><th>CondiÃ§Ã£o</th><th>Estado</th><th>AÃ§Ã£o resultante</th><th>Tempo</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Jogador</td><td>Pegar</td><td>Panfleto do comerciante</td>
+              <td class="muted">Entregar a 5 pessoas distintas</td>
+              <td class="muted">Contador 0/5</td>
+              <td class="muted">Nenhuma â€” aguarda condiÃ§Ã£o</td>
+              <td class="muted">InstantÃ¢nea (por entrega)</td>
+            </tr>
+            <tr>
+              <td>Jogador</td><td>Entregar</td><td>Panfleto â†’ NPC #5</td>
+              <td class="muted">Contador atinge 5/5</td>
+              <td class="muted">CondiÃ§Ã£o satisfeita</td>
+              <td class="muted">Comerciante libera cashback</td>
+              <td class="muted">InstantÃ¢nea</td>
+            </tr>
+            <tr>
+              <td>Comerciante</td><td>Pagar</td><td>Cashback em sats</td>
+              <td class="muted">Requer autoridade externa</td>
+              <td class="muted">Aguardando confirmaÃ§Ã£o (Lightning)</td>
+              <td class="muted">Saldo do jogador atualizado</td>
+              <td class="muted">Diferida</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="example-block">
+      <h3><span class="tagnum">02</span>O copo de suco</h3>
+      <p class="desc">Estado como propriedade fÃ­sica do objeto, nÃ£o como progresso. Trocar um atributo do objeto muda o resultado sem tocar no motor.</p>
+      <div class="table-scroll">
+        <table class="ex-table">
+          <thead>
+            <tr><th>Entidade</th><th>Verbo</th><th>Objeto</th><th>CondiÃ§Ã£o</th><th>Estado</th><th>AÃ§Ã£o resultante</th><th>Tempo</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>NPC</td><td>Beber</td><td>Suco</td>
+              <td class="muted">Suco disponÃ­vel</td>
+              <td class="muted">Copo cheio</td>
+              <td class="muted">HidrataÃ§Ã£o e felicidade aumentam</td>
+              <td class="muted">InstantÃ¢nea</td>
+            </tr>
+            <tr>
+              <td>NPC</td><td>Beber</td><td>Suco <span class="chip amber" style="margin-left:4px;">+ veneno</span></td>
+              <td class="muted">Suco disponÃ­vel</td>
+              <td class="muted">Copo cheio</td>
+              <td class="muted">HidrataÃ§Ã£o sobe, saÃºde despenca</td>
+              <td class="muted">InstantÃ¢nea</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">05 â€” Por que isso escala</div>
+    <h2>Uma profissÃ£o nova nÃ£o Ã© um motor novo. Ã‰ uma linha nova.</h2>
+    <p>O motor de interaÃ§Ã£o nunca precisa saber o que Ã© uma "barbearia", nem que suco pode ter veneno. Ele sÃ³ sabe ler entidade, verbo, objeto, condiÃ§Ã£o, estado, aÃ§Ã£o, escala e tempo â€” a biblioteca de conhecimento Ã© quem decide o que essas colunas significam pra cada caso novo do mundo.</p>
+    <div class="tag-row">
+      <span>ZyroLog</span>
+      <span>Rota dos Romeiros</span>
+      <span>Prova de evento</span>
+      <span>Pirapora do Bom Jesus</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">06 â€” A camada de proveniÃªncia</div>
+    <h2>ZyroLog: de agenda a proveniÃªncia</h2>
+    <p class="intro">O ZyroLog nÃ£o Ã© mais uma funÃ§Ã£o do sistema. Ã‰ a camada que responde uma pergunta diferente em cada nÃ­vel â€” do significado atÃ© a prova externa.</p>
+
+    <div class="layers">
+      <div class="layer-row">
+        <div class="lname"><span class="idx">CAMADA 01</span><span class="name">GramÃ¡tica Zero</span><span class="q">O que significa?</span></div>
+        <div class="ldesc">A sintaxe: entidade, verbo, objeto, condiÃ§Ã£o, estado.</div>
+      </div>
+      <div class="layer-row">
+        <div class="lname"><span class="idx">CAMADA 02</span><span class="name">ZyroLog</span><span class="q">O que aconteceu?</span></div>
+        <div class="ldesc">O evento concreto, padronizado, gerado a partir da gramÃ¡tica.</div>
+      </div>
+      <div class="layer-row">
+        <div class="lname"><span class="idx">CAMADA 03</span><span class="name">Cadeia</span><span class="q">O que aconteceu antes disso?</span></div>
+        <div class="ldesc">Cada evento aponta pro anterior â€” altere um elo e a cadeia inteira deixa de conferir.</div>
+      </div>
+      <div class="layer-row">
+        <div class="lname"><span class="idx">CAMADA 04</span><span class="name">Ã‚ncora</span><span class="q">O que foi publicado pra tornar aquilo verificÃ¡vel?</span></div>
+        <div class="ldesc">Um compromisso externo â€” nÃ£o precisa ser Bitcoin, mas pode ser.</div>
+      </div>
+      <div class="layer-row">
+        <div class="lname"><span class="idx">CAMADA 05</span><span class="name">ZyroKey</span><span class="q">Como outra parte reproduz aquilo?</span></div>
+        <div class="ldesc">A chave compacta que outro processo interpreta e reconstrÃ³i.</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>NÃ£o ancore todo evento.</strong> Satoshi nÃ£o Ã© "uma prova" â€” Ã© o recurso econÃ´mico usado pra publicar um estado. A prova criptogrÃ¡fica existe independente do valor financeiro, o que evita prender o sistema conceitualmente ao Bitcoin.
+    </div>
+
+    <div style="margin-top:22px;" class="flow-vertical">
+      <div class="flow-box">5.000 eventos</div>
+      <div class="flow-arrow-v">â†“</div>
+      <div class="flow-box">Merkle tree</div>
+      <div class="flow-arrow-v">â†“</div>
+      <div class="flow-box">uma raiz</div>
+      <div class="flow-arrow-v">â†“</div>
+      <div class="flow-box final">Pulso â†’ Ã¢ncora Bitcoin</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">07 â€” Carteiras como entidades</div>
+    <h2>Duas cadeias confirmando o mesmo evento</h2>
+    <p class="intro">Em vez de "A diz que pagou", o sistema procura a correspondÃªncia entre os estados independentes dos dois participantes.</p>
+
+    <div class="chains">
+      <div class="chain-col">
+        <div class="clabel">Cadeia do cliente</div>
+        <div class="chain-node">A1 â†’ A2 â†’ A3</div>
+        <div class="chain-node" style="border-color:var(--amber); color:var(--amber);">A4 â€” agendamento</div>
+      </div>
+      <div class="chain-mid">correspondÃªncia<br>cruzada<br>â†”</div>
+      <div class="chain-col">
+        <div class="clabel">Cadeia do CarlÃ£o</div>
+        <div class="chain-node">B1 â†’ B2 â†’ B3</div>
+        <div class="chain-node" style="border-color:var(--amber); color:var(--amber);">B4 â€” confirmaÃ§Ã£o</div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:22px;">
+      <strong>Identificador universal de evento.</strong> <span class="mono">ZYR:event:&lt;hash&gt;</span> identifica o quÃª. <span class="mono">ZYR:&lt;payload compacto&gt;</span> transporta o quÃª. Separar identificaÃ§Ã£o de transporte evita confundir "isso Ã© isso" com "isso carrega isso" â€” Ã© a mesma lÃ³gica por trÃ¡s da ZyroKey.
+    </div>
+  </div>
+</section>
+
+<section style="border-bottom:none;">
+  <div class="wrap">
+    <div class="eyebrow">08 â€” A arquitetura completa</div>
+    <h2>GramÃ¡tica por cima, proveniÃªncia por baixo</h2>
+    <p class="intro">A gramÃ¡tica se ramifica em motor, biblioteca e ZyroLog â€” os trÃªs convergem numa situaÃ§Ã£o concreta, que desce atÃ© virar prova externa.</p>
+
+    <div class="branch">
+      <div class="branch-top">GRAMÃTICA ZERO</div>
+      <div class="branch-mid">
+        <div class="branch-node">MOTOR</div>
+        <div class="branch-node">BIBLIOTECA</div>
+        <div class="branch-node">ZYROLOG</div>
+      </div>
+      <div class="branch-chain">
+        <div class="flow-box">situaÃ§Ã£o</div>
+        <div class="flow-arrow-v">â†“</div>
+        <div class="flow-box">estado</div>
+        <div class="flow-arrow-v">â†“</div>
+        <div class="flow-box">evento</div>
+        <div class="flow-arrow-v">â†“</div>
+        <div class="flow-box">cadeia</div>
+        <div class="flow-arrow-v">â†“</div>
+        <div class="flow-box">pulso</div>
+        <div class="flow-arrow-v">â†“</div>
+        <div class="flow-box final">Ã¢ncora</div>
+      </div>
+    </div>
+
+    <p style="color:var(--muted); font-size:14.5px; margin-top:24px; max-width:600px;">A mesma estrutura serve pro corte no CarlÃ£o, o pagamento, o cupom, a entrega, o QR Code da gincana e o cardÃ¡pio. A gramÃ¡tica nÃ£o muda â€” muda sÃ³ a biblioteca e o contexto.</p>
+  </div>
+</section>
+
+<footer>ZYRO ENGINE Â· DOCUMENTO DE ARQUITETURA Â· GUI LABRIOLAG</footer>
+
+</body>
+</html>
