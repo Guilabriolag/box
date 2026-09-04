@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estação Comercial 3D — White Label</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #05050a;
+            color: white;
+            user-select: none;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        /* HUD - Painel de Controle */
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(20, 20, 25, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            max-width: 320px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            margin: 0 0 5px 0;
+            font-size: 22px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h1 .logo-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        h2 {
+            margin: 0 0 15px 0;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 8px;
+            margin-top: 15px;
+            letter-spacing: 1px;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        button.active {
+            color: #1a1a1a;
+        }
+
+        /* Instruções de Navegação */
+        #instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 12px;
+            pointer-events: none;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 10;
+            text-align: center;
+        }
+
+        /* Carregando */
+        #loader {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #111;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.5s ease;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #loader p {
+            margin-top: 20px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        /* --- MODO DE IMERSÃO --- */
+        #btn-immersion {
+            position: fixed;
+            bottom: 24px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(20, 20, 25, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+        }
+
+        #btn-exit-immersion {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: auto;
+            padding: 10px 16px;
+            border-radius: 20px;
+            background: rgba(20, 20, 25, 0.9);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            font-size: 12px;
+            z-index: 30;
+            display: none;
+        }
+
+        #btn-camera-toggle {
+            position: fixed;
+            bottom: 24px;
+            right: 96px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(20, 20, 25, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 22px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+        }
+
+        /* --- JOYSTICK VIRTUAL --- */
+        #joystick-base {
+            position: fixed;
+            bottom: 40px;
+            left: 30px;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.12);
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            display: none;
+            z-index: 30;
+            touch-action: none;
+        }
+
+        #joystick-handle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 54px;
+            height: 54px;
+            margin-top: -27px;
+            margin-left: -27px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="spinner"></div>
+        <p id="loader-text">CONSTRUINDO ESTAÇÃO 3D...</p>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <!-- HUD de Controle -->
+    <div id="hud">
+        <h1>
+            <span class="logo-dot" id="logo-dot"></span>
+            <span id="hud-title">—</span>
+        </h1>
+        <h2 id="hud-slogan">—</h2>
+
+        <div class="section-title">Ambiente & Horário</div>
+        <div class="btn-group">
+            <button id="btn-day" class="active">☀ Dia</button>
+            <button id="btn-night">🌙 Noite</button>
+        </div>
+
+        <div class="section-title">Controle de Câmera</div>
+        <div class="btn-group">
+            <button id="btn-cam-ext" class="active">Fachada</button>
+            <button id="btn-cam-int">Interior</button>
+            <button id="btn-cam-drive">Entrada</button>
+            <button id="btn-cam-totem">Totem</button>
+        </div>
+
+        <div class="section-title">Animação</div>
+        <button id="btn-orbit" style="width: 100%;">🔄 Rotacionar Câmera (On)</button>
+    </div>
+
+    <div id="instructions">
+        Use o <b>Botão Esquerdo</b> para girar • <b>Botão Direito</b> para arrastar • <b>Scroll</b> para Zoom
+    </div>
+
+    <!-- Modo de Imersão -->
+    <button id="btn-immersion" title="Entrar no Modo Imersão">🎮</button>
+    <button id="btn-exit-immersion" title="Sair do Modo Imersão">✕ Sair da Imersão</button>
+    <button id="btn-camera-toggle" title="Alternar 1ª/3ª Pessoa">👁️</button>
+
+    <div id="joystick-base">
+        <div id="joystick-handle"></div>
+    </div>
+
+    <!-- Importando Three.js, OrbitControls de fontes estáveis CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        // =====================================================================
+        // STATION_CONFIG — TUDO que é "identidade de marca" mora aqui.
+        // Trocar este objeto (ou substituí-lo por um JSON carregado externamente)
+        // é o único passo necessário para gerar uma nova estação white-label.
+        // Nenhuma linha do motor abaixo depende de uma marca específica.
+        // =====================================================================
+        const STATION_CONFIG = {
+            // --- Identidade ---
+            brand: {
+                name: "Labriolag",
+                monogram: "L",                    // letra usada no logo/badge procedural
+                title: "Labriolag",                // título grande no letreiro da fachada
+                slogan: "Laboratório de Ideias Influentes",
+                secondarySign: "CET Studio",       // equivalente ao "McCafé" — letreiro lateral
+                entrySignLabel: "ENTRADA",         // equivalente ao "DRIVE THRU" no totem
+                menuBoardLabel: "CATÁLOGO",        // texto do painel atrás do balcão
+                pageTitle: "Labriolag — Estação 3D",
+                loaderText: "CONSTRUINDO LABRIOLAG 3D..."
+            },
+
+            // --- Tema de cores (todas as cores do motor derivam daqui) ---
+            theme: {
+                primary: "#ffbc0d",     // cor de destaque / letreiros / logo
+                secondary: "#2f7dfb",   // cor de acento estrutural (substitui o "vermelho Mc")
+                facade: "#18181c",      // paredes escuras
+                wood: "#c19a6b",        // painéis de madeira
+                trim: "#f0f0f2",        // marquise/acabamento branco
+                glass: "#ffffff",       // vidraças
+                interiorFloor: "#dedede",
+                counterTop: "#ffffff",
+                road: "#222225",
+                grass: "#3b5e2b",
+                vehicle: "#2f7dfb"      // cor do veículo que circula na pista externa
+            },
+
+            // --- Tipografia ---
+            fontFamily: '"Segoe UI", Arial, sans-serif',
+
+            // --- Features opcionais (ligar/desligar peças do template) ---
+            features: {
+                driveThru: true,        // pista + carrinho circulando
+                entryTotem: true,       // totem externo de sinalização
+                exteriorOrnament: false,// equivalente ao "inflável de batata frita" (decoração temática)
+                outdoorSeating: false,
+                booths: true,
+                highTable: true,
+                roundTables: true
+            }
+        };
+        // =====================================================================
+
+        // --- CONFIGURAÇÃO GLOBAL ---
+        const container = document.getElementById('canvas-container');
+        let scene, camera, renderer, controls;
+        let buildingGroup, furnitureGroup, lightGroup, environmentGroup, vehicleGroup;
+        let clock = new THREE.Clock();
+
+        // Estados e Animações
+        let isNight = false;
+        let autoRotate = true;
+        let dayNightTransition = 0.0; // 0 = Dia, 1 = Noite
+        let carSpline, carMesh;
+        let carProgress = 0;
+
+        // Objetos Dinâmicos para Transição Dia/Noite
+        let hemiLight, dirLight;
+        let streetLights = [];
+        let interiorSpotlights = [];
+        let neonMaterials = [];
+        let skyMesh;
+
+        // --- MODO DE IMERSÃO / PERSONAGEM ---
+        let immersionMode = false;
+        let cameraMode = "third"; // "third" | "first"
+        let playerGroup, playerHeadMesh;
+        let playerFacing = Math.PI; // ângulo em radianos (0 = olhando para +Z)
+        let playerFacingTarget = Math.PI;
+        const playerSpeed = 2.8;    // reduzido para dar mais controle (era 4.2)
+        const playerEyeHeight = 1.85; // ajustado para o novo tamanho do personagem
+        const turnSpeed = 8;          // rad/s — velocidade máxima de giro (evita "tremedeira")
+        const inputDeadzone = 0.18;   // ignora toques mínimos/ruído do dedo
+
+        // Vetor de input normalizado vindo do joystick ou do teclado.
+        // x: -1 (esquerda) a 1 (direita) | y: -1 (para trás) a 1 (para frente)
+        let inputVector = { x: 0, y: 0 };
+        const keysPressed = {};
+
+        // Zoom por gesto de pinça (2 dedos), usado na 3ª pessoa como distância da câmera.
+        let immersionZoomDistance = 5;
+        const zoomMin = 2.5;
+        const zoomMax = 10;
+        let pinchStartDist = null;
+        let pinchStartZoom = immersionZoomDistance;
+
+        // Colisão simples: retângulos (AABB) das paredes externas do prédio,
+        // baseados nas mesmas posições/dimensões usadas em createBuilding().
+        const collisionBoxes = [
+            // Parede traseira
+            { minX: -11, maxX: 11, minZ: -7.75, maxZ: -7.25 },
+            // Parede direita
+            { minX: 10.75, maxX: 11.25, minZ: -7.5, maxZ: 7.5 },
+            // Painel de madeira esquerdo
+            { minX: -11.25, maxX: -10.75, minZ: -7.5, maxZ: -3 },
+        ];
+
+        // --- UNIVERSO AUTÔNOMO (roda sempre, independente do player) ---
+        let droneGroup, dronePropellers = [];
+        let droneActive = false;
+        let droneHoverT = 0;
+
+        let npcGroup;
+        const npcPatrol = { points: [], index: 0, progress: 0, speed: 0.35 };
+
+        let raycaster, pointerVec;
+
+        // --- APLICAR CONFIG NA UI (HTML) ---
+        function applyConfigToDOM() {
+            const c = STATION_CONFIG;
+            document.title = c.brand.pageTitle;
+            document.getElementById('loader-text').textContent = c.brand.loaderText;
+            document.getElementById('hud-title').textContent = c.brand.title;
+            document.getElementById('hud-slogan').textContent = c.brand.slogan;
+            document.getElementById('logo-dot').style.background = c.theme.primary;
+            document.getElementById('btn-cam-drive').textContent = c.features.driveThru ? 'Entrada' : 'Área Externa';
+            document.getElementById('btn-cam-totem').style.display = c.features.entryTotem ? '' : 'none';
+
+            // Estiliza botões/títulos com as cores do tema, sem tocar no CSS estático
+            const styleTag = document.createElement('style');
+            styleTag.textContent = `
+                body { font-family: ${c.fontFamily}; }
+                h1 { color: ${c.theme.primary}; }
+                h2 { color: ${c.theme.secondary}; }
+                button:hover { border-color: ${c.theme.primary}; }
+                button.active { background: ${c.theme.primary}; border-color: ${c.theme.primary}; box-shadow: 0 0 10px ${c.theme.primary}66; }
+                .spinner { border-top-color: ${c.theme.primary}; }
+                #loader p { color: ${c.theme.primary}; }
+            `;
+            document.head.appendChild(styleTag);
+        }
+
+        // --- INICIALIZAÇÃO ---
+        function init() {
+            applyConfigToDOM();
+
+            // Cena
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x1a1a24, 0.015);
+
+            // Câmera
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(28, 12, 35);
+
+            // Renderizador
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.0;
+            container.appendChild(renderer.domElement);
+
+            // Controles de Órbita
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2 - 0.05;
+            controls.minDistance = 3;
+            controls.maxDistance = 80;
+            controls.target.set(0, 3, 0);
+
+            // Grupos Organizacionais
+            buildingGroup = new THREE.Group();
+            furnitureGroup = new THREE.Group();
+            lightGroup = new THREE.Group();
+            environmentGroup = new THREE.Group();
+            vehicleGroup = new THREE.Group();
+
+            scene.add(buildingGroup, furnitureGroup, lightGroup, environmentGroup, vehicleGroup);
+
+            // Criação do Mundo
+            createEnvironment();
+            createBuilding();
+            createInterior();
+            createLogosAndSigns();
+            if (STATION_CONFIG.features.driveThru) createDriveThruCar();
+            setupLights();
+            createPlayer();
+            createWorkbenchWithDrone(-7, 0.3, -1.5);
+            createNPC(2.5, 0.3, -3.3);
+
+            window.addEventListener('resize', onWindowResize);
+            setupUI();
+            setupImmersionUI();
+            setupInteraction();
+
+            setTimeout(() => {
+                document.getElementById('loader').style.opacity = 0;
+                setTimeout(() => document.getElementById('loader').remove(), 500);
+            }, 1000);
+
+            animate();
+        }
+
+        // --- PROCEDURAL TEXTURES & CANVASES ---
+        function createTextTexture(text, textColor, bgColor, fontSize = 48) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.font = `bold ${fontSize}px ${STATION_CONFIG.fontFamily}`;
+            ctx.fillStyle = textColor;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = textColor;
+            ctx.shadowBlur = 10;
+            ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        // Logo genérico em formato de "badge" circular com monograma —
+        // substitui qualquer geometria de marca específica por algo 100% white-label.
+        function createLogoBadge(scale = 1) {
+            const group = new THREE.Group();
+            const theme = STATION_CONFIG.theme;
+
+            const plateMat = new THREE.MeshStandardMaterial({
+                color: theme.facade,
+                roughness: 0.3,
+                metalness: 0.6
+            });
+            const plate = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.1, 0.25, 32), plateMat);
+            plate.rotation.x = Math.PI / 2;
+            plate.castShadow = true;
+            group.add(plate);
+
+            const ringMat = new THREE.MeshStandardMaterial({
+                color: theme.primary,
+                emissive: theme.primary,
+                emissiveIntensity: 0.0,
+                roughness: 0.2,
+                metalness: 0.7
+            });
+            neonMaterials.push(ringMat);
+            const ring = new THREE.Mesh(new THREE.TorusGeometry(1.1, 0.08, 12, 32), ringMat);
+            group.add(ring);
+
+            const monoTex = createTextTexture(STATION_CONFIG.brand.monogram, theme.primary, "rgba(0,0,0,0)", 90);
+            const monoMat = new THREE.MeshBasicMaterial({ map: monoTex, transparent: true });
+            const monoPlane = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 1.6), monoMat);
+            monoPlane.position.z = 0.14;
+            group.add(monoPlane);
+
+            group.scale.set(scale, scale, scale);
+            return group;
+        }
+
+        // --- CONSTRUÇÃO DO CENÁRIO & CHÃO ---
+        function createEnvironment() {
+            const theme = STATION_CONFIG.theme;
+
+            const floorGeo = new THREE.PlaneGeometry(100, 100);
+            const floorMat = new THREE.MeshStandardMaterial({ color: theme.road, roughness: 0.8, metalness: 0.1 });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
+            environmentGroup.add(floor);
+
+            if (STATION_CONFIG.features.driveThru) {
+                const lineGeo = new THREE.RingGeometry(18, 18.5, 64, 1, 0, Math.PI * 1.5);
+                const lineMat = new THREE.MeshBasicMaterial({ color: theme.primary, side: THREE.DoubleSide });
+                const driveLaneLine = new THREE.Mesh(lineGeo, lineMat);
+                driveLaneLine.rotation.x = Math.PI / 2;
+                driveLaneLine.position.set(0, 0.02, 0);
+                environmentGroup.add(driveLaneLine);
+            }
+
+            const curbGeo = new THREE.BoxGeometry(26, 0.3, 18);
+            const curbMat = new THREE.MeshStandardMaterial({ color: 0x888890, roughness: 0.6 });
+            const curb = new THREE.Mesh(curbGeo, curbMat);
+            curb.position.set(0, 0.15, 0);
+            curb.receiveShadow = true;
+            environmentGroup.add(curb);
+
+            const grassGeo = new THREE.BoxGeometry(8, 0.3, 18);
+            const grassMat = new THREE.MeshStandardMaterial({ color: theme.grass, roughness: 0.9 });
+            const grass = new THREE.Mesh(grassGeo, grassMat);
+            grass.position.set(17, 0.15, 0);
+            grass.receiveShadow = true;
+            environmentGroup.add(grass);
+
+            for (let i = 0; i < 3; i++) createTree(17, 0.3, -6 + i * 6);
+
+            createStreetLight(10, 0, 10);
+            createStreetLight(-10, 0, -10);
+
+            const skyGeo = new THREE.SphereGeometry(150, 32, 15);
+            const skyMat = new THREE.MeshBasicMaterial({ color: 0x5075a6, side: THREE.BackSide });
+            skyMesh = new THREE.Mesh(skyGeo, skyMat);
+            scene.add(skyMesh);
+
+            if (STATION_CONFIG.features.exteriorOrnament) {
+                createExteriorOrnament(17, 0.3, 3);
+            }
+        }
+
+        function createTree(x, y, z) {
+            const treeGroup = new THREE.Group();
+            treeGroup.position.set(x, y, z);
+
+            const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5a3d28, roughness: 0.9 });
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.25, 2, 8), trunkMat);
+            trunk.position.y = 1;
+            trunk.castShadow = true;
+            treeGroup.add(trunk);
+
+            const leavesMat = new THREE.MeshStandardMaterial({ color: 0x2e5c1e, roughness: 0.8, flatShading: true });
+            const leaves1 = new THREE.Mesh(new THREE.ConeGeometry(1.2, 2, 6), leavesMat);
+            leaves1.position.y = 2.5;
+            leaves1.castShadow = true;
+            treeGroup.add(leaves1);
+
+            const leaves2 = new THREE.Mesh(new THREE.ConeGeometry(0.9, 1.5, 6), leavesMat);
+            leaves2.position.y = 3.5;
+            leaves2.castShadow = true;
+            treeGroup.add(leaves2);
+
+            environmentGroup.add(treeGroup);
+        }
+
+        function createStreetLight(x, y, z) {
+            const poleGroup = new THREE.Group();
+            poleGroup.position.set(x, y, z);
+
+            const poleMat = new THREE.MeshStandardMaterial({ color: 0x444, metalness: 0.8, roughness: 0.2 });
+            const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.15, 8, 8), poleMat);
+            pole.position.y = 4;
+            pole.castShadow = true;
+            poleGroup.add(pole);
+
+            const arm = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.15, 0.3), poleMat);
+            arm.position.set(0.5, 8, 0);
+            arm.rotation.z = -0.2;
+            poleGroup.add(arm);
+
+            const lightFixture = new THREE.Mesh(
+                new THREE.BoxGeometry(0.6, 0.1, 0.4),
+                new THREE.MeshBasicMaterial({ color: 0xffffff })
+            );
+            lightFixture.position.set(1.1, 7.85, 0);
+            poleGroup.add(lightFixture);
+
+            const spotLight = new THREE.SpotLight(0xfff3d1, 0, 20, Math.PI / 4, 0.5, 1);
+            spotLight.position.set(1.1, 7.8, 0);
+            spotLight.target.position.set(1.1, 0, 0);
+            spotLight.castShadow = true;
+            spotLight.shadow.mapSize.set(512, 512);
+            poleGroup.add(spotLight, spotLight.target);
+
+            streetLights.push({ spotLight, lightFixture });
+            environmentGroup.add(poleGroup);
+        }
+
+        // --- CONSTRUÇÃO DO EDIFÍCIO ---
+        function createBuilding() {
+            const theme = STATION_CONFIG.theme;
+
+            const darkPanelMat = new THREE.MeshStandardMaterial({ color: theme.facade, roughness: 0.65, metalness: 0.2 });
+            const woodPanelMat = new THREE.MeshStandardMaterial({ color: theme.wood, roughness: 0.5 });
+            const whiteTrimMat = new THREE.MeshStandardMaterial({ color: theme.trim, roughness: 0.3 });
+            const accentBladeMat = new THREE.MeshStandardMaterial({ color: theme.secondary, metalness: 0.1, roughness: 0.4 });
+
+            const glassMat = new THREE.MeshPhysicalMaterial({
+                color: theme.glass,
+                transparent: true,
+                opacity: 0.3,
+                transmission: 0.8,
+                roughness: 0.1,
+                metalness: 0.1,
+                ior: 1.5,
+                depthWrite: false
+            });
+
+            const backWall = new THREE.Mesh(new THREE.BoxGeometry(22, 6, 0.5), darkPanelMat);
+            backWall.position.set(0, 3.3, -7.5);
+            backWall.castShadow = backWall.receiveShadow = true;
+            buildingGroup.add(backWall);
+
+            const rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.5, 6, 15), darkPanelMat);
+            rightWall.position.set(11, 3.3, 0);
+            rightWall.castShadow = rightWall.receiveShadow = true;
+            buildingGroup.add(rightWall);
+
+            const leftWoodWall = new THREE.Mesh(new THREE.BoxGeometry(0.5, 6, 4.5), woodPanelMat);
+            leftWoodWall.position.set(-11, 3.3, -5.25);
+            leftWoodWall.castShadow = true;
+            buildingGroup.add(leftWoodWall);
+
+            const frontWoodAccent = new THREE.Mesh(new THREE.BoxGeometry(5, 6, 0.5), woodPanelMat);
+            frontWoodAccent.position.set(-8.5, 3.3, 7.5);
+            frontWoodAccent.castShadow = true;
+            buildingGroup.add(frontWoodAccent);
+
+            const frontWindowFrame = new THREE.Mesh(new THREE.BoxGeometry(16, 5, 0.1), glassMat);
+            frontWindowFrame.position.set(2.5, 2.8, 7.5);
+            buildingGroup.add(frontWindowFrame);
+
+            const leftWindowFrame = new THREE.Mesh(new THREE.BoxGeometry(0.1, 5, 10), glassMat);
+            leftWindowFrame.position.set(-11, 2.8, 2);
+            buildingGroup.add(leftWindowFrame);
+
+            for (let x = -5; x <= 10; x += 3.8) {
+                const mullion = new THREE.Mesh(new THREE.BoxGeometry(0.1, 5, 0.2), darkPanelMat);
+                mullion.position.set(x, 2.8, 7.5);
+                buildingGroup.add(mullion);
+            }
+
+            // Lâmina de destaque vertical (equivalente estrutural ao "red blade")
+            const accentBlade = new THREE.Mesh(new THREE.BoxGeometry(2.5, 9.5, 1.2), accentBladeMat);
+            accentBlade.position.set(-8.5, 5.05, 7.8);
+            accentBlade.castShadow = true;
+            buildingGroup.add(accentBlade);
+
+            const roof = new THREE.Mesh(new THREE.BoxGeometry(23, 0.6, 16), darkPanelMat);
+            roof.position.set(0, 6.3, 0);
+            roof.receiveShadow = true;
+            buildingGroup.add(roof);
+
+            const canopy = new THREE.Mesh(new THREE.BoxGeometry(23.6, 0.6, 16.6), whiteTrimMat);
+            canopy.position.set(0, 6.0, 0.3);
+            canopy.castShadow = true;
+            buildingGroup.add(canopy);
+
+            const fascia = new THREE.Mesh(new THREE.BoxGeometry(23, 1.2, 0.4), darkPanelMat);
+            fascia.position.set(0, 6.9, 7.7);
+            buildingGroup.add(fascia);
+        }
+
+        // --- INTERIOR MOBILIADO ---
+        function createInterior() {
+            const theme = STATION_CONFIG.theme;
+            const f = STATION_CONFIG.features;
+
+            const floorTileMat = new THREE.MeshStandardMaterial({ color: theme.interiorFloor, roughness: 0.1 });
+            const intFloor = new THREE.Mesh(new THREE.BoxGeometry(21.5, 0.1, 14.5), floorTileMat);
+            intFloor.position.set(0, 0.31, 0);
+            intFloor.receiveShadow = true;
+            furnitureGroup.add(intFloor);
+
+            const counterMat = new THREE.MeshStandardMaterial({ color: 0x222, roughness: 0.4 });
+            const counterTopMat = new THREE.MeshStandardMaterial({ color: theme.counterTop, roughness: 0.2 });
+
+            const counterBase = new THREE.Mesh(new THREE.BoxGeometry(8, 1.1, 1.5), counterMat);
+            counterBase.position.set(5, 0.85, -2);
+            counterBase.castShadow = true;
+            furnitureGroup.add(counterBase);
+
+            const counterTop = new THREE.Mesh(new THREE.BoxGeometry(8.2, 0.1, 1.7), counterTopMat);
+            counterTop.position.set(5, 1.45, -2);
+            furnitureGroup.add(counterTop);
+
+            const menuScreenMat = new THREE.MeshBasicMaterial({
+                map: createTextTexture(STATION_CONFIG.brand.menuBoardLabel, theme.primary, theme.secondary, 40)
+            });
+            const menuBoard = new THREE.Mesh(new THREE.BoxGeometry(6, 1.2, 0.1), menuScreenMat);
+            menuBoard.position.set(5, 4.3, -3.9);
+            furnitureGroup.add(menuBoard);
+
+            if (f.highTable) createHighTable(-2, 0.3, 2);
+            if (f.roundTables) {
+                createRoundTable(2, 0.3, 3);
+                createRoundTable(-5, 0.3, -3);
+            }
+            if (f.booths) {
+                createBooth(-5, 0.3, 2, 0);
+                createBooth(2, 0.3, -3, Math.PI);
+            }
+
+            const kitchenWall = new THREE.Mesh(new THREE.BoxGeometry(0.1, 5, 6), new THREE.MeshStandardMaterial({ color: 0xaaaaaa }));
+            kitchenWall.position.set(0, 2.8, -4.5);
+            furnitureGroup.add(kitchenWall);
+
+            const kitchenEquip = new THREE.Mesh(new THREE.BoxGeometry(4, 1.5, 1.5), new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.8 }));
+            kitchenEquip.position.set(4, 1.05, -5.5);
+            furnitureGroup.add(kitchenEquip);
+        }
+
+        function createHighTable(x, y, z) {
+            const tableGroup = new THREE.Group();
+            tableGroup.position.set(x, y, z);
+
+            const woodMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.4 });
+            const metalMat = new THREE.MeshStandardMaterial({ color: 0x111, metalness: 0.8, roughness: 0.3 });
+
+            const top = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.08, 3), woodMat);
+            top.position.y = 1.6;
+            top.castShadow = true;
+            tableGroup.add(top);
+
+            [[-0.6, -1.3], [0.6, -1.3], [-0.6, 1.3], [0.6, 1.3]].forEach(([lx, lz]) => {
+                const leg = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.6, 0.1), metalMat);
+                leg.position.set(lx, 0.8, lz);
+                tableGroup.add(leg);
+            });
+
+            for (let i = -1; i <= 1; i += 1) {
+                createStool(tableGroup, -1, 0, i, metalMat);
+                createStool(tableGroup, 1, 0, i, metalMat);
+            }
+
+            furnitureGroup.add(tableGroup);
+        }
+
+        function createStool(parent, x, y, z, mat) {
+            const stool = new THREE.Group();
+            stool.position.set(x, y, z);
+
+            const seat = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.2, 0.2, 0.05, 16),
+                new THREE.MeshStandardMaterial({ color: STATION_CONFIG.theme.secondary, roughness: 0.5 })
+            );
+            seat.position.y = 1;
+            seat.castShadow = true;
+            stool.add(seat);
+
+            const base = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1, 8), mat);
+            base.position.y = 0.5;
+            stool.add(base);
+
+            parent.add(stool);
+        }
+
+        function createRoundTable(x, y, z) {
+            const group = new THREE.Group();
+            group.position.set(x, y, z);
+
+            const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1 });
+            const chromeMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.9 });
+
+            const top = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 0.05, 32), whiteMat);
+            top.position.y = 1.1;
+            top.castShadow = true;
+            group.add(top);
+
+            const post = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.1, 8), chromeMat);
+            post.position.y = 0.55;
+            group.add(post);
+
+            const chairColor = new THREE.MeshStandardMaterial({ color: STATION_CONFIG.theme.primary, roughness: 0.4 });
+            for (let i = 0; i < 4; i++) {
+                const angle = (Math.PI / 2) * i;
+                const chair = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), chairColor);
+                chair.position.set(Math.cos(angle) * 1.1, 0.5, Math.sin(angle) * 1.1);
+                chair.castShadow = true;
+                group.add(chair);
+            }
+
+            furnitureGroup.add(group);
+        }
+
+        function createBooth(x, y, z, rot) {
+            const group = new THREE.Group();
+            group.position.set(x, y, z);
+            group.rotation.y = rot;
+
+            const woodMat = new THREE.MeshStandardMaterial({ color: 0x4a2e1b });
+            const cushionMat = new THREE.MeshStandardMaterial({ color: STATION_CONFIG.theme.secondary, roughness: 0.7 });
+
+            const back = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.4, 2.5), woodMat);
+            back.position.set(-0.8, 0.7, 0);
+            back.castShadow = true;
+            group.add(back);
+
+            const seat = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.5, 2.4), cushionMat);
+            seat.position.set(-0.4, 0.25, 0);
+            seat.castShadow = true;
+            group.add(seat);
+
+            const cushionBack = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.6, 2.4), cushionMat);
+            cushionBack.position.set(-0.7, 0.8, 0);
+            group.add(cushionBack);
+
+            const table = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.05, 2), new THREE.MeshStandardMaterial({ color: 0xdedede }));
+            table.position.set(0.3, 1.0, 0);
+            table.castShadow = true;
+            group.add(table);
+
+            const tableLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1, 8), woodMat);
+            tableLeg.position.set(0.3, 0.5, 0);
+            group.add(tableLeg);
+
+            furnitureGroup.add(group);
+        }
+
+        // --- LOGOTIPOS, LETREIROS E SINALIZAÇÃO ---
+        function createLogosAndSigns() {
+            const brand = STATION_CONFIG.brand;
+            const theme = STATION_CONFIG.theme;
+
+            // 1. Badge/monograma no topo da lâmina de destaque
+            const badge = createLogoBadge(0.9);
+            badge.position.set(-8.5, 9.0, 8.4);
+            buildingGroup.add(badge);
+
+            // 2. Letreiro principal na fachada
+            const mainTex = createTextTexture(brand.title, "#ffffff", "rgba(0,0,0,0)", 54);
+            const mainSign = new THREE.Mesh(
+                new THREE.PlaneGeometry(8, 2),
+                new THREE.MeshBasicMaterial({ map: mainTex, transparent: true, side: THREE.DoubleSide })
+            );
+            mainSign.position.set(1.5, 4.9, 7.8);
+            buildingGroup.add(mainSign);
+
+            // 3. Letreiro secundário lateral
+            const secTex = createTextTexture(brand.secondarySign, theme.primary, "rgba(0,0,0,0)", 60);
+            const sideSign = new THREE.Mesh(
+                new THREE.PlaneGeometry(3, 1),
+                new THREE.MeshBasicMaterial({ map: secTex, transparent: true })
+            );
+            sideSign.position.set(11.27, 4.1, 4);
+            sideSign.rotation.y = Math.PI / 2;
+            buildingGroup.add(sideSign);
+
+            // 4. Totem externo (opcional)
+            if (STATION_CONFIG.features.entryTotem) {
+                const totemGroup = new THREE.Group();
+                totemGroup.position.set(12, 0, 10);
+
+                const pole = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.2, 0.25, 12, 16),
+                    new THREE.MeshStandardMaterial({ color: 0x55555d, metalness: 0.7 })
+                );
+                pole.position.y = 6;
+                pole.castShadow = true;
+                totemGroup.add(pole);
+
+                const signBoard = new THREE.Mesh(
+                    new THREE.BoxGeometry(4, 1.5, 0.6),
+                    new THREE.MeshStandardMaterial({ color: theme.facade })
+                );
+                signBoard.position.set(0, 10.5, 0);
+                signBoard.castShadow = true;
+                totemGroup.add(signBoard);
+
+                const entryTex = createTextTexture(brand.entrySignLabel, "#ffffff", "rgba(0,0,0,0)", 50);
+                const entrySign = new THREE.Mesh(
+                    new THREE.PlaneGeometry(3.6, 1.2),
+                    new THREE.MeshBasicMaterial({ map: entryTex, transparent: true })
+                );
+                entrySign.position.set(0, 10.5, 0.31);
+                totemGroup.add(entrySign);
+
+                const totemBadge = createLogoBadge(1.2);
+                totemBadge.position.set(0, 12.8, 0);
+                totemGroup.add(totemBadge);
+
+                environmentGroup.add(totemGroup);
+            }
+        }
+
+        // Ornamento externo genérico e opcional (equivalente ao "inflável" temático) —
+        // por padrão desligado; cada skin decide se faz sentido usar.
+        function createExteriorOrnament(x, y, z) {
+            const group = new THREE.Group();
+            group.position.set(x, y, z);
+            group.scale.set(1.2, 1.2, 1.2);
+
+            const baseMat = new THREE.MeshStandardMaterial({ color: STATION_CONFIG.theme.secondary, roughness: 0.3 });
+            const base = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.5, 1.6, 16), baseMat);
+            base.position.y = 0.8;
+            base.castShadow = true;
+            group.add(base);
+
+            const badge = createLogoBadge(0.7);
+            badge.position.set(0, 1.6, 0.5);
+            group.add(badge);
+
+            environmentGroup.add(group);
+        }
+
+        // --- SISTEMA DE ILUMINAÇÃO ---
+        function setupLights() {
+            hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.0);
+            hemiLight.position.set(0, 50, 0);
+            lightGroup.add(hemiLight);
+
+            dirLight = new THREE.DirectionalLight(0xfff8e7, 1.2);
+            dirLight.position.set(30, 45, 25);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.set(2048, 2048);
+            dirLight.shadow.camera.near = 0.5;
+            dirLight.shadow.camera.far = 150;
+            const d = 30;
+            Object.assign(dirLight.shadow.camera, { left: -d, right: d, top: d, bottom: -d });
+            dirLight.shadow.bias = -0.0005;
+            lightGroup.add(dirLight);
+
+            const spotPositions = [
+                { x: -5, z: 2 }, { x: 5, z: 2 },
+                { x: -5, z: -3 }, { x: 5, z: -3 }
+            ];
+
+            spotPositions.forEach(pos => {
+                const intSpot = new THREE.SpotLight(0xffaa44, 2.0, 12, Math.PI / 3, 0.5, 1);
+                intSpot.position.set(pos.x, 5.8, pos.z);
+                intSpot.target.position.set(pos.x, 0, pos.z);
+                intSpot.castShadow = true;
+                intSpot.shadow.mapSize.set(256, 256);
+                lightGroup.add(intSpot, intSpot.target);
+
+                const bulb = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.15, 8, 8),
+                    new THREE.MeshBasicMaterial({ color: 0xffeedd })
+                );
+                bulb.position.set(pos.x, 6.1, pos.z);
+                lightGroup.add(bulb);
+
+                interiorSpotlights.push({ intSpot, bulb });
+            });
+        }
+
+        // --- VEÍCULO DA PISTA EXTERNA ---
+        function createDriveThruCar() {
+            const carGroup = new THREE.Group();
+            const bodyMat = new THREE.MeshStandardMaterial({ color: STATION_CONFIG.theme.vehicle, roughness: 0.1 });
+
+            const chassis = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.4, 3.2), bodyMat);
+            chassis.position.y = 0.35;
+            chassis.castShadow = true;
+            carGroup.add(chassis);
+
+            const cabin = new THREE.Mesh(
+                new THREE.BoxGeometry(1.4, 0.7, 1.8),
+                new THREE.MeshStandardMaterial({ color: 0x111, roughness: 0.1 })
+            );
+            cabin.position.set(0, 0.9, -0.2);
+            cabin.castShadow = true;
+            carGroup.add(cabin);
+
+            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111, roughness: 0.8 });
+            const wheelGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.3, 12);
+            wheelGeo.rotateZ(Math.PI / 2);
+            [[-0.85, 1], [0.85, 1], [-0.85, -1], [0.85, -1]].forEach(([wx, wz]) => {
+                const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                wheel.position.set(wx, 0.3, wz);
+                carGroup.add(wheel);
+            });
+
+            const headlightMat = new THREE.MeshBasicMaterial({ color: 0xffffcc });
+            [[-0.6, 1.6], [0.6, 1.6]].forEach(([hx, hz]) => {
+                const h = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.1, 0.1), headlightMat);
+                h.position.set(hx, 0.4, hz);
+                carGroup.add(h);
+            });
+
+            carSpline = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(18, 0, 18),
+                new THREE.Vector3(18, 0, -18),
+                new THREE.Vector3(-18, 0, -18),
+                new THREE.Vector3(-18, 0, 18),
+                new THREE.Vector3(0, 0, 18)
+            ], true);
+
+            carMesh = carGroup;
+            vehicleGroup.add(carMesh);
+        }
+
+        // --- BANCADA COM DRONE INTERATIVO ---
+        // Objeto de "vida de laboratório": fica ligado/desligado independente
+        // do player estar interagindo — e pode ser tocado para alternar estado.
+        function createWorkbenchWithDrone(x, y, z) {
+            const bench = new THREE.Group();
+            bench.position.set(x, y, z);
+
+            const benchTopMat = new THREE.MeshStandardMaterial({ color: 0x2b2b2f, roughness: 0.5, metalness: 0.3 });
+            const benchLegMat = new THREE.MeshStandardMaterial({ color: 0x111114, metalness: 0.6, roughness: 0.4 });
+
+            const top = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.1, 1.2), benchTopMat);
+            top.position.y = 1.0;
+            top.castShadow = true;
+            top.receiveShadow = true;
+            bench.add(top);
+
+            [[-1.05, -0.5], [1.05, -0.5], [-1.05, 0.5], [1.05, 0.5]].forEach(([lx, lz]) => {
+                const leg = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.0, 0.08), benchLegMat);
+                leg.position.set(lx, 0.5, lz);
+                bench.add(leg);
+            });
+
+            // --- Drone ---
+            droneGroup = new THREE.Group();
+            droneGroup.position.set(0, 1.15, 0); // pousado sobre a bancada
+
+            const droneBodyMat = new THREE.MeshStandardMaterial({
+                color: STATION_CONFIG.theme.primary, roughness: 0.3, metalness: 0.6
+            });
+            const droneBody = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.12, 0.4), droneBodyMat);
+            droneBody.castShadow = true;
+            droneGroup.add(droneBody);
+
+            const armMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.5 });
+            const armPositions = [[0.28, 0.28], [-0.28, 0.28], [0.28, -0.28], [-0.28, -0.28]];
+            armPositions.forEach(([ax, az]) => {
+                const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.4, 6), armMat);
+                arm.rotation.z = Math.PI / 2;
+                arm.rotation.y = Math.atan2(az, ax);
+                arm.position.set(ax * 0.5, 0, az * 0.5);
+                droneGroup.add(arm);
+
+                const propeller = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.24, 0.01, 0.03),
+                    new THREE.MeshStandardMaterial({ color: 0x333333 })
+                );
+                propeller.position.set(ax, 0.05, az);
+                droneGroup.add(propeller);
+                dronePropellers.push(propeller);
+            });
+
+            // Luz indicadora de status (pisca quando ativo)
+            const statusLight = new THREE.Mesh(
+                new THREE.SphereGeometry(0.03, 8, 8),
+                new THREE.MeshBasicMaterial({ color: 0x00ff88 })
+            );
+            statusLight.position.set(0, 0.08, 0.18);
+            droneGroup.add(statusLight);
+            droneGroup.userData.statusLight = statusLight;
+            droneGroup.userData.isInteractive = true;
+            droneGroup.userData.label = "drone";
+
+            bench.add(droneGroup);
+            furnitureGroup.add(bench);
+        }
+
+        // --- NPC AUTÔNOMO (ex: atendente atrás do balcão) ---
+        function createNPC(x, y, z) {
+            npcGroup = new THREE.Group();
+            npcGroup.position.set(x, y, z);
+
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x445566, roughness: 0.6 });
+            const headMat = new THREE.MeshStandardMaterial({ color: 0xe0b090, roughness: 0.6 });
+
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.34, 1.4, 12), bodyMat);
+            body.position.y = 0.95;
+            body.castShadow = true;
+            npcGroup.add(body);
+
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.26, 12, 12), headMat);
+            head.position.y = 1.8;
+            head.castShadow = true;
+            npcGroup.add(head);
+
+            furnitureGroup.add(npcGroup);
+
+            // Rota simples de patrulha atrás do balcão (definido em createInterior:
+            // balcão fica em torno de x=5, z=-2).
+            npcPatrol.points = [
+                new THREE.Vector3(2.5, y, -3.3),
+                new THREE.Vector3(7.5, y, -3.3)
+            ];
+            npcPatrol.index = 0;
+            npcPatrol.progress = 0;
+        }
+
+        // Roda sempre — imersão ligada ou desligada — para o "mundo" parecer vivo
+        // mesmo quando o player só está olhando de fora (câmera orbital).
+        function updateWorldSimulation(delta) {
+            // Drone: as hélices sempre giram um pouco (idle); mais rápido se ativo.
+            const propSpeed = droneActive ? 22 : 3;
+            dronePropellers.forEach(p => { p.rotation.y += propSpeed * delta; });
+
+            if (droneActive) {
+                droneHoverT += delta * 2;
+                droneGroup.position.y = 1.15 + Math.sin(droneHoverT) * 0.06 + 0.15;
+            } else {
+                droneHoverT = 0;
+                droneGroup.position.y = 1.15;
+            }
+            if (droneGroup && droneGroup.userData.statusLight) {
+                droneGroup.userData.statusLight.material.color.set(droneActive ? 0x00ff88 : 0x882222);
+            }
+
+            // NPC: anda de um ponto a outro atrás do balcão, em loop, sozinho.
+            if (npcGroup && npcPatrol.points.length === 2) {
+                npcPatrol.progress += delta * npcPatrol.speed;
+                if (npcPatrol.progress >= 1) {
+                    npcPatrol.progress = 0;
+                    npcPatrol.index = 1 - npcPatrol.index;
+                }
+                const from = npcPatrol.points[npcPatrol.index];
+                const to = npcPatrol.points[1 - npcPatrol.index];
+                npcGroup.position.lerpVectors(from, to, npcPatrol.progress);
+
+                const facing = npcPatrol.index === 0 ? Math.PI / 2 : -Math.PI / 2;
+                npcGroup.rotation.y = facing;
+            }
+        }
+
+        // --- INTERAÇÃO POR TOQUE/CLIQUE (raycasting) ---
+        function setupInteraction() {
+            raycaster = new THREE.Raycaster();
+            pointerVec = new THREE.Vector2();
+
+            function handleTap(clientX, clientY) {
+                pointerVec.x = (clientX / window.innerWidth) * 2 - 1;
+                pointerVec.y = -(clientY / window.innerHeight) * 2 + 1;
+                raycaster.setFromCamera(pointerVec, camera);
+
+                if (droneGroup) {
+                    const hits = raycaster.intersectObject(droneGroup, true);
+                    if (hits.length > 0) {
+                        droneActive = !droneActive;
+                    }
+                }
+            }
+
+            renderer.domElement.addEventListener('click', (e) => {
+                handleTap(e.clientX, e.clientY);
+            });
+
+            renderer.domElement.addEventListener('touchend', (e) => {
+                // Evita conflitar com o joystick/pinça (que já tratam seus próprios touches)
+                if (e.changedTouches.length !== 1) return;
+                const t = e.changedTouches[0];
+                handleTap(t.clientX, t.clientY);
+            });
+        }
+
+
+        function createPlayer() {
+            playerGroup = new THREE.Group();
+            playerGroup.position.set(0, 0, 13); // ponto livre em frente à fachada
+
+            const bodyMat = new THREE.MeshStandardMaterial({ color: STATION_CONFIG.theme.secondary, roughness: 0.5 });
+            const headMat = new THREE.MeshStandardMaterial({ color: 0xe0b090, roughness: 0.6 });
+
+            // Tamanho aumentado (~1,85m de altura) para ficar proporcional
+            // à escala do prédio (paredes de 6 unidades de altura).
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.4, 1.55, 12), bodyMat);
+            body.position.y = 1.05;
+            body.castShadow = true;
+            playerGroup.add(body);
+
+            playerHeadMesh = new THREE.Mesh(new THREE.SphereGeometry(0.3, 14, 14), headMat);
+            playerHeadMesh.position.y = 1.95;
+            playerHeadMesh.castShadow = true;
+            playerGroup.add(playerHeadMesh);
+
+            // Pequena seta indicando a direção que o personagem "olha"
+            // (referência visual só em 3ª pessoa, para você confirmar que a
+            // direção do movimento bate com a rotação do boneco).
+            const noseMat = new THREE.MeshBasicMaterial({ color: STATION_CONFIG.theme.primary });
+            const nose = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.18, 8), noseMat);
+            nose.rotation.x = Math.PI / 2;
+            nose.position.set(0, 1.95, 0.35);
+            playerGroup.add(nose);
+
+            scene.add(playerGroup);
+        }
+
+        // Checa colisão simples por AABB (bounding box) contra as paredes externas.
+        function isBlockedByWalls(x, z, radius = 0.35) {
+            for (const box of collisionBoxes) {
+                if (
+                    x + radius > box.minX && x - radius < box.maxX &&
+                    z + radius > box.minZ && z - radius < box.maxZ
+                ) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Diferença angular mais curta entre dois ângulos (evita giro pelo caminho longo).
+        function shortestAngleDelta(from, to) {
+            let diff = (to - from) % (Math.PI * 2);
+            if (diff > Math.PI) diff -= Math.PI * 2;
+            if (diff < -Math.PI) diff += Math.PI * 2;
+            return diff;
+        }
+
+        function updatePlayer(delta) {
+            if (!immersionMode) return;
+
+            const ix = inputVector.x; // -1 esquerda .. 1 direita
+            const iy = inputVector.y; // -1 trás .. 1 frente
+            const rawMagnitude = Math.hypot(ix, iy);
+
+            // Deadzone: ignora ruído/toque mínimo do dedo (causa da "sensibilidade"
+            // percebida — pequenos tremores no joystick não devem mover o personagem).
+            if (rawMagnitude < inputDeadzone) return;
+
+            // Remapeia o intervalo [deadzone, 1] para [0, 1] suavemente.
+            const magnitude = Math.min(1, (rawMagnitude - inputDeadzone) / (1 - inputDeadzone));
+            const nx = ix / rawMagnitude;
+            const ny = iy / rawMagnitude;
+
+            // Mapeamento ABSOLUTO no mundo (não relativo à rotação atual do
+            // personagem). O cálculo anterior usava "playerFacing" para decidir
+            // a própria direção-alvo de "playerFacing" — um loop que fazia o
+            // personagem perseguir um alvo que mudava junto com ele, girando
+            // sem avançar. Direção fixa resolve isso:
+            // joystick para cima    -> personagem anda em direção à estação (-Z)
+            // joystick para a direita -> personagem anda para +X
+            const moveX = nx;
+            const moveZ = -ny;
+
+            playerFacingTarget = Math.atan2(moveX, moveZ);
+
+            // Suaviza a rotação (evita o personagem "tremer" girando instantaneamente
+            // a cada micro-variação do joystick).
+            const angleDelta = shortestAngleDelta(playerFacing, playerFacingTarget);
+            const maxStep = turnSpeed * delta;
+            playerFacing += Math.max(-maxStep, Math.min(maxStep, angleDelta));
+
+            const dx = moveX * playerSpeed * delta * magnitude;
+            const dz = moveZ * playerSpeed * delta * magnitude;
+
+            const newX = playerGroup.position.x + dx;
+            const newZ = playerGroup.position.z + dz;
+
+            if (!isBlockedByWalls(newX, playerGroup.position.z)) playerGroup.position.x = newX;
+            if (!isBlockedByWalls(playerGroup.position.x, newZ)) playerGroup.position.z = newZ;
+
+            playerGroup.rotation.y = playerFacing;
+        }
+
+        function updateImmersionCamera() {
+            if (!immersionMode) return;
+
+            if (cameraMode === "third") {
+                playerGroup.visible = true;
+                const distance = immersionZoomDistance;
+                const height = 1.8 + immersionZoomDistance * 0.35; // acompanha o zoom
+                const offsetX = -Math.sin(playerFacing) * distance;
+                const offsetZ = -Math.cos(playerFacing) * distance;
+
+                camera.position.set(
+                    playerGroup.position.x + offsetX,
+                    playerGroup.position.y + height,
+                    playerGroup.position.z + offsetZ
+                );
+                camera.lookAt(
+                    playerGroup.position.x,
+                    playerGroup.position.y + 1.4,
+                    playerGroup.position.z
+                );
+            } else {
+                // Primeira pessoa: câmera nos "olhos", personagem escondido
+                // para não obstruir a própria visão.
+                playerGroup.visible = false;
+                camera.position.set(
+                    playerGroup.position.x,
+                    playerGroup.position.y + playerEyeHeight,
+                    playerGroup.position.z
+                );
+                const lookX = playerGroup.position.x + Math.sin(playerFacing) * 2;
+                const lookZ = playerGroup.position.z + Math.cos(playerFacing) * 2;
+                camera.lookAt(lookX, playerGroup.position.y + playerEyeHeight, lookZ);
+            }
+        }
+
+        // --- JOYSTICK VIRTUAL (TOUCH) ---
+        function setupJoystick() {
+            const base = document.getElementById('joystick-base');
+            const handle = document.getElementById('joystick-handle');
+            const maxRadius = 40;
+            let activeTouchId = null;
+            let baseRect = null;
+
+            function updateHandle(dx, dz) {
+                handle.style.transform = `translate(${dx}px, ${dz}px)`;
+            }
+
+            function resetHandle() {
+                updateHandle(0, 0);
+                inputVector.x = 0;
+                inputVector.y = 0;
+            }
+
+            base.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.changedTouches[0];
+                activeTouchId = touch.identifier;
+                baseRect = base.getBoundingClientRect();
+            }, { passive: false });
+
+            base.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                for (const touch of e.changedTouches) {
+                    if (touch.identifier !== activeTouchId || !baseRect) continue;
+                    const centerX = baseRect.left + baseRect.width / 2;
+                    const centerY = baseRect.top + baseRect.height / 2;
+
+                    let dx = touch.clientX - centerX;
+                    let dy = touch.clientY - centerY;
+                    const dist = Math.hypot(dx, dy);
+                    if (dist > maxRadius) {
+                        dx = (dx / dist) * maxRadius;
+                        dy = (dy / dist) * maxRadius;
+                    }
+                    updateHandle(dx, dy);
+
+                    // IMPORTANTE — mapeamento de eixos (corrige inversão esquerda/direita):
+                    // dx positivo (dedo pra direita na tela) => inputVector.x = +1 (direita)
+                    // dy negativo (dedo pra cima na tela)    => inputVector.y = +1 (frente)
+                    inputVector.x = dx / maxRadius;
+                    inputVector.y = -dy / maxRadius;
+                }
+            }, { passive: false });
+
+            function handleTouchEnd(e) {
+                for (const touch of e.changedTouches) {
+                    if (touch.identifier === activeTouchId) {
+                        activeTouchId = null;
+                        resetHandle();
+                    }
+                }
+            }
+            base.addEventListener('touchend', handleTouchEnd);
+            base.addEventListener('touchcancel', handleTouchEnd);
+        }
+
+        // --- FALLBACK DE TECLADO (para testar em desktop) ---
+        function setupKeyboardFallback() {
+            window.addEventListener('keydown', (e) => { keysPressed[e.key.toLowerCase()] = true; });
+            window.addEventListener('keyup', (e) => { keysPressed[e.key.toLowerCase()] = false; });
+        }
+
+        function updateKeyboardInput() {
+            if (!immersionMode) return;
+            // Seta/A = esquerda (-1) | Seta/D = direita (+1)
+            // Seta/W = frente (+1)   | Seta/S = trás (-1)
+            let x = 0, y = 0;
+            if (keysPressed['arrowleft'] || keysPressed['a']) x -= 1;
+            if (keysPressed['arrowright'] || keysPressed['d']) x += 1;
+            if (keysPressed['arrowup'] || keysPressed['w']) y += 1;
+            if (keysPressed['arrowdown'] || keysPressed['s']) y -= 1;
+
+            // Teclado só assume o controle se o joystick estiver solto,
+            // para não conflitar com o toque em telas híbridas.
+            const joystickIdle = Math.abs(inputVector.x) < 0.05 && Math.abs(inputVector.y) < 0.05;
+            if (x !== 0 || y !== 0 || joystickIdle) {
+                if (x !== 0 || y !== 0) {
+                    inputVector.x = x;
+                    inputVector.y = y;
+                }
+            }
+        }
+
+        // --- ZOOM POR GESTO DE PINÇA (2 dedos) ---
+        function setupPinchZoom() {
+            function getPinchDistance(touches) {
+                const dx = touches[0].clientX - touches[1].clientX;
+                const dy = touches[0].clientY - touches[1].clientY;
+                return Math.hypot(dx, dy);
+            }
+
+            window.addEventListener('touchstart', (e) => {
+                if (!immersionMode) return;
+                if (e.touches.length === 2) {
+                    pinchStartDist = getPinchDistance(e.touches);
+                    pinchStartZoom = immersionZoomDistance;
+                }
+            }, { passive: true });
+
+            window.addEventListener('touchmove', (e) => {
+                if (!immersionMode || e.touches.length !== 2) return;
+                e.preventDefault();
+                if (pinchStartDist === null) {
+                    pinchStartDist = getPinchDistance(e.touches);
+                    pinchStartZoom = immersionZoomDistance;
+                    return;
+                }
+                const currentDist = getPinchDistance(e.touches);
+                // Afastar os dedos (currentDist > pinchStartDist) aproxima a câmera (zoom in).
+                const delta = (currentDist - pinchStartDist) * 0.02;
+                immersionZoomDistance = Math.max(zoomMin, Math.min(zoomMax, pinchStartZoom - delta));
+            }, { passive: false });
+
+            window.addEventListener('touchend', (e) => {
+                if (e.touches.length < 2) pinchStartDist = null;
+            });
+        }
+
+        // --- LIGAR / DESLIGAR MODO DE IMERSÃO ---
+        function setupImmersionUI() {
+            const btnImmersion = document.getElementById('btn-immersion');
+            const btnExit = document.getElementById('btn-exit-immersion');
+            const btnCameraToggle = document.getElementById('btn-camera-toggle');
+            const joystickBase = document.getElementById('joystick-base');
+            const hud = document.getElementById('hud');
+            const instructions = document.getElementById('instructions');
+
+            function enterImmersion() {
+                immersionMode = true;
+                controls.enabled = false;
+                autoRotate = false;
+
+                hud.style.display = 'none';
+                instructions.style.display = 'none';
+                btnImmersion.style.display = 'none';
+                btnExit.style.display = 'block';
+                btnCameraToggle.style.display = 'flex';
+                joystickBase.style.display = 'block';
+
+                // Personagem reaparece na posição atual, olhando para o prédio.
+                playerFacing = Math.PI;
+                playerGroup.rotation.y = playerFacing;
+            }
+
+            function exitImmersion() {
+                immersionMode = false;
+                controls.enabled = true;
+                inputVector.x = 0;
+                inputVector.y = 0;
+
+                hud.style.display = '';
+                instructions.style.display = '';
+                btnImmersion.style.display = 'flex';
+                btnExit.style.display = 'none';
+                btnCameraToggle.style.display = 'none';
+                joystickBase.style.display = 'none';
+                playerGroup.visible = true;
+            }
+
+            btnImmersion.addEventListener('click', enterImmersion);
+            btnExit.addEventListener('click', exitImmersion);
+            btnCameraToggle.addEventListener('click', () => {
+                cameraMode = cameraMode === "third" ? "first" : "third";
+                btnCameraToggle.textContent = cameraMode === "third" ? "👁️" : "🎯";
+            });
+
+            setupJoystick();
+            setupKeyboardFallback();
+            setupPinchZoom();
+        }
+
+        // --- CICLO DIA / NOITE ---
+        function updateDayNightCycle() {
+            const speed = 0.05;
+            if (isNight && dayNightTransition < 1.0) dayNightTransition += speed;
+            else if (!isNight && dayNightTransition > 0.0) dayNightTransition -= speed;
+
+            const skyColor = new THREE.Color(0x5075a6).lerp(new THREE.Color(0x020208), dayNightTransition);
+            skyMesh.material.color.copy(skyColor);
+            scene.fog.color.copy(skyColor);
+            renderer.setClearColor(skyColor);
+
+            dirLight.intensity = THREE.MathUtils.lerp(1.5, 0.1, dayNightTransition);
+            dirLight.color.lerpColors(new THREE.Color(0xfff8e7), new THREE.Color(0x55aaee), dayNightTransition);
+            hemiLight.intensity = THREE.MathUtils.lerp(0.8, 0.2, dayNightTransition);
+
+            streetLights.forEach(light => {
+                light.spotLight.intensity = THREE.MathUtils.lerp(0, 6, dayNightTransition);
+                light.lightFixture.material.color.lerpColors(new THREE.Color(0x222222), new THREE.Color(0xffffff), dayNightTransition);
+            });
+
+            neonMaterials.forEach(mat => {
+                mat.emissiveIntensity = THREE.MathUtils.lerp(0.0, 1.8, dayNightTransition);
+            });
+
+            interiorSpotlights.forEach(spot => {
+                spot.intSpot.intensity = THREE.MathUtils.lerp(1.2, 3.5, dayNightTransition);
+            });
+        }
+
+        // --- LOOP DE ANIMAÇÃO ---
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+
+            // O "universo" roda sempre — drone e NPC continuam vivos mesmo
+            // com o player fora do modo imersão, olhando de fora.
+            updateWorldSimulation(delta);
+
+            if (immersionMode) {
+                updateKeyboardInput();
+                updatePlayer(delta);
+                updateImmersionCamera();
+            } else {
+                controls.autoRotate = autoRotate;
+                controls.autoRotateSpeed = 0.8;
+                controls.update();
+            }
+
+            updateDayNightCycle();
+
+            if (carSpline && carMesh) {
+                carProgress += 0.015 * delta;
+                if (carProgress > 1.0) carProgress = 0;
+
+                const position = carSpline.getPointAt(carProgress);
+                carMesh.position.copy(position);
+
+                const tangent = carSpline.getTangentAt(carProgress).normalize();
+                carMesh.lookAt(position.clone().add(tangent));
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // --- UI / HUD ---
+        function setupUI() {
+            const btnDay = document.getElementById('btn-day');
+            const btnNight = document.getElementById('btn-night');
+            const btnOrbit = document.getElementById('btn-orbit');
+            const camExt = document.getElementById('btn-cam-ext');
+            const camInt = document.getElementById('btn-cam-int');
+            const camDrive = document.getElementById('btn-cam-drive');
+            const camTotem = document.getElementById('btn-cam-totem');
+
+            btnDay.addEventListener('click', () => {
+                isNight = false;
+                btnDay.classList.add('active');
+                btnNight.classList.remove('active');
+            });
+
+            btnNight.addEventListener('click', () => {
+                isNight = true;
+                btnNight.classList.add('active');
+                btnDay.classList.remove('active');
+            });
+
+            btnOrbit.addEventListener('click', () => {
+                autoRotate = !autoRotate;
+                btnOrbit.innerHTML = autoRotate ? "🔄 Rotacionar Câmera (On)" : "🔄 Rotacionar Câmera (Off)";
+            });
+
+            const resetCamButtons = () => {
+                [camExt, camInt, camDrive, camTotem].forEach(btn => btn.classList.remove('active'));
+            };
+            const stopOrbit = () => {
+                autoRotate = false;
+                btnOrbit.innerHTML = "🔄 Rotacionar Câmera (Off)";
+            };
+
+            camExt.addEventListener('click', () => {
+                resetCamButtons(); camExt.classList.add('active'); stopOrbit();
+                animateCamera(new THREE.Vector3(26, 10, 26), new THREE.Vector3(0, 3, 0));
+            });
+            camInt.addEventListener('click', () => {
+                resetCamButtons(); camInt.classList.add('active'); stopOrbit();
+                animateCamera(new THREE.Vector3(-1, 2.5, 4.5), new THREE.Vector3(5, 2, -2));
+            });
+            camDrive.addEventListener('click', () => {
+                resetCamButtons(); camDrive.classList.add('active'); stopOrbit();
+                animateCamera(new THREE.Vector3(-22, 5, -12), new THREE.Vector3(-10, 2, -5));
+            });
+            camTotem.addEventListener('click', () => {
+                resetCamButtons(); camTotem.classList.add('active'); stopOrbit();
+                animateCamera(new THREE.Vector3(18, 12, 22), new THREE.Vector3(12, 10, 10));
+            });
+        }
+
+        function animateCamera(targetPosition, targetLookAt) {
+            let count = 0;
+            const steps = 40;
+            const startPos = camera.position.clone();
+            const startLook = controls.target.clone();
+
+            function step() {
+                count++;
+                const t = count / steps;
+                const ease = Math.sin(t * Math.PI / 2);
+                camera.position.lerpVectors(startPos, targetPosition, ease);
+                controls.target.lerpVectors(startLook, targetLookAt, ease);
+                if (count < steps) requestAnimationFrame(step);
+            }
+            step();
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
