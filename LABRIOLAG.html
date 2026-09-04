@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LABRIOLAG vBeta</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#FFD700">
+    <style>
+        :root {
+            --color-primary: #00A5FF;
+            --color-secondary: #FFD700;
+            --bg: #000;
+            --font: 'Montserrat', sans-serif;
+        }
+        body {
+            margin:0;
+            font-family:var(--font);
+            background:var(--bg);
+            color:#333;
+        }
+        header {
+            background:var(--color-secondary);
+            color:#fff;
+            padding:12px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            user-select:none;
+        }
+        header h1 {
+            margin:0;
+            font-size:1.2rem;
+            font-weight:bold;
+        }
+        button {
+            padding:8px 16px;
+            margin:4px 2px;
+            border:none;
+            border-radius:24px;
+            cursor:pointer;
+            font-weight:600;
+            transition:all 0.2s ease-in-out;
+        }
+        button:hover {
+            transform:translateY(-1px);
+            box-shadow:0 2px 4px rgba(0,0,0,0.2);
+        }
+        .btn-primary {background:var(--color-primary);color:#000;}
+        .btn-secondary {background:var(--color-secondary);color:#fff;}
+        .btn-ghost {background:transparent;color:var(--color-secondary);border:1px solid var(--color-secondary);}
+        .btn-danger {background:#e53e3e;color:#fff;}
+        .input-field {
+            width:calc(100% - 16px);
+            padding:8px;
+            margin:4px 0;
+            border:1px solid #ccc;
+            border-radius:8px;
+        }
+        .card-item {
+            border:1px solid #ddd;
+            border-radius:8px;
+            overflow:hidden;
+            display:flex;
+            flex-direction:column;
+            cursor:pointer;
+            transition:transform 0.2s;
+        }
+        .card-item:hover {transform:scale(1.02);}
+        .card-item .thumb img {
+            width:100%;
+            height:120px;
+            object-fit:cover;
+        }
+        .drawer {
+            position:fixed;
+            top:0;
+            right:-320px;
+            width:320px;
+            height:100%;
+            background:#fff;
+            box-shadow:-2px 0 8px rgba(0,0,0,.3);
+            transition:0.3s;
+            padding:12px;
+            overflow-y:auto;
+            z-index:100;
+        }
+        .drawer.open {right:0;}
+        .screen {
+            padding:12px;
+            display:none;
+        }
+        .screen.active {
+            display:block;
+        }
+        .small {font-size:0.75rem;color:#555;}
+        .kv {font-size:0.7rem;color:#999;}
+        .hr {border-top:1px solid #ccc;margin:6px 0;}
+        #cartFab {
+            position:fixed;
+            bottom:16px;
+            right:16px;
+            background:var(--color-primary);
+            border-radius:50%;
+            width:56px;
+            height:56px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            cursor:pointer;
+            box-shadow:0 2px 6px rgba(0,0,0,0.3);
+            z-index:90;
+        }
+        #cartCount {
+            position:absolute;
+            top:-4px;
+            right:-4px;
+            background:red;
+            color:#fff;
+            border-radius:50%;
+            width:20px;
+            height:20px;
+            font-size:0.7rem;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+        .tabs-container {
+            display:flex;
+            gap:8px;
+            flex-wrap:wrap;
+            margin-bottom:12px;
+        }
+        .tab-btn {
+            padding:8px 16px;
+            border-radius:24px;
+            cursor:pointer;
+            background:#eee;
+        }
+        .tab-btn.active {
+            background:var(--color-secondary);
+            color:#fff;
+        }
+        .tab-content {display:none;}
+        .tab-content.active {display:block;}
+        .table-data {
+            width:100%;
+            border-collapse:collapse;
+            font-size:0.8rem;
+            text-align:left;
+        }
+        .table-data th, .table-data td {
+            border:1px solid #ccc;
+            padding:6px;
+        }
+        .table-data th {
+            background:#f0f0f0;
+        }
+        .toast {
+            position:fixed;
+            top:20px;
+            left:50%;
+            transform:translateX(-50%);
+            padding:12px 24px;
+            background:rgba(0,0,0,0.8);
+            color:#fff;
+            border-radius:24px;
+            z-index:1000;
+            opacity:0;
+            transition:opacity 0.3s ease-in-out;
+            pointer-events:none;
+        }
+        .toast.show {
+            opacity:1;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #4CAF50;
+        }
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 8px 0;
+        }
+        .filter-tab {
+            white-space: nowrap;
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border-radius: 24px;
+            cursor: pointer;
+        }
+        .filter-tab.active {
+            background: var(--color-secondary);
+            color: #fff;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<header>
+    <h1>LABRIOLAG vBeta</h1>
+    <div id="userInfo"></div>
+</header>
+<main>
+    <div id="loginScreen" class="screen active">
+        <h2>Login</h2>
+        <input type="text" id="loginKey" placeholder="Key" class="input-field">
+        <input type="password" id="loginPass" placeholder="Senha" class="input-field">
+        <button class="btn-primary" onclick="login()">Entrar</button>
+        <button class="btn-ghost" onclick="registerUser()">Cadastrar</button>
+        <button class="btn-ghost" onclick="guestLogin()">Entrar como Visitante</button>
+    </div>
+
+    <div id="totemScreen" class="screen">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <h2 style="margin:0;">Cardápio</h2>
+            <button class="btn-ghost" onclick="toAdminPanel()" id="manageBtn" style="display:none;">Gerenciar</button>
+        </div>
+        <div id="categoryTabs" class="filter-tabs"></div>
+        <div id="subcategoryTabs" class="filter-tabs" style="display:none;"></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;padding:8px;" id="totemGrid"></div>
+    </div>
+
+    <div id="adminScreen" class="screen">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <h2 style="margin:0;">Dashboard</h2>
+            <button class="btn-ghost" onclick="toTotem()">Totem</button>
+        </div>
+        <div class="tabs-container" id="adminTabs"></div>
+        <div id="tab-dashboard" class="tab-content">
+            <h3>Resumo</h3>
+            <div id="dashboardSummary"></div>
+            <h3>Pedidos Recentes</h3>
+            <div id="ordersList"></div>
+            <hr class="hr">
+            <h3>Histórico Completo</h3>
+            <table class="table-data" id="ordersTable"></table>
+        </div>
+        <div id="tab-products" class="tab-content">
+            <h3>Gerenciar Produtos</h3>
+            <form id="prodForm">
+                <input type="hidden" id="prodId">
+                <input type="text" id="prodName" placeholder="Nome" class="input-field" required>
+                <input type="number" id="prodPrice" placeholder="Preço" class="input-field" step="0.01" required>
+                <div style="margin: 8px 0;">
+                    <input type="checkbox" id="isComboToggle" onchange="toggleComboFields()"> É um Combo?
+                </div>
+                <div id="nonComboFields">
+                    <input type="text" id="prodCat" placeholder="Categoria" class="input-field">
+                    <input type="text" id="prodSubcat" placeholder="Subcategoria" class="input-field">
+                    <input type="number" id="prodStock" placeholder="Estoque" class="input-field" required>
+                </div>
+                <div id="comboFields" style="display:none;">
+                    <input type="text" id="comboItems" placeholder="IDs dos Itens do Combo (ex: id1,id2)" class="input-field">
+                    <div style="margin: 8px 0;">
+                        <input type="checkbox" id="isPromotionalToggle" onchange="togglePromoOptions()"> É promocional?
+                    </div>
+                    <div id="promoOptions" style="display: none;">
+                        <label class="small">Opções de Promoção:</label><br>
+                        <input type="radio" id="promoType1" name="promoType" value="mais-caro" checked onchange="updatePromoPrice()">
+                        <label for="promoType1" class="small">Pagar apenas o produto mais caro</label><br>
+                        <input type="radio" id="promoType2" name="promoType" value="preco-fixo" onchange="updatePromoPrice()">
+                        <label for="promoType2" class="small">Escolher um preço para o combo</label><br>
+                    </div>
+                    <label class="small">Validade (em dias):</label>
+                    <input type="number" id="promoValidity" placeholder="Validade (dias)" class="input-field" value="0">
+                </div>
+                <input type="text" id="prodImg" placeholder="URL da imagem" class="input-field">
+                <button type="submit" class="btn-primary">Salvar</button>
+                <button type="button" class="btn-ghost" onclick="resetForm('prodForm')">Limpar</button>
+            </form>
+            <hr class="hr">
+            <table class="table-data" id="prodTable"></table>
+        </div>
+        <div id="tab-people" class="tab-content">
+            <h3>Gerenciar Pessoas</h3>
+            <form id="personForm">
+                <input type="hidden" id="personId">
+                <input type="text" id="personName" placeholder="Nome" class="input-field">
+                <input type="tel" id="personPhone" placeholder="Telefone" class="input-field">
+                <button type="submit" class="btn-primary">Salvar</button>
+                <button type="button" class="btn-ghost" onclick="resetForm('personForm')">Limpar</button>
+            </form>
+            <hr class="hr">
+            <table class="table-data" id="peopleTable"></table>
+        </div>
+        <div id="tab-coupons" class="tab-content">
+            <h3>Gerenciar Cupons</h3>
+            <form id="couponForm">
+                <input type="hidden" id="couponId">
+                <input type="text" id="couponCode" placeholder="Código" class="input-field">
+                <input type="number" id="couponValue" placeholder="Valor (R$)" class="input-field" step="0.01">
+                <button type="submit" class="btn-primary">Salvar</button>
+                <button type="button" class="btn-ghost" onclick="resetForm('couponForm')">Limpar</button>
+            </form>
+            <hr class="hr">
+            <table class="table-data" id="couponsTable"></table>
+        </div>
+        <div id="tab-ads" class="tab-content">
+            <h3>Gerenciar Publicidade</h3>
+            <form id="adsForm">
+                <input type="hidden" id="adsId">
+                <input type="text" id="adsContent" placeholder="Conteúdo do anúncio" class="input-field">
+                <button type="submit" class="btn-primary">Salvar</button>
+                <button type="button" class="btn-ghost" onclick="resetForm('adsForm')">Limpar</button>
+            </form>
+            <hr class="hr">
+            <table class="table-data" id="adsTable"></table>
+        </div>
+        <div id="tab-keys" class="tab-content">
+            <h3>Gerenciar Keys</h3>
+            <form id="keyForm">
+                <input type="hidden" id="keyId">
+                <input type="text" id="keyKey" placeholder="Key" class="input-field">
+                <input type="text" id="keyPass" placeholder="Senha" class="input-field">
+                <select id="keyRole" class="input-field"></select>
+                <button type="submit" class="btn-primary">Salvar</button>
+                <button type="button" class="btn-ghost" onclick="resetForm('keyForm')">Limpar</button>
+            </form>
+            <hr class="hr">
+            <table class="table-data" id="keysTable"></table>
+        </div>
+        <div id="tab-custom" class="tab-content">
+            <h3>Customização de Layout</h3>
+            <div style="display:grid;gap:8px;">
+                <div>
+                    <label for="customPrimary" class="small">Cor Primária:</label>
+                    <input type="color" id="customPrimary" class="input-field">
+                </div>
+                <div>
+                    <label for="customSecondary" class="small">Cor Secundária:</label>
+                    <input type="color" id="customSecondary" class="input-field">
+                </div>
+                <div>
+                    <label for="customBg" class="small">Cor de Fundo:</label>
+                    <input type="color" id="customBg" class="input-field">
+                </div>
+                <button class="btn-primary" onclick="saveCustom()">Aplicar</button>
+            </div>
+        </div>
+        <div id="tab-settings" class="tab-content">
+            <h3>Configurações e Dados</h3>
+            <div style="margin-bottom:8px;">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="storeOpenToggle" onchange="toggleStoreStatus()">
+                    <span class="slider"></span>
+                </label>
+                <span id="storeStatusLabel">Loja Fechada</span>
+            </div>
+            <label for="lowStockThreshold" class="small">Nível de Estoque Baixo:</label>
+            <input type="number" id="lowStockThreshold" class="input-field" value="5">
+            <label for="waPhone" class="small">Telefone WhatsApp:</label>
+            <input type="tel" id="waPhone" class="input-field">
+            <label for="pixKey" class="small">Chave PIX:</label>
+            <input type="text" id="pixKey" class="input-field">
+            <label for="bankInfo" class="small">Dados Bancários:</label>
+            <input type="text" id="bankInfo" class="input-field">
+            <label for="paymentMessage" class="small">Mensagem de Pagamento:</label>
+            <textarea id="paymentMessage" class="input-field" rows="3" placeholder="Ex: Por favor, envie o comprovante."></textarea>
+            <button class="btn-primary" onclick="saveSetup()">Salvar</button>
+            <hr class="hr">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn-secondary" onclick="exportData()">Exportar Dados (JSON)</button>
+                <label for="importFile" class="btn-ghost">Importar Dados (JSON)</label>
+                <input type="file" id="importFile" style="display:none;" onchange="importData(event)">
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+                <button class="btn-danger" onclick="resetAllData()">Limpar Tudo</button>
+            </div>
+        </div>
+    </div>
+    <div class="drawer" id="drawer">
+        <h3>Carrinho</h3>
+        <div id="cartItems" style="margin-bottom:12px;"></div>
+        <div style="font-weight:bold;margin-top:12px;">Total: R$ <span id="cartSum">0.00</span></div>
+        <button class="btn-primary" onclick="checkout()">Finalizar pedido</button>
+        <button class="btn-ghost" onclick="clearCart()">Limpar</button>
+        <button class="btn-ghost" onclick="toggleDrawer()">Fechar</button>
+    </div>
+    <div id="cartFab" onclick="toggleDrawer()">
+        🛒
+        <div id="cartCount">0</div>
+    </div>
+</main>
+<div id="toast" class="toast"></div>
+<script>
+    /* -------------------- Global State & Data Storage -------------------- */
+    const LS = {PRODS:'mcProds',PEOPLE:'mcPeople',COUPONS:'mcCoupons',KEYS:'mcKeys',CART:'mcCart',PUB:'mcPub',SETUP:'mcSetup',CUSTOM:'mcCustom',ORDERS:'mcOrders'};
+    const STATE = {
+        user: null,
+        products: [],
+        people: [],
+        coupons: [],
+        keys: [],
+        cart: { items: [] },
+        pub: [],
+        setup: { whatsapp: '', lowStockThreshold: 5, storeOpen: true, pixKey: '', bankInfo: '', paymentMessage: '' },
+        custom: { primary: '#00A5FF', secondary: '#FFD700', bg: '#fff', font: 'Montserrat' },
+        orders: [],
+        undoHistory: [],
+        undoPointer: -1,
+        selectedCategory: 'Todos',
+        selectedSubcategory: null
+    };
+    const KEY_LIMITS = {
+        'A_DEVGUI': 1,
+        'A_DEMO': 1,
+        'B': 2,
+        'C': 2,
+        'D': 50
+    };
+    const ROLE_PERMISSIONS = {
+        'A': ['A', 'B', 'C', 'D', 'E'],
+        'B': ['B', 'C', 'D', 'E'],
+        'C': ['D', 'E'],
+        'D': [],
+        'E': []
+    };
+    const ADMIN_TABS_CONFIG = {
+        'dashboard': { name: 'Dashboard', role: ['A', 'B'] },
+        'products': { name: '🍔 Produtos', role: ['A', 'B'] },
+        'people': { name: '👤 Pessoas', role: ['A', 'B'] },
+        'coupons': { name: '🏷️ Cupons', role: ['A', 'B'] },
+        'ads': { name: '📢 Publicidade', role: ['A', 'B'] },
+        'keys': { name: '🔑 Keys', role: ['A', 'B', 'C'] },
+        'custom': { name: '🎨 Customizar', role: ['A', 'B'] },
+        'settings': { name: '⚙️ Config', role: ['A', 'B'] },
+    };
+    /* -------------------- Utility Functions -------------------- */
+    function $(id) { return document.getElementById(id); }
+    function lsGet(k) { return JSON.parse(localStorage.getItem(k) || '[]'); }
+    function lsSet(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+    function genId() { return Date.now(); }
+    function formatMoney(v) { return (v || 0).toFixed(2).replace('.', ','); }
+    function toast(msg) {
+        const t = $('toast');
+        t.innerText = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+    function recordState() {
+        if (STATE.undoPointer < STATE.undoHistory.length - 1) {
+            STATE.undoHistory = STATE.undoHistory.slice(0, STATE.undoPointer + 1);
+        }
+        const newState = JSON.stringify({ products: STATE.products, people: STATE.people, coupons: STATE.coupons, keys: STATE.keys, orders: STATE.orders, setup: STATE.setup });
+        STATE.undoHistory.push(newState);
+        STATE.undoPointer = STATE.undoHistory.length - 1;
+    }
+    function undo() {
+        if (STATE.undoPointer > 0) {
+            STATE.undoPointer--;
+            const prevState = JSON.parse(STATE.undoHistory[STATE.undoPointer]);
+            STATE.products = prevState.products;
+            STATE.people = prevState.people;
+            STATE.coupons = prevState.coupons;
+            STATE.keys = prevState.keys;
+            STATE.orders = prevState.orders;
+            STATE.setup = prevState.setup;
+            saveAll();
+            renderAllAdminTables();
+            renderProducts();
+            renderDashboard();
+            toast('Última ação desfeita.');
+        } else {
+            toast('Nada para desfazer.');
+        }
+    }
+    function canCreateKey(role) {
+        if (!STATE.user) return false;
+        const userRole = STATE.user.role;
+        return ROLE_PERMISSIONS[userRole].includes(role);
+    }
+    function hasKeyLimitReached(role) {
+        if (role === 'E') return false;
+        const count = STATE.keys.filter(k => k.role === role).length;
+        const keyType = (role === 'A') ? (STATE.keys.find(k => k.role === 'A' && k.key === 'DEVGUI') ? 'A_DEVGUI' : 'A_DEMO') : role;
+        return count >= KEY_LIMITS[keyType];
+    }
+    /* -------------------- Initializers -------------------- */
+    document.addEventListener('DOMContentLoaded', () => {
+        loadAll();
+        applyCustomizations();
+        if (window.location.hash === '#admin') {
+            const devKey = STATE.keys.find(k => k.key === 'DEVGUI' && k.pass === '###*');
+            if (devKey) {
+                STATE.user = devKey;
+                toAdminPanel();
+            } else {
+                toLogin();
+            }
+        } else {
+            toLogin();
+        }
+        renderProducts();
+        renderCart();
+        renderSettings();
+        renderCategories();
+    });
+    function loadAll() {
+        STATE.products = lsGet(LS.PRODS);
+        STATE.people = lsGet(LS.PEOPLE);
+        STATE.coupons = lsGet(LS.COUPONS);
+        STATE.keys = lsGet(LS.KEYS);
+        STATE.cart = JSON.parse(localStorage.getItem(LS.CART) || '{"items":[]}');
+        STATE.pub = lsGet(LS.PUB);
+        STATE.setup = JSON.parse(localStorage.getItem(LS.SETUP) || '{"whatsapp":"", "lowStockThreshold":5, "storeOpen":true, "pixKey":"", "bankInfo":"", "paymentMessage":""}');
+        STATE.custom = JSON.parse(localStorage.getItem(LS.CUSTOM) || JSON.stringify(STATE.custom));
+        STATE.orders = lsGet(LS.ORDERS);
+        // Seed initial data if empty
+        if (!STATE.keys.length) {
+            STATE.keys.push({ id: genId(), key: 'DEVGUI', pass: '###*', role: 'A', active: true, unlimited: true });
+            STATE.keys.push({ id: genId(), key: 'DEMO', pass: 'DEMO', role: 'A', active: true, unlimited: false });
+        }
+        if (!STATE.products.length) {
+            STATE.products.push({ id: genId(), name: 'Cheeseburger', price: 15.00, cat: 'Lanches', subcat: 'Sanduíches', stock: 10, img: 'https://via.placeholder.com/150/DA291C/FFFFFF?text=Cheeseburger', available: true, isCombo: false, isPromotional: false, promoType: null, promoValidity: 0, comboItems: [] });
+            STATE.products.push({ id: genId(), name: 'Batata Média', price: 8.00, cat: 'Acompanhamentos', subcat: 'Fritos', stock: 20, img: 'https://via.placeholder.com/150/FFCC00/000000?text=Batata', available: true, isCombo: false, isPromotional: false, promoType: null, promoValidity: 0, comboItems: [] });
+            STATE.products.push({ id: genId(), name: 'Coca-Cola', price: 5.00, cat: 'Bebidas', subcat: 'Refrigerantes', stock: 30, img: 'https://via.placeholder.com/150/000000/FFFFFF?text=Coca-Cola', available: true, isCombo: false, isPromotional: false, promoType: null, promoValidity: 0, comboItems: [] });
+        }
+        saveAll();
+    }
+    function saveAll() {
+        lsSet(LS.PRODS, STATE.products);
+        lsSet(LS.PEOPLE, STATE.people);
+        lsSet(LS.COUPONS, STATE.coupons);
+        lsSet(LS.KEYS, STATE.keys);
+        lsSet(LS.CART, STATE.cart);
+        lsSet(LS.PUB, STATE.pub);
+        lsSet(LS.SETUP, STATE.setup);
+        lsSet(LS.CUSTOM, STATE.custom);
+        lsSet(LS.ORDERS, STATE.orders);
+    }
+    /* -------------------- Screen & UI Rendering -------------------- */
+    function toLogin() {
+        switchScreen('loginScreen');
+        $('userInfo').innerText = '';
+        $('manageBtn').style.display = 'none';
+    }
+    function toTotem() {
+        switchScreen('totemScreen');
+        if (STATE.user && (STATE.user.role === 'A' || STATE.user.role === 'B' || STATE.user.role === 'C')) {
+            $('manageBtn').style.display = 'block';
+        } else {
+            $('manageBtn').style.display = 'none';
+        }
+    }
+    function toAdminPanel() {
+        switchScreen('adminScreen');
+        renderDashboard();
+        renderAllAdminTables();
+        renderAdminTabs();
+    }
+    function switchScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        $(screenId).classList.add('active');
+        $('drawer').classList.remove('open');
+    }
+    function applyCustomizations() {
+        document.documentElement.style.setProperty('--color-primary', STATE.custom.primary);
+        document.documentElement.style.setProperty('--color-secondary', STATE.custom.secondary);
+        document.documentElement.style.setProperty('--bg', STATE.custom.bg);
+        document.documentElement.style.setProperty('--font', `'${STATE.custom.font}', sans-serif`);
+        $('customPrimary').value = STATE.custom.primary;
+        $('customSecondary').value = STATE.custom.secondary;
+        $('customBg').value = STATE.custom.bg;
+    }
+    function saveCustom() {
+        STATE.custom.primary = $('customPrimary').value;
+        STATE.custom.secondary = $('customSecondary').value;
+        STATE.custom.bg = $('customBg').value;
+        applyCustomizations();
+        lsSet(LS.CUSTOM, STATE.custom);
+        toast('Tema salvo!');
+    }
+    function renderAdminTabs() {
+        const tabsContainer = $('adminTabs');
+        tabsContainer.innerHTML = '';
+        const userRole = STATE.user ? STATE.user.role : null;
+        let firstTab = null;
+        for (const tabKey in ADMIN_TABS_CONFIG) {
+            const config = ADMIN_TABS_CONFIG[tabKey];
+            if (config.role.includes(userRole)) {
+                const btn = document.createElement('button');
+                btn.className = 'tab-btn';
+                btn.dataset.tab = tabKey;
+                btn.innerText = config.name;
+                btn.onclick = () => {
+                    document.querySelectorAll('#adminTabs .tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    $(`tab-${tabKey}`).classList.add('active');
+                    if (tabKey === 'dashboard') renderDashboard();
+                };
+                tabsContainer.appendChild(btn);
+                if (!firstTab) firstTab = btn;
+            }
+        }
+        if (firstTab) {
+            firstTab.classList.add('active');
+            $(`tab-${firstTab.dataset.tab}`).classList.add('active');
+        }
+    }
+    /* -------------------- Login & Permissions -------------------- */
+    function login() {
+        const key = $('loginKey').value.trim();
+        const pass = $('loginPass').value.trim();
+        const k = STATE.keys.find(k => k.key === key && k.pass === pass && k.active);
+        if (!k) { toast('Key inválida'); return; }
+        STATE.user = k;
+        $('userInfo').innerText = `Logado: ${k.key} (${k.role})`;
+        toTotem();
+        toast('Login realizado!');
+    }
+    function registerUser() {
+        if (hasKeyLimitReached('D')) {
+            toast('Limite de chaves D atingido.');
+            return;
+        }
+        const key = prompt('Escolha sua Key:');
+        if (!key) { toast('Operação cancelada.'); return; }
+        if (STATE.keys.find(k => k.key === key)) {
+            toast('Esta Key já existe.');
+            return;
+        }
+        const pass = prompt('Escolha sua senha:');
+        if (!pass) { toast('Operação cancelada.'); return; }
+        const newKey = { id: genId(), key, pass, role: 'D', active: true };
+        STATE.keys.push(newKey);
+        saveAll();
+        toast('Cadastro realizado! Agora você pode logar.');
+        $('loginKey').value = key;
+        $('loginPass').value = pass;
+    }
+    function guestLogin() {
+        const key = 'VISITANTE_' + Date.now().toString().slice(-4);
+        const pass = 'guest';
+        const newKey = { id: genId(), key, pass, role: 'E', active: true };
+        STATE.keys.push(newKey);
+        saveAll();
+        STATE.user = newKey;
+        $('userInfo').innerText = `Logado: ${key} (E)`;
+        toTotem();
+        toast('Acesso de visitante.');
+    }
+    /* -------------------- Totem & Cart -------------------- */
+    function renderCategories() {
+        const categories = ['Todos', ...new Set(STATE.products.filter(p => !p.isCombo).map(p => p.cat))].filter(c => c);
+        const catTabs = $('categoryTabs');
+        catTabs.innerHTML = '';
+        categories.forEach(cat => {
+            const btn = document.createElement('div');
+            btn.className = `filter-tab ${STATE.selectedCategory === cat ? 'active' : ''}`;
+            btn.innerText = cat;
+            btn.onclick = () => filterProducts(cat);
+            catTabs.appendChild(btn);
+        });
+        if (STATE.selectedCategory && STATE.selectedCategory !== 'Todos') {
+            renderSubcategories(STATE.selectedCategory);
+        } else {
+            $('subcategoryTabs').style.display = 'none';
+        }
+        renderProducts();
+    }
+    function renderSubcategories(category) {
+        const subcats = ['Todos', ...new Set(STATE.products.filter(p => p.cat === category && !p.isCombo).map(p => p.subcat))].filter(sc => sc);
+        const subcatTabs = $('subcategoryTabs');
+        subcatTabs.innerHTML = '';
+        if (subcats.length > 1) { // 1 because of 'Todos'
+            subcatTabs.style.display = 'flex';
+            subcats.forEach(subcat => {
+                const btn = document.createElement('div');
+                btn.className = `filter-tab ${STATE.selectedSubcategory === subcat ? 'active' : ''}`;
+                btn.innerText = subcat;
+                btn.onclick = () => filterProducts(category, subcat);
+                subcatTabs.appendChild(btn);
+            });
+        } else {
+            subcatTabs.style.display = 'none';
+            STATE.selectedSubcategory = null;
+        }
+    }
+    function filterProducts(category, subcategory = null) {
+        STATE.selectedCategory = category;
+        STATE.selectedSubcategory = subcategory;
+        document.querySelectorAll('#categoryTabs .filter-tab').forEach(b => b.classList.remove('active'));
+        document.querySelector(`#categoryTabs .filter-tab[data-category="${category}"]`)?.classList.add('active');
+        if (category === 'Todos') {
+            $('subcategoryTabs').style.display = 'none';
+        } else {
+            renderSubcategories(category);
+        }
+        renderProducts();
+    }
+    function renderProducts() {
+        const grid = $('totemGrid');
+        grid.innerHTML = '';
+        let filteredProducts = STATE.products.filter(p => p.available);
+        // Show all products and combos
+        if (STATE.selectedCategory === 'Todos') {
+            filteredProducts = STATE.products.filter(p => p.available);
+        } else {
+            // Filter by category and subcategory
+            filteredProducts = filteredProducts.filter(p => p.cat === STATE.selectedCategory);
+            if (STATE.selectedSubcategory && STATE.selectedSubcategory !== 'Todos') {
+                filteredProducts = filteredProducts.filter(p => p.subcat === STATE.selectedSubcategory);
+            }
+        }
+        filteredProducts.forEach((p) => {
+            const div = document.createElement('div');
+            div.className = 'card-item';
+            div.onclick = () => addToCart(p.id);
+            const comboInfo = p.isCombo ? ' Combo' : '';
+            div.innerHTML = `<div class="thumb"><img src="${p.img}" alt="${p.name}"></div>
+<div style="padding:4px;font-weight:bold">${p.name}</div>
+<div style="padding:2px" class="small">R$ ${formatMoney(p.price)}${comboInfo}</div>
+<div style="padding:2px" class="kv">Estoque: ${p.isCombo ? '---' : p.stock}</div>`;
+            grid.appendChild(div);
+        });
+    }
+    function toggleDrawer() { $('drawer').classList.toggle('open'); }
+    function renderCart() {
+        const list = $('cartItems');
+        const countEl = $('cartCount');
+        list.innerHTML = '';
+        if (!STATE.cart.items.length) { list.innerHTML = '<div class="small">Carrinho vazio</div>'; countEl.innerText = '0'; $('cartSum').innerText = formatMoney(0); return; }
+        let sum = 0;
+        STATE.cart.items.forEach(i => {
+            sum += i.price * i.qty;
+            const row = document.createElement('div');
+            row.style.display = 'flex';
+            row.style.justifyContent = 'space-between';
+            row.style.alignItems = 'center';
+            row.style.margin = '4px 0';
+            row.innerHTML = `<span>${i.qty}x ${i.pname}</span>
+<div>
+<button class="btn-ghost" onclick="changeCartQty(${i.id},-1)">-</button>
+<button class="btn-ghost" onclick="changeCartQty(${i.id},1)">+</button>
+</div>`;
+            list.appendChild(row);
+        });
+        countEl.innerText = STATE.cart.items.reduce((s, i) => s + i.qty, 0);
+        $('cartSum').innerText = formatMoney(sum);
+        lsSet(LS.CART, STATE.cart);
+    }
+    function addToCart(id) {
+        if (!STATE.setup.storeOpen && (STATE.user.role === 'D' || STATE.user.role === 'E')) {
+            toast('Loja fechada. Não é possível adicionar itens ao carrinho no momento.');
+            return;
+        }
+        const p = STATE.products.find(x => x.id == id); if (!p) return;
+        if (p.isCombo) {
+            const allItemsHaveStock = p.comboItems.every(itemId => {
+                const item = STATE.products.find(prod => prod.id == itemId);
+                return item && item.stock > 0;
+            });
+            if (!allItemsHaveStock) {
+                toast(`Um ou mais itens do combo "${p.name}" estão fora de estoque.`);
+                return;
+            }
+            p.comboItems.forEach(itemId => {
+                const item = STATE.products.find(prod => prod.id == itemId);
+                if (item) item.stock--;
+            });
+        } else if (p.stock <= 0) {
+            toast(`${p.name} está fora de estoque.`);
+            return;
+        } else {
+            p.stock--;
+        }
+        let item = STATE.cart.items.find(x => x.id == id);
+        if (item) { item.qty++; } else { STATE.cart.items.push({ id, pname: p.name, price: p.price, qty: 1, isCombo: p.isCombo, comboItems: p.comboItems }); }
+        renderCart();
+        renderProducts();
+        toast(`${p.name} adicionado!`);
+    }
+    function changeCartQty(id, ch) {
+        let item = STATE.cart.items.find(x => x.id == id);
+        if (!item) return;
+        const p = STATE.products.find(x => x.id == id);
+        if (!p) return;
+        if (ch > 0 && p.isCombo) {
+            const allItemsHaveStock = p.comboItems.every(itemId => {
+                const item = STATE.products.find(prod => prod.id == itemId);
+                return item && item.stock > 0;
+            });
+            if (!allItemsHaveStock) {
+                toast(`Um ou mais itens do combo "${p.name}" estão fora de estoque.`);
+                return;
+            }
+            p.comboItems.forEach(itemId => {
+                const item = STATE.products.find(prod => prod.id == itemId);
+                if (item) item.stock--;
+            });
+        } else if (ch > 0 && p.stock <= 0) {
+            toast(`${p.name} está fora de estoque.`);
+            return;
+        } else if (!p.isCombo) {
+            p.stock -= ch;
+        }
+        item.qty += ch;
+        if (item.qty <= 0) {
+            if (item.isCombo) {
+                item.comboItems.forEach(itemId => {
+                    const indItem = STATE.products.find(prod => prod.id == itemId);
+                    if(indItem) indItem.stock += 1;
+                });
+            }
+            STATE.cart.items = STATE.cart.items.filter(x => x.id != id);
+        }
+        renderCart();
+        renderProducts();
+    }
+    function clearCart() {
+        STATE.cart.items.forEach(item => {
+            const p = STATE.products.find(x => x.id == item.id);
+            if (!p) return;
+            if (p.isCombo) {
+                p.comboItems.forEach(itemId => {
+                    const indItem = STATE.products.find(prod => prod.id == itemId);
+                    if(indItem) indItem.stock += item.qty;
+                });
+            } else {
+                p.stock += item.qty;
+            }
+        });
+        STATE.cart.items = [];
+        renderCart();
+        renderProducts();
+        toast('Carrinho limpo.');
+    }
+    /* -------------------- Checkout -------------------- */
+    function checkout() {
+        if (!STATE.cart.items.length) { toast('Carrinho vazio'); return; }
+        const phone = STATE.setup.whatsapp;
+        if (!phone) { toast('WhatsApp não configurado. Por favor, avise o gerente.'); return; }
+        const name = prompt('Seu nome:');
+        if (!name) { toast('Pedido cancelado.'); return; }
+        const order = {
+            id: genId(),
+            date: new Date().toLocaleString(),
+            name,
+            items: STATE.cart.items,
+            total: STATE.cart.items.reduce((s, i) => s + i.price * i.qty, 0),
+            completed: false
+        };
+        STATE.orders.push(order);
+        lsSet(LS.ORDERS, STATE.orders);
+        let msg = `Olá! Novo pedido de *${name}*:\n\n`;
+        order.items.forEach(i => { msg += `${i.qty}x ${i.pname} - R$ ${formatMoney(i.price * i.qty)}\n` });
+        msg += `\nTotal do pedido: R$ ${formatMoney(order.total)}`;
+        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+        let paymentInfoMsg = '✅ Pedido Enviado!\n\n';
+        if (STATE.setup.pixKey) {
+            paymentInfoMsg += `💰 **Chave PIX:** ${STATE.setup.pixKey}\n\n`;
+        }
+        if (STATE.setup.bankInfo) {
+            paymentInfoMsg += `🏦 **Dados Bancários:** ${STATE.setup.bankInfo}\n\n`;
+        }
+        paymentInfoMsg += `Total a pagar: R$ ${formatMoney(order.total)}\n\n`;
+        if (STATE.setup.paymentMessage) {
+            paymentInfoMsg += STATE.setup.paymentMessage;
+        }
+        alert(paymentInfoMsg);
+        STATE.cart.items = [];
+        renderCart();
+        toast('Pedido enviado! Aguarde a confirmação.');
+    }
+    /* -------------------- Admin Panel Management -------------------- */
+    function renderAllAdminTables() {
+        renderProductsTable();
+        renderPeopleTable();
+        renderCouponsTable();
+        renderAdsTable();
+        renderKeysTable();
+        renderKeyRoleOptions();
+        renderOrdersTable();
+    }
+    function renderDashboard() {
+        const summaryEl = $('dashboardSummary');
+        const ordersEl = $('ordersList');
+        const totalSales = STATE.orders.reduce((s, o) => s + o.total, 0);
+        const totalOrders = STATE.orders.length;
+        const productSales = {};
+        STATE.orders.forEach(o => o.items.forEach(i => { productSales[i.pname] = (productSales[i.pname] || 0) + i.qty; }));
+        const topProduct = Object.keys(productSales).sort((a, b) => productSales[b] - productSales[a])[0] || 'N/A';
+        summaryEl.innerHTML = ` <p><strong>Total de Vendas:</strong> R$ ${formatMoney(totalSales)}</p> <p><strong>Total de Pedidos:</strong> ${totalOrders}</p> <p><strong>Produto Mais Vendido:</strong> ${topProduct} (${topProduct !== 'N/A' ? productSales[topProduct] : 0} unidades)</p> `;
+        ordersEl.innerHTML = ` <table class="table-data"> <thead> <tr><th>ID</th><th>Data</th><th>Cliente</th><th>Total</th></tr> </thead> <tbody> ${STATE.orders.filter(o => !o.completed).reverse().slice(0, 5).map(o => `<tr><td>${o.id}</td><td>${o.date.split(',')[0]}</td><td>${o.name}</td><td>R$ ${formatMoney(o.total)}</td></tr>`).join('')} </tbody> </table> `; renderOrdersTable();
+    }
+    function renderOrdersTable() {
+        const table = $('ordersTable');
+        table.innerHTML = `<thead><tr><th>ID</th><th>Data</th><th>Cliente</th><th>Status</th><th>Total</th><th>Ações</th></tr></thead><tbody> ${STATE.orders.reverse().map(o => { const status = o.completed ? '✅ Entregue' : '⌛ Pendente'; const statusBtnClass = o.completed ? 'btn-ghost' : 'btn-secondary'; const statusBtnText = o.completed ? 'Desmarcar' : 'Entregue'; const actions = o.completed ? `<button class="btn-ghost" onclick="completeOrder(${o.id})">${statusBtnText}</button>` : `<button class="btn-secondary" onclick="completeOrder(${o.id})">${statusBtnText}</button>`; return `<tr><td>${o.id}</td><td>${o.date.split(',')[0]}</td><td>${o.name}</td><td>${status}</td><td>R$ ${formatMoney(o.total)}</td> <td>${actions}<button class="btn-danger" onclick="deleteOrder(${o.id})">Excluir</button></td></tr>`; }).join('')} </tbody>`;
+    }
+    function completeOrder(id) {
+        const order = STATE.orders.find(o => o.id === id);
+        if (order) {
+            order.completed = !order.completed;
+            saveAll();
+            renderAllAdminTables();
+            toast('Status do pedido atualizado.');
+        }
+    }
+    function deleteOrder(id) {
+        if (confirm('Tem certeza?')) {
+            STATE.orders = STATE.orders.filter(o => o.id !== id);
+            saveAll();
+            renderAllAdminTables();
+            toast('Pedido excluído.');
+        }
+    }
+    // Products
+    function renderProductsTable() {
+        const table = $('prodTable');
+        table.innerHTML = `<thead><tr><th>Nome</th><th>Preço</th><th>Cat</th><th>Subcat</th><th>Estoque</th><th>Ações</th></tr></thead><tbody> ${STATE.products.map(p => `<tr><td>${p.name}</td><td>R$ ${formatMoney(p.price)}</td><td>${p.isCombo ? 'Combo' : p.cat || 'N/A'}</td><td>${p.subcat || 'N/A'}</td><td>${p.isCombo ? '---' : p.stock}</td><td><button class="btn-ghost" onclick="editProduct(${p.id})">Editar</button> <button class="btn-danger" onclick="deleteProduct(${p.id})">Excluir</button></td></tr>`).join('')} </tbody>`;
+    }
+    function saveProduct() {
+        const id = $('prodId').value;
+        const name = $('prodName').value;
+        const price = parseFloat($('prodPrice').value);
+        const isCombo = $('isComboToggle').checked;
+        const prodImg = $('prodImg').value;
+        let product;
+        if (isCombo) {
+            const comboItems = $('comboItems').value.split(',').map(item => parseInt(item.trim())).filter(id => !isNaN(id));
+            const isPromotional = $('isPromotionalToggle').checked;
+            const promoType = isPromotional ? document.querySelector('input[name="promoType"]:checked').value : null;
+            const promoValidity = parseInt($('promoValidity').value) || 0;
+            product = { id: id ? parseInt(id) : genId(), name, price, isCombo, isPromotional, promoType, promoValidity, comboItems, img: prodImg, available: true };
+        } else {
+            const prodCat = $('prodCat').value;
+            const prodSubcat = $('prodSubcat').value;
+            const prodStock = parseInt($('prodStock').value);
+            product = { id: id ? parseInt(id) : genId(), name, price, cat: prodCat, subcat: prodSubcat, stock: prodStock, img: prodImg, available: true, isCombo: false };
+        }
+        if (id) {
+            const index = STATE.products.findIndex(p => p.id == id);
+            if (index !== -1) {
+                STATE.products[index] = product;
+            }
+        } else {
+            STATE.products.push(product);
+        }
+        saveAll();
+        renderProductsTable();
+        renderProducts();
+        recordState();
+        resetForm('prodForm');
+        toast('Produto salvo!');
+    }
+    function editProduct(id) {
+        const p = STATE.products.find(x => x.id === id);
+        if (!p) return;
+        $('prodId').value = p.id;
+        $('prodName').value = p.name;
+        $('prodPrice').value = p.price;
+        $('isComboToggle').checked = p.isCombo;
+        $('prodImg').value = p.img;
+        if (p.isCombo) {
+            $('comboItems').value = p.comboItems.join(',');
+            $('isPromotionalToggle').checked = p.isPromotional;
+            if (p.isPromotional) {
+                document.querySelector(`input[name="promoType"][value="${p.promoType}"]`).checked = true;
+                $('promoValidity').value = p.promoValidity;
+            }
+        } else {
+            $('prodCat').value = p.cat;
+            $('prodSubcat').value = p.subcat;
+            $('prodStock').value = p.stock;
+        }
+        toggleComboFields();
+        togglePromoOptions();
+    }
+    function deleteProduct(id) {
+        if (confirm('Tem certeza?')) {
+            STATE.products = STATE.products.filter(p => p.id !== id);
+            saveAll();
+            renderProductsTable();
+            renderProducts();
+            recordState();
+            toast('Produto excluído!');
+        }
+    }
+    function toggleComboFields() {
+        const isCombo = $('isComboToggle').checked;
+        $('nonComboFields').style.display = isCombo ? 'none' : 'block';
+        $('comboFields').style.display = isCombo ? 'block' : 'none';
+        if (!isCombo) {
+            $('isPromotionalToggle').checked = false;
+        }
+    }
+    function togglePromoOptions() {
+        const isPromotional = $('isPromotionalToggle').checked;
+        $('promoOptions').style.display = isPromotional ? 'block' : 'none';
+    }
+    function updatePromoPrice() {
+        // This is a simple logic. In a real app, this would be more complex.
+        const isPromotional = $('isPromotionalToggle').checked;
+        const promoType = document.querySelector('input[name="promoType"]:checked').value;
+        const comboItems = $('comboItems').value.split(',').map(item => parseInt(item.trim())).filter(id => !isNaN(id));
+        if (isPromotional && promoType === 'mais-caro' && comboItems.length > 0) {
+            const prices = comboItems.map(itemId => {
+                const item = STATE.products.find(prod => prod.id == itemId);
+                return item ? item.price : 0;
+            });
+            const maxPrice = Math.max(...prices);
+            $('prodPrice').value = maxPrice;
+        }
+    }
+    $('prodForm').addEventListener('submit', function(e) { e.preventDefault(); saveProduct(); });
+    // People
+    function renderPeopleTable() {
+        const table = $('peopleTable');
+        table.innerHTML = `<thead><tr><th>Nome</th><th>Telefone</th><th>Ações</th></tr></thead><tbody> ${STATE.people.map(p => `<tr><td>${p.name}</td><td>${p.phone}</td><td><button class="btn-ghost" onclick="editPerson(${p.id})">Editar</button> <button class="btn-danger" onclick="deletePerson(${p.id})">Excluir</button></td></tr>`).join('')} </tbody>`;
+    }
+    function savePerson() {
+        const id = $('personId').value;
+        const name = $('personName').value;
+        const phone = $('personPhone').value;
+        const person = { id: id ? parseInt(id) : genId(), name, phone };
+        if (id) {
+            const index = STATE.people.findIndex(p => p.id == id);
+            if (index !== -1) {
+                STATE.people[index] = person;
+            }
+        } else {
+            STATE.people.push(person);
+        }
+        saveAll();
+        renderPeopleTable();
+        recordState();
+        resetForm('personForm');
+        toast('Pessoa salva!');
+    }
+    function editPerson(id) {
+        const p = STATE.people.find(x => x.id === id);
+        if (p) {
+            $('personId').value = p.id;
+            $('personName').value = p.name;
+            $('personPhone').value = p.phone;
+        }
+    }
+    function deletePerson(id) {
+        if (confirm('Tem certeza?')) {
+            STATE.people = STATE.people.filter(p => p.id !== id);
+            saveAll();
+            renderPeopleTable();
+            recordState();
+            toast('Pessoa excluída!');
+        }
+    }
+    $('personForm').addEventListener('submit', function(e) { e.preventDefault(); savePerson(); });
+    // Coupons
+    function renderCouponsTable() {
+        const table = $('couponsTable');
+        table.innerHTML = `<thead><tr><th>Código</th><th>Valor (R$)</th><th>Ações</th></tr></thead><tbody> ${STATE.coupons.map(c => `<tr><td>${c.code}</td><td>R$ ${formatMoney(c.value)}</td><td><button class="btn-ghost" onclick="editCoupon(${c.id})">Editar</button> <button class="btn-danger" onclick="deleteCoupon(${c.id})">Excluir</button></td></tr>`).join('')} </tbody>`;
+    }
+    function saveCoupon() {
+        const id = $('couponId').value;
+        const code = $('couponCode').value;
+        const value = parseFloat($('couponValue').value);
+        const coupon = { id: id ? parseInt(id) : genId(), code, value };
+        if (id) {
+            const index = STATE.coupons.findIndex(c => c.id == id);
+            if (index !== -1) {
+                STATE.coupons[index] = coupon;
+            }
+        } else {
+            STATE.coupons.push(coupon);
+        }
+        saveAll();
+        renderCouponsTable();
+        recordState();
+        resetForm('couponForm');
+        toast('Cupom salvo!');
+    }
+    function editCoupon(id) {
+        const c = STATE.coupons.find(x => x.id === id);
+        if (c) {
+            $('couponId').value = c.id;
+            $('couponCode').value = c.code;
+            $('couponValue').value = c.value;
+        }
+    }
+    function deleteCoupon(id) {
+        if (confirm('Tem certeza?')) {
+            STATE.coupons = STATE.coupons.filter(c => c.id !== id);
+            saveAll();
+            renderCouponsTable();
+            recordState();
+            toast('Cupom excluído!');
+        }
+    }
+    $('couponForm').addEventListener('submit', function(e) { e.preventDefault(); saveCoupon(); });
+    // Ads
+    function renderAdsTable() {
+        const table = $('adsTable');
+        table.innerHTML = `<thead><tr><th>Conteúdo</th><th>Ações</th></tr></thead><tbody> ${STATE.pub.map(a => `<tr><td>${a.content}</td><td><button class="btn-ghost" onclick="editAd(${a.id})">Editar</button> <button class="btn-danger" onclick="deleteAd(${a.id})">Excluir</button></td></tr>`).join('')} </tbody>`;
+    }
+    function saveAd() {
+        const id = $('adsId').value;
+        const content = $('adsContent').value;
+        const ad = { id: id ? parseInt(id) : genId(), content };
+        if (id) {
+            const index = STATE.pub.findIndex(a => a.id == id);
+            if (index !== -1) {
+                STATE.pub[index] = ad;
+            }
+        } else {
+            STATE.pub.push(ad);
+        }
+        saveAll();
+        renderAdsTable();
+        recordState();
+        resetForm('adsForm');
+        toast('Anúncio salvo!');
+    }
+    function editAd(id) {
+        const a = STATE.pub.find(x => x.id === id);
+        if (a) {
+            $('adsId').value = a.id;
+            $('adsContent').value = a.content;
+        }
+    }
+    function deleteAd(id) {
+        if (confirm('Tem certeza?')) {
+            STATE.pub = STATE.pub.filter(a => a.id !== id);
+            saveAll();
+            renderAdsTable();
+            recordState();
+            toast('Anúncio excluído!');
+        }
+    }
+    $('adsForm').addEventListener('submit', function(e) { e.preventDefault(); saveAd(); });
+    // Keys
+    function renderKeysTable() {
+        const table = $('keysTable');
+        table.innerHTML = `<thead><tr><th>Key</th><th>Role</th><th>Status</th><th>Ações</th></tr></thead><tbody> ${STATE.keys.map(k => `<tr><td>${k.key}</td><td>${k.role}</td><td>${k.active ? 'Ativa' : 'Inativa'}</td><td>${k.key !== 'DEVGUI' ? `<button class="btn-ghost" onclick="toggleKey(${k.id})">${k.active ? 'Desativar' : 'Ativar'}</button> <button class="btn-danger" onclick="deleteKey(${k.id})">Excluir</button>` : ''}</td></tr>`).join('')} </tbody>`;
+    }
+    function renderKeyRoleOptions() {
+        const select = $('keyRole');
+        select.innerHTML = '';
+        for (const role in ROLE_PERMISSIONS) {
+            if (canCreateKey(role)) {
+                const option = document.createElement('option');
+                option.value = role;
+                option.innerText = `Role ${role}`;
+                select.appendChild(option);
+            }
+        }
+    }
+    function saveKey() {
+        const id = $('keyId').value;
+        const key = $('keyKey').value;
+        const pass = $('keyPass').value;
+        const role = $('keyRole').value;
+        if (hasKeyLimitReached(role)) {
+            toast('Limite de chaves atingido para esta Role.');
+            return;
+        }
+        const k = { id: id ? parseInt(id) : genId(), key, pass, role, active: true };
+        if (id) {
+            const index = STATE.keys.findIndex(k => k.id == id);
+            if (index !== -1) {
+                STATE.keys[index] = k;
+            }
+        } else {
+            if (STATE.keys.find(x => x.key === key)) {
+                toast('Esta Key já existe.');
+                return;
+            }
+            STATE.keys.push(k);
+        }
+        saveAll();
+        renderKeysTable();
+        recordState();
+        resetForm('keyForm');
+        toast('Key salva!');
+    }
+    function editKey(id) {
+        const k = STATE.keys.find(x => x.id === id);
+        if (k) {
+            $('keyId').value = k.id;
+            $('keyKey').value = k.key;
+            $('keyPass').value = k.pass;
+            $('keyRole').value = k.role;
+        }
+    }
+    function deleteKey(id) {
+        if (confirm('Tem certeza?')) {
+            STATE.keys = STATE.keys.filter(k => k.id !== id);
+            saveAll();
+            renderKeysTable();
+            recordState();
+            toast('Key excluída!');
+        }
+    }
+    function toggleKey(id) {
+        const k = STATE.keys.find(x => x.id === id);
+        if (k && k.key !== 'DEVGUI') {
+            k.active = !k.active;
+            saveAll();
+            renderKeysTable();
+            toast('Status da Key alterado.');
+        }
+    }
+    $('keyForm').addEventListener('submit', function(e) { e.preventDefault(); saveKey(); });
+    // Settings & Data
+    function renderSettings() {
+        $('storeOpenToggle').checked = STATE.setup.storeOpen;
+        $('storeStatusLabel').innerText = STATE.setup.storeOpen ? 'Loja Aberta' : 'Loja Fechada';
+        $('lowStockThreshold').value = STATE.setup.lowStockThreshold;
+        $('waPhone').value = STATE.setup.whatsapp;
+        $('pixKey').value = STATE.setup.pixKey;
+        $('bankInfo').value = STATE.setup.bankInfo;
+        $('paymentMessage').value = STATE.setup.paymentMessage;
+    }
+    function toggleStoreStatus() {
+        STATE.setup.storeOpen = $('storeOpenToggle').checked;
+        saveAll();
+        renderSettings();
+        toast(`Loja ${STATE.setup.storeOpen ? 'aberta' : 'fechada'}.`);
+    }
+    function saveSetup() {
+        STATE.setup.lowStockThreshold = parseInt($('lowStockThreshold').value) || 5;
+        STATE.setup.whatsapp = $('waPhone').value;
+        STATE.setup.pixKey = $('pixKey').value;
+        STATE.setup.bankInfo = $('bankInfo').value;
+        STATE.setup.paymentMessage = $('paymentMessage').value;
+        saveAll();
+        toast('Configurações salvas!');
+    }
+    function resetForm(formId) {
+        $(`${formId}`).reset();
+        $(`${formId}Id`).value = '';
+        if (formId === 'prodForm') {
+            $('isComboToggle').checked = false;
+            $('isPromotionalToggle').checked = false;
+            toggleComboFields();
+            togglePromoOptions();
+        }
+    }
+    function exportData() {
+        const data = JSON.stringify(STATE, (key, value) => {
+            if (key === 'user') {
+                return undefined;
+            }
+            return value;
+        }, 2);
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `mcclone_data_${new Date().toISOString()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast('Dados exportados!');
+    }
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const importedState = JSON.parse(e.target.result);
+                if (confirm('Importar? Isso substituirá todos os dados atuais.')) {
+                    for (const key in importedState) {
+                        if (STATE.hasOwnProperty(key) && key !== 'user' && key !== 'undoHistory' && key !== 'undoPointer') {
+                            STATE[key] = importedState[key];
+                        }
+                    }
+                    saveAll();
+                    loadAll();
+                    toast('Dados importados com sucesso!');
+                    toAdminPanel();
+                }
+            } catch (error) {
+                toast('Erro ao importar. Arquivo JSON inválido.');
+            }
+        };
+        reader.readAsText(file);
+    }
+    function resetAllData() {
+        if (confirm('Tem certeza que quer limpar TUDO?')) {
+            localStorage.clear();
+            location.reload();
+        }
+    }
+    // Global Shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if ($('drawer').classList.contains('open')) {
+                toggleDrawer();
+            }
+        }
+    });
+</script>
+</body>
+</html>

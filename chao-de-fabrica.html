@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Chão de Fábrica — ZYRO Sandbox</title>
+<style>
+  :root{
+    --bg-void:#0b0e14;
+    --grid-line:#1c2433;
+    --grid-line-strong:#2a3550;
+    --tile-fill:#12172230;
+    --accent:#5fd0a0;
+    --accent-dim:#5fd0a033;
+    --warn:#e0a45f;
+    --ink:#c9d3e0;
+    --ink-dim:#6c7891;
+    --panel-bg:#10141ce8;
+    --danger:#e0705f;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{
+    margin:0; padding:0; width:100%; height:100%;
+    background:var(--bg-void);
+    overflow:hidden;
+    font-family:'SF Mono', 'JetBrains Mono', 'Courier New', monospace;
+    color:var(--ink);
+    touch-action:none;
+    overscroll-behavior:none;
+  }
+  #world{
+    position:fixed; inset:0;
+    display:block;
+  }
+
+  /* ---------- HUD topo ---------- */
+  #hud-top{
+    position:fixed; top:0; left:0; right:0;
+    padding:max(14px, env(safe-area-inset-top)) 16px 10px;
+    display:flex; justify-content:space-between; align-items:flex-start;
+    pointer-events:none;
+    z-index:10;
+  }
+  #hud-title{
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-dim);
+  }
+  #hud-title b{ color:var(--accent); font-weight:600; }
+  #hud-coords{
+    font-size:11px; color:var(--ink-dim);
+    text-align:right;
+    line-height:1.5;
+  }
+  #hud-coords span{ color:var(--ink); }
+
+  /* ---------- Painel de entidades ---------- */
+  #panel-toggle{
+    position:fixed;
+    top:max(14px, env(safe-area-inset-top));
+    left:50%; transform:translateX(-50%);
+    background:var(--panel-bg);
+    border:1px solid var(--grid-line-strong);
+    color:var(--ink);
+    font-family:inherit;
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    padding:8px 16px;
+    border-radius:20px;
+    z-index:20;
+    pointer-events:auto;
+  }
+  #panel{
+    position:fixed;
+    top:0; right:0;
+    width:min(280px, 78vw);
+    height:100%;
+    background:var(--panel-bg);
+    border-left:1px solid var(--grid-line-strong);
+    backdrop-filter:blur(6px);
+    transform:translateX(100%);
+    transition:transform .25s ease;
+    z-index:30;
+    padding:max(20px, env(safe-area-inset-top)) 16px 16px;
+    overflow-y:auto;
+  }
+  #panel.open{ transform:translateX(0); }
+  #panel h2{
+    font-size:12px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--ink-dim); margin:0 0 14px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  #panel h2 button{
+    background:none; border:none; color:var(--ink-dim);
+    font-size:16px; cursor:pointer; padding:0 4px;
+  }
+  .entity-row{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 0;
+    border-bottom:1px solid var(--grid-line);
+    font-size:12px;
+  }
+  .entity-dot{
+    width:10px; height:10px; border-radius:2px;
+    flex-shrink:0;
+  }
+  .entity-info{ flex:1; }
+  .entity-info b{ display:block; color:var(--ink); font-size:12.5px; }
+  .entity-info span{ color:var(--ink-dim); font-size:10.5px; }
+  .entity-remove{
+    background:none; border:1px solid var(--danger);
+    color:var(--danger); border-radius:6px;
+    font-size:10px; padding:4px 8px;
+    font-family:inherit; cursor:pointer;
+  }
+  #spawn-list{ margin-top:18px; }
+  #spawn-list h2{ margin-bottom:10px; }
+  .spawn-btn{
+    width:100%;
+    display:flex; align-items:center; gap:10px;
+    background:#ffffff08;
+    border:1px solid var(--grid-line-strong);
+    color:var(--ink);
+    font-family:inherit;
+    font-size:12px;
+    padding:10px 12px;
+    border-radius:8px;
+    margin-bottom:8px;
+    cursor:pointer;
+    text-align:left;
+  }
+  .spawn-btn:active{ background:var(--accent-dim); }
+  .empty-note{
+    color:var(--ink-dim); font-size:11px; line-height:1.6;
+    padding:12px 0;
+  }
+
+  /* ---------- Joystick virtual ---------- */
+  #joy-zone{
+    position:fixed;
+    bottom:0; left:0;
+    width:46vw; height:46vw;
+    max-width:220px; max-height:220px;
+    margin:0 0 max(24px, env(safe-area-inset-bottom)) 24px;
+    z-index:15;
+  }
+  #joy-base{
+    position:absolute; inset:0;
+    border-radius:50%;
+    background:#ffffff07;
+    border:1px solid var(--grid-line-strong);
+  }
+  #joy-knob{
+    position:absolute;
+    width:42%; height:42%;
+    left:29%; top:29%;
+    border-radius:50%;
+    background:var(--accent-dim);
+    border:1px solid var(--accent);
+    transition:transform .05s linear;
+  }
+
+  /* ---------- Botão de ação ---------- */
+  #action-btn{
+    position:fixed;
+    bottom:0; right:0;
+    margin:0 24px max(30px, env(safe-area-inset-bottom)) 0;
+    width:64px; height:64px;
+    border-radius:50%;
+    background:var(--panel-bg);
+    border:1px solid var(--accent);
+    color:var(--accent);
+    font-family:inherit;
+    font-size:10px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    z-index:15;
+  }
+  #action-btn:active{ background:var(--accent-dim); }
+
+  /* ---------- Toast de evento ---------- */
+  #event-toast{
+    position:fixed;
+    bottom:max(160px, calc(env(safe-area-inset-bottom) + 160px));
+    left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--panel-bg);
+    border:1px solid var(--grid-line-strong);
+    border-radius:8px;
+    padding:10px 16px;
+    font-size:11px;
+    color:var(--ink);
+    opacity:0;
+    transition:opacity .2s ease, transform .2s ease;
+    z-index:25;
+    max-width:82vw;
+    text-align:center;
+    pointer-events:none;
+  }
+  #event-toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  #event-toast b{ color:var(--accent); }
+</style>
+</head>
+<body>
+
+<canvas id="world"></canvas>
+
+<div id="hud-top">
+  <div id="hud-title"><b>ZYRO</b> · chão de fábrica</div>
+  <div id="hud-coords">grid <span id="coord-xy">0,0</span><br>entidades <span id="coord-count">0</span></div>
+</div>
+
+<button id="panel-toggle">entidades</button>
+
+<div id="panel">
+  <h2>Plugadas <button id="panel-close">×</button></h2>
+  <div id="entity-list"><div class="empty-note">Nenhuma entidade plugada ainda. Use a lista abaixo para testar uma.</div></div>
+
+  <div id="spawn-list">
+    <h2>Plugar nova</h2>
+    <button class="spawn-btn" data-type="caixa">🟧 Caixa — objeto estático, sem verbo</button>
+    <button class="spawn-btn" data-type="porta">🚪 Porta — aceita "abrir" / "fechar"</button>
+    <button class="spawn-btn" data-type="npc">🧍 NPC mudo — aceita "falar"</button>
+  </div>
+</div>
+
+<div id="joy-zone">
+  <div id="joy-base"></div>
+  <div id="joy-knob"></div>
+</div>
+
+<button id="action-btn">interagir</button>
+
+<div id="event-toast"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  // ============================================================
+  // CONFIG DO GRID ISOMÉTRICO
+  // ============================================================
+  const TILE_W = 64;      // largura do losango do tile
+  const TILE_H = 32;      // altura do losango do tile
+  const GRID_SIZE = 12;   // grid quadrado GRID_SIZE x GRID_SIZE, vazio, expansível depois
+  const MOVE_SPEED = 2.6; // tiles por segundo no modo contínuo
+  const ELEV_STEP = 18;   // pixels de deslocamento vertical por nível de elevação
+
+  // ------------------------------------------------------------
+  // MAPA DE ELEVAÇÃO — matriz editável à mão.
+  // 0 = chão base. Cada nível acima empurra o tile pra cima na tela
+  // e ganha uma "parede" lateral desenhada até o chão.
+  // Por enquanto gera um platô no centro só pra ter relevo pra testar;
+  // depois dá pra substituir por um array fixo desenhado à mão.
+  // ------------------------------------------------------------
+  const heightMap = [];
+  (function buildHeightMap(){
+    const cx = GRID_SIZE/2, cy = GRID_SIZE/2;
+    for (let gx=0; gx<GRID_SIZE; gx++){
+      heightMap[gx] = [];
+      for (let gy=0; gy<GRID_SIZE; gy++){
+        const d = Math.hypot(gx-cx+0.5, gy-cy+0.5);
+        let h = 0;
+        if (d < 1.8) h = 2;
+        else if (d < 3.6) h = 1;
+        heightMap[gx][gy] = h;
+      }
+    }
+  })();
+
+  function getHeight(gx, gy){
+    gx = Math.round(gx); gy = Math.round(gy);
+    if (gx<0||gy<0||gx>=GRID_SIZE||gy>=GRID_SIZE) return 0;
+    return heightMap[gx][gy];
+  }
+
+  // Versão contínua (interpolação bilinear) — usada pra jogador e câmera,
+  // pra que a transição entre níveis de elevação seja suave em vez de
+  // "pular" degrau a degrau quando cruza a borda de um tile.
+  function getHeightSmooth(gx, gy){
+    const x0 = Math.floor(gx), y0 = Math.floor(gy);
+    const tx = gx - x0, ty = gy - y0;
+    const h00 = getHeight(x0,   y0);
+    const h10 = getHeight(x0+1, y0);
+    const h01 = getHeight(x0,   y0+1);
+    const h11 = getHeight(x0+1, y0+1);
+    const hTop = h00 * (1-tx) + h10 * tx;
+    const hBot = h01 * (1-tx) + h11 * tx;
+    return hTop * (1-ty) + hBot * ty;
+  }
+
+  // ============================================================
+  // CANVAS / RESIZE
+  // ============================================================
+  const canvas = document.getElementById('world');
+  const ctx = canvas.getContext('2d');
+  let W, H, DPR;
+
+  function resize(){
+    DPR = window.devicePixelRatio || 1;
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = W * DPR;
+    canvas.height = H * DPR;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // Câmera: sempre recalculada pra manter o jogador centralizado na tela.
+  const camera = { x:0, y:0 };
+
+  // Posição isométrica "crua" (sem câmera), incluindo deslocamento por elevação.
+  function isoRaw(gx, gy, elevation){
+    return {
+      x: (gx - gy) * (TILE_W/2),
+      y: (gx + gy) * (TILE_H/2) - elevation * ELEV_STEP
+    };
+  }
+
+  function updateCamera(){
+    const playerElev = getHeightSmooth(player.gx, player.gy);
+    const p = isoRaw(player.gx, player.gy, playerElev);
+    const targetX = W/2 - p.x;
+    const targetY = H/2 - p.y;
+    // suaviza a própria câmera (lerp) pra tirar qualquer solavanco residual
+    const ease = 0.22;
+    camera.x += (targetX - camera.x) * ease;
+    camera.y += (targetY - camera.y) * ease;
+  }
+
+  function gridToScreen(gx, gy, elevation){
+    const p = isoRaw(gx, gy, elevation || 0);
+    return { x: p.x + camera.x, y: p.y + camera.y };
+  }
+
+  // ============================================================
+  // GRAMÁTICA ZERO — normalização de evento + encadeamento
+  // (versão mínima local, sem hash criptográfico ainda —
+  //  isso entra quando plugarmos o zyrolog.js real)
+  // ============================================================
+  let eventChain = [];
+  let lastEventDigest = 'GENESIS';
+
+  function simpleDigest(str){
+    // hash não-criptográfico só para o sandbox visual (placeholder).
+    // trocar por SHA-256 real quando integrar o zyrolog.js.
+    let h = 0;
+    for (let i=0; i<str.length; i++){
+      h = (h << 5) - h + str.charCodeAt(i);
+      h |= 0;
+    }
+    return 'sbx_' + Math.abs(h).toString(16).slice(0,8);
+  }
+
+  function emitEvent({entidade, verbo, objeto, condicao, estadoAnterior, acao, estadoNovo}){
+    const evento = {
+      id: eventChain.length + 1,
+      entidade, verbo, objeto, condicao,
+      estado_anterior: estadoAnterior,
+      acao,
+      estado_novo: estadoNovo,
+      timestamp: Date.now(),
+      evento_anterior: lastEventDigest
+    };
+    const normalized = JSON.stringify(evento);
+    const digest = simpleDigest(normalized + lastEventDigest);
+    evento.hash = digest;
+    lastEventDigest = digest;
+    eventChain.push(evento);
+    showToast(`<b>${verbo}</b> → ${objeto} · #${digest}`);
+    return evento;
+  }
+
+  function showToast(html){
+    const el = document.getElementById('event-toast');
+    el.innerHTML = html;
+    el.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=> el.classList.remove('show'), 2200);
+  }
+
+  // ============================================================
+  // REGISTRO DE ENTIDADES — plugar / desplugar sem quebrar nada
+  // ============================================================
+  const entities = new Map(); // id -> entity
+  let entityCounter = 0;
+
+  const ARCHETYPES = {
+    caixa: { label:'Caixa', color:'#e0a45f', verbos:[] },
+    porta: { label:'Porta', color:'#5fa0e0', verbos:['abrir','fechar'], estadoInicial:'fechada' },
+    npc:   { label:'NPC mudo', color:'#c95fe0', verbos:['falar'] }
+  };
+
+  function plugEntity(type, gx, gy){
+    const archetype = ARCHETYPES[type];
+    if (!archetype) return null;
+    entityCounter++;
+    const id = type + '_' + entityCounter;
+    const entity = {
+      id, type,
+      label: archetype.label,
+      color: archetype.color,
+      gx, gy,
+      estado: archetype.estadoInicial || 'padrão',
+      verbos: archetype.verbos
+    };
+    entities.set(id, entity);
+
+    emitEvent({
+      entidade: 'sistema',
+      verbo: 'plugar',
+      objeto: id,
+      condicao: 'slot_livre',
+      estadoAnterior: 'inexistente',
+      acao: 'instanciar_entidade',
+      estadoNovo: entity.estado
+    });
+
+    renderEntityList();
+    return entity;
+  }
+
+  function unplugEntity(id){
+    const entity = entities.get(id);
+    if (!entity) return;
+    entities.delete(id);
+
+    emitEvent({
+      entidade: 'sistema',
+      verbo: 'desplugar',
+      objeto: id,
+      condicao: 'entidade_presente',
+      estadoAnterior: entity.estado,
+      acao: 'remover_entidade',
+      estadoNovo: 'inexistente'
+    });
+
+    renderEntityList();
+  }
+
+  function interactWith(entity){
+    if (!entity.verbos.length){
+      emitEvent({
+        entidade:'jogador', verbo:'tocar', objeto:entity.id,
+        condicao:'sem_verbo_disponivel', estadoAnterior:entity.estado,
+        acao:'nenhuma_acao', estadoNovo:entity.estado
+      });
+      return;
+    }
+    // exemplo simples: porta alterna estado, npc "fala"
+    if (entity.type === 'porta'){
+      const novoEstado = entity.estado === 'fechada' ? 'aberta' : 'fechada';
+      const verbo = novoEstado === 'aberta' ? 'abrir' : 'fechar';
+      emitEvent({
+        entidade:'jogador', verbo, objeto:entity.id,
+        condicao:'ao_alcance', estadoAnterior:entity.estado,
+        acao:'alternar_estado', estadoNovo:novoEstado
+      });
+      entity.estado = novoEstado;
+    } else if (entity.type === 'npc'){
+      emitEvent({
+        entidade:'jogador', verbo:'falar', objeto:entity.id,
+        condicao:'ao_alcance', estadoAnterior:entity.estado,
+        acao:'disparar_dialogo', estadoNovo:entity.estado
+      });
+    }
+    renderEntityList();
+  }
+
+  // ============================================================
+  // PAINEL LATERAL (UI de plug/unplug)
+  // ============================================================
+  const panel = document.getElementById('panel');
+  const panelToggle = document.getElementById('panel-toggle');
+  const panelClose = document.getElementById('panel-close');
+  const entityListEl = document.getElementById('entity-list');
+  const coordCount = document.getElementById('coord-count');
+
+  panelToggle.addEventListener('click', ()=> panel.classList.add('open'));
+  panelClose.addEventListener('click', ()=> panel.classList.remove('open'));
+
+  document.querySelectorAll('.spawn-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      // plug próximo ao jogador, em tile livre à frente
+      const gx = Math.round(player.gx) + 1;
+      const gy = Math.round(player.gy);
+      plugEntity(btn.dataset.type, clampGrid(gx), clampGrid(gy));
+    });
+  });
+
+  function clampGrid(v){ return Math.max(0, Math.min(GRID_SIZE-1, v)); }
+
+  function renderEntityList(){
+    coordCount.textContent = entities.size;
+    if (entities.size === 0){
+      entityListEl.innerHTML = '<div class="empty-note">Nenhuma entidade plugada ainda. Use a lista abaixo para testar uma.</div>';
+      return;
+    }
+    let html = '';
+    entities.forEach(e=>{
+      html += `
+        <div class="entity-row">
+          <div class="entity-dot" style="background:${e.color}"></div>
+          <div class="entity-info">
+            <b>${e.label}</b>
+            <span>${e.id} · estado: ${e.estado} · (${e.gx},${e.gy})</span>
+          </div>
+          <button class="entity-remove" data-id="${e.id}">remover</button>
+        </div>`;
+    });
+    entityListEl.innerHTML = html;
+    entityListEl.querySelectorAll('.entity-remove').forEach(b=>{
+      b.addEventListener('click', ()=> unplugEntity(b.dataset.id));
+    });
+  }
+
+  // ============================================================
+  // JOYSTICK VIRTUAL
+  // ============================================================
+  const joyZone = document.getElementById('joy-zone');
+  const joyKnob = document.getElementById('joy-knob');
+  let joyActive = false;
+  let joyVec = {x:0, y:0}; // -1..1
+  let joyTouchId = null;
+  let joyCenter = {x:0, y:0};
+
+  function joyRect(){ return joyZone.getBoundingClientRect(); }
+
+  function joyStart(x, y){
+    joyActive = true;
+    const r = joyRect();
+    joyCenter = { x: r.left + r.width/2, y: r.top + r.height/2 };
+    joyMove(x, y);
+  }
+  function joyMove(x, y){
+    if (!joyActive) return;
+    const r = joyRect();
+    const maxR = r.width/2;
+    let dx = x - joyCenter.x;
+    let dy = y - joyCenter.y;
+    const dist = Math.min(Math.hypot(dx,dy), maxR);
+    const angle = Math.atan2(dy,dx);
+    dx = Math.cos(angle) * dist;
+    dy = Math.sin(angle) * dist;
+    joyKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+    joyVec.x = dx / maxR;
+    joyVec.y = dy / maxR;
+  }
+  function joyEnd(){
+    joyActive = false;
+    joyVec.x = 0; joyVec.y = 0;
+    joyKnob.style.transform = 'translate(0,0)';
+    joyTouchId = null;
+  }
+
+  joyZone.addEventListener('touchstart', e=>{
+    e.preventDefault();
+    const t = e.changedTouches[0];
+    joyTouchId = t.identifier;
+    joyStart(t.clientX, t.clientY);
+  }, {passive:false});
+  joyZone.addEventListener('touchmove', e=>{
+    e.preventDefault();
+    for (const t of e.changedTouches){
+      if (t.identifier === joyTouchId) joyMove(t.clientX, t.clientY);
+    }
+  }, {passive:false});
+  window.addEventListener('touchend', e=>{
+    for (const t of e.changedTouches){
+      if (t.identifier === joyTouchId) joyEnd();
+    }
+  });
+
+  // fallback desktop: mouse + teclado (setas/WASD) pra testar sem celular
+  joyZone.addEventListener('mousedown', e=> joyStart(e.clientX, e.clientY));
+  window.addEventListener('mousemove', e=> { if(joyActive) joyMove(e.clientX, e.clientY); });
+  window.addEventListener('mouseup', joyEnd);
+
+  const keys = {};
+  window.addEventListener('keydown', e=> keys[e.key.toLowerCase()] = true);
+  window.addEventListener('keyup', e=> keys[e.key.toLowerCase()] = false);
+
+  // ============================================================
+  // BOTÃO DE AÇÃO
+  // ============================================================
+  document.getElementById('action-btn').addEventListener('click', ()=>{
+    // acha entidade mais próxima do jogador dentro de 1 tile
+    let closest = null, closestDist = 999;
+    entities.forEach(e=>{
+      const d = Math.hypot(e.gx - player.gx, e.gy - player.gy);
+      if (d < 1.2 && d < closestDist){ closest = e; closestDist = d; }
+    });
+    if (closest) interactWith(closest);
+    else showToast('nada por perto para interagir');
+  });
+
+  // ============================================================
+  // JOGADOR
+  // ============================================================
+  const player = { gx: GRID_SIZE/2, gy: GRID_SIZE/2 };
+
+  // ============================================================
+  // LOOP PRINCIPAL
+  // ============================================================
+  let lastTime = performance.now();
+  const coordXY = document.getElementById('coord-xy');
+
+  function update(dt){
+    let vx = joyVec.x, vy = joyVec.y;
+    // teclado como input alternativo (soma ao joystick)
+    if (keys['arrowup']||keys['w']) vy -= 1;
+    if (keys['arrowdown']||keys['s']) vy += 1;
+    if (keys['arrowleft']||keys['a']) vx -= 1;
+    if (keys['arrowright']||keys['d']) vx += 1;
+
+    const mag = Math.hypot(vx,vy);
+    if (mag > 0.05){
+      vx /= Math.max(mag,1); vy /= Math.max(mag,1);
+      player.gx += vx * MOVE_SPEED * dt;
+      player.gy += vy * MOVE_SPEED * dt;
+      player.gx = Math.max(0, Math.min(GRID_SIZE-0.5, player.gx));
+      player.gy = Math.max(0, Math.min(GRID_SIZE-0.5, player.gy));
+    }
+    coordXY.textContent = `${player.gx.toFixed(1)},${player.gy.toFixed(1)}`;
+  }
+
+  function drawTile(gx, gy){
+    const h = heightMap[gx][gy];
+    const p = gridToScreen(gx, gy, h);
+    const top    = { x:p.x,          y:p.y - TILE_H/2 };
+    const right  = { x:p.x + TILE_W/2, y:p.y };
+    const bottom = { x:p.x,          y:p.y + TILE_H/2 };
+    const left   = { x:p.x - TILE_W/2, y:p.y };
+
+    // paredes laterais até o chão (só se elevado) — dão o efeito de bloco
+    if (h > 0){
+      const drop = h * ELEV_STEP;
+      // parede direita (face sudeste)
+      ctx.beginPath();
+      ctx.moveTo(right.x, right.y);
+      ctx.lineTo(bottom.x, bottom.y);
+      ctx.lineTo(bottom.x, bottom.y + drop);
+      ctx.lineTo(right.x, right.y + drop);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(40,52,74,0.9)';
+      ctx.fill();
+      // parede esquerda (face sudoeste), um pouco mais clara
+      ctx.beginPath();
+      ctx.moveTo(left.x, left.y);
+      ctx.lineTo(bottom.x, bottom.y);
+      ctx.lineTo(bottom.x, bottom.y + drop);
+      ctx.lineTo(left.x, left.y + drop);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(56,70,98,0.9)';
+      ctx.fill();
+    }
+
+    // topo do tile
+    ctx.beginPath();
+    ctx.moveTo(top.x, top.y);
+    ctx.lineTo(right.x, right.y);
+    ctx.lineTo(bottom.x, bottom.y);
+    ctx.lineTo(left.x, left.y);
+    ctx.closePath();
+    const shade = h === 0 ? 'rgba(20,26,38,0.5)' : h === 1 ? 'rgba(30,42,58,0.85)' : 'rgba(38,54,72,0.9)';
+    ctx.fillStyle = shade;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(90,110,150,0.28)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  function drawGrid(){
+    ctx.clearRect(0,0,W,H);
+    // desenha em ordem de profundidade (gx+gy crescente) pra elevação
+    // sobrepor corretamente os tiles atrás
+    for (let sum=0; sum<=2*(GRID_SIZE-1); sum++){
+      for (let gx=0; gx<GRID_SIZE; gx++){
+        const gy = sum - gx;
+        if (gy<0 || gy>=GRID_SIZE) continue;
+        drawTile(gx, gy);
+      }
+    }
+  }
+
+  function drawEntity(gx, gy, color, size, label, elevOverride){
+    const elev = (elevOverride !== undefined) ? elevOverride : getHeight(gx, gy);
+    const p = gridToScreen(gx, gy, elev);
+    // sombra
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y + 4, size*0.9, size*0.4, 0, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.fill();
+    // corpo
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - size*0.6, size, 0, Math.PI*2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+    ctx.stroke();
+    if (label){
+      ctx.font = '10px monospace';
+      ctx.fillStyle = 'rgba(201,211,224,0.85)';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, p.x, p.y - size*0.6 - size - 6);
+    }
+  }
+
+  function draw(){
+    updateCamera();
+    drawGrid();
+    entities.forEach(e=> drawEntity(e.gx, e.gy, e.color, 12, e.label));
+    drawEntity(player.gx, player.gy, '#5fd0a0', 14, null, getHeightSmooth(player.gx, player.gy));
+  }
+
+  function loop(now){
+    const dt = Math.min((now - lastTime)/1000, 0.05);
+    lastTime = now;
+    update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  // registro inicial (chão de fábrica ligado)
+  emitEvent({
+    entidade:'sistema', verbo:'iniciar', objeto:'chao_de_fabrica',
+    condicao:'boot', estadoAnterior:'desligado',
+    acao:'inicializar_mundo', estadoNovo:'vazio'
+  });
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1357 @@
+Sim — e acho que a ideia fica bem mais interessante se você não pensar nele como um “Paint de cidade”, mas como um editor visual de urbanismo, onde o usuário monta uma cidade arrastando peças.
+
+Pelo que você descreveu, você está misturando três conceitos:
+
+Paint antigo: simplicidade, tela 2D, ferramentas fáceis.
+Home design/3D antigo: biblioteca de objetos que você coloca no cenário.
+City builders: ruas, avenidas, quarteirões, prédios e infraestrutura.
+A ideia central
+
+Eu imaginaria algo assim:
+
+Uma tela em branco + uma biblioteca de elementos urbanos + ferramentas simples para montar uma cidade.
+
+Você não "desenha" uma avenida. Você coloca uma avenida.
+
+Você não desenha uma casa. Você coloca uma casa.
+
+E o programa entende que esses elementos fazem parte de uma cidade.
+
+Por exemplo:
+
+┌──────────────────────────────────────────────────────────────┐
+│ 🏠 CidadeBuilder       Arquivo  Editar  Visualizar  Projeto │
+├────────────┬─────────────────────────────────────────────────┤
+│ ELEMENTOS  │                                                 │
+│            │                                                 │
+│ 🛣 Ruas    │                                                 │
+│ 🛣 Avenida │             ┌───────────────┐                   │
+│ 🏠 Casa    │             │     CASA      │                   │
+│ 🏢 Prédio  │             └───────┬───────┘                   │
+│ 🏫 Escola  │                     │                           │
+│ 🏥 Hospital│        ═════════════╪══════════════             │
+│ 🌳 Árvore  │              AVENIDA                            │
+│ 🚦 Semáforo│                     │                           │
+│ 🅿 Estacion│                 ┌───┴───┐                       │
+│            │                 │ PRÉDIO│                       │
+│            │                 └───────┘                       │
+├────────────┴─────────────────────────────────────────────────┤
+│ Zoom 100%     Grade □     Snap ✓              X: 120 Y: 340 │
+└──────────────────────────────────────────────────────────────┘
+
+O segredo: trabalhar com "peças"
+
+Eu faria o programa baseado em objetos urbanos.
+
+A biblioteca poderia ser dividida assim:
+
+🛣️ Vias
+Rua residencial
+Rua de mão única
+Rua de mão dupla
+Avenida
+Avenida dividida
+Rodovia
+Estrada de terra
+Ciclovia
+Calçada
+Rotatória
+Cruzamento
+Ponte
+🏠 Residencial
+Casa pequena
+Casa grande
+Sobrado
+Condomínio
+Apartamentos
+Prédio residencial
+🏢 Comercial
+Loja
+Mercado
+Shopping
+Restaurante
+Posto de gasolina
+Escritório
+Hotel
+🏭 Industrial
+Fábrica
+Galpão
+Armazém
+Usina
+Depósito
+🏫 Público
+Escola
+Universidade
+Hospital
+Delegacia
+Bombeiros
+Prefeitura
+Biblioteca
+🌳 Ambiente
+Árvore
+Parque
+Praça
+Lago
+Rio
+Jardim
+Área de terra
+🚦 Infraestrutura
+Semáforo
+Placa
+Poste
+Iluminação
+Faixa de pedestre
+Ponto de ônibus
+Estacionamento
+Mas eu faria uma mudança importante
+
+Em vez de o usuário simplesmente colocar objetos livremente, o programa poderia ter dois modos.
+
+Modo 1 — Construção
+
+É onde você monta a cidade.
+
+Você seleciona:
+
+Avenida → clica e arrasta
+
+E o programa cria a avenida.
+
+Depois:
+
+Rua → clica e arrasta
+
+Depois:
+
+Casa → clica no terreno
+
+Muito simples.
+
+Modo 2 — Edição
+
+Você seleciona qualquer coisa e aparece um painel:
+
+┌──────────────────────┐
+│ AVENIDA              │
+├──────────────────────┤
+│ Nome                 │
+│ [Av. Central       ] │
+│                      │
+│ Largura              │
+│ [ 20m              ] │
+│                      │
+│ Faixas               │
+│ [-] 4 [+]            │
+│                      │
+│ Canteiro central     │
+│ [✓]                  │
+│                      │
+│ Calçada              │
+│ [✓]                  │
+│                      │
+│ ↻ Girar              │
+│ 🗑 Excluir            │
+└──────────────────────┘
+
+
+Isso começa a ficar muito parecido com a filosofia do Home Design 3D, só que aplicado a urbanismo.
+
+E tem uma ideia que pode deixar o programa MUITO melhor
+O sistema de "conexão"
+
+Imagine que você coloque uma avenida:
+
+════════════════════════════
+
+
+Depois você pega uma rua e aproxima:
+
+              │
+              │
+              │
+══════════════╪══════════════
+              │
+              │
+
+
+O programa automaticamente entende:
+
+"Isso é um cruzamento."
+
+E conecta as duas.
+
+O mesmo poderia acontecer com:
+
+ruas;
+calçadas;
+ciclovias;
+avenidas;
+ferrovias;
+rios;
+pontes.
+
+Isso elimina aquele problema de ficar tentando alinhar tudo manualmente.
+
+Eu também usaria uma "grade invisível"
+
+Essa é uma das coisas que deixaria o programa extremamente fácil.
+
+Por exemplo:
+
+     0    10    20    30    40    50m
+     │     │     │     │     │     │
+─────┼─────┼─────┼─────┼─────┼─────
+     │     │     │     │     │     │
+─────┼─────┼─────┼─────┼─────┼─────
+     │     │     │     │     │     │
+
+
+Mas a grade não precisa aparecer.
+
+O objeto simplesmente "gruda" nela.
+
+Assim, quando você colocar dez casas, elas naturalmente ficam alinhadas.
+
+E aí entra uma coisa muito legal: quarteirões
+
+Eu não faria o usuário precisar construir tudo manualmente.
+
+Ele poderia selecionar:
+
+Criar quarteirão
+
+E desenhar:
+
+┌────────────────────────┐
+│                        │
+│                        │
+│                        │
+│                        │
+└────────────────────────┘
+
+
+O programa cria automaticamente:
+
+┌────────────────────────┐
+│ 🏠 🏠 🏠 🏠 🏠       │
+│                        │
+│ 🏠 🏠 🏠 🏠 🏠       │
+│                        │
+└────────────────────────┘
+
+
+Depois o usuário pode trocar as casas por prédios.
+
+Isso transforma o programa de um simples editor em uma espécie de LEGO urbano digital.
+
+Uma coisa que eu evitaria no começo
+
+Eu não começaria tentando fazer um City Builder completo.
+
+Não precisa ter:
+
+população;
+economia;
+dinheiro;
+impostos;
+trânsito;
+felicidade;
+empregos;
+simulação;
+inteligência artificial.
+
+Isso pode vir depois.
+
+A primeira versão deveria ser quase:
+
+"Photoshop/Paint para montar cidades."
+
+O objetivo inicial é permitir que alguém consiga montar isso em poucos minutos:
+
+        🏠 🏠 🏠
+          │
+          │ Rua
+          │
+══════════╪════════════
+       AVENIDA
+══════════╪════════════
+          │
+       🏢 🏢
+          │
+        🏫
+
+E eu pensaria em 3 níveis de visualização
+
+Isso pode ser um diferencial enorme.
+
+1. Planta
+
+Vista de cima:
+
+┌──────────────────────────────┐
+│ 🏠 🏠      🏢 🏢            │
+│                              │
+│───────────────┬──────────────│
+│               │              │
+│    🏠 🏠      │      🏫      │
+│               │              │
+│═══════════════╪══════════════│
+│               │              │
+│      🏢       │      🏠      │
+└──────────────────────────────┘
+
+2. Isométrica
+
+A cidade ganha profundidade:
+
+       🏢
+      /\
+     /  \
+    /____\
+       │
+       │
+  🏠  🛣️  🏠
+
+3. 3D
+
+Futuramente, você poderia apertar:
+
+"Visualizar em 3D"
+
+E aquilo que foi construído em 2D vira uma pequena cidade 3D.
+
+Isso faria a referência do Home Design 3D encaixar perfeitamente.
+
+E talvez o conceito mais importante: "objetos inteligentes"
+
+Uma casa não precisa ser apenas uma imagem.
+
+Ela pode ser um objeto com propriedades:
+
+CASA
+├── categoria: residencial
+├── largura: 8m
+├── comprimento: 12m
+├── altura: 2 andares
+├── entrada: frente
+├── garagem: sim
+└── terreno: 10 × 20m
+
+
+Um prédio:
+
+PRÉDIO
+├── categoria: residencial
+├── andares: 12
+├── apartamentos: 48
+├── garagem: subterrânea
+└── entrada: frente
+
+
+No começo essas informações podem servir somente para edição.
+
+Mas futuramente elas podem alimentar uma simulação.
+
+Aí você abre uma porta gigantesca para transformar o editor em um verdadeiro City Builder.
+
+Uma interface que eu acho que funcionaria muito bem
+
+Eu faria algo próximo disso:
+
+┌──────────────────────────────────────────────────────────┐
+│ 🏙️ MEU PROJETO     Novo | Abrir | Salvar | Exportar     │
+├───────┬───────────────────────────────────────┬──────────┤
+│       │                                       │          │
+│ 🛣️    │                                       │ PROPRIED.│
+│ Ruas  │                                       │          │
+│       │                                       │ Avenida  │
+│ 🏠    │             ÁREA DE                   │          │
+│ Casas │             CONSTRUÇÃO                │ Largura  │
+│       │                                       │ 20m      │
+│ 🏢    │                                       │          │
+│ Prédios                                       │ Faixas   │
+│       │                                       │ 4        │
+│ 🌳    │                                       │          │
+│ Natureza                                      │          │
+│       │                                       │          │
+│ 🏫    │                                       │          │
+│ Público                                       │          │
+│       │                                       │          │
+├───────┴───────────────────────────────────────┴──────────┤
+│ 🔍 100%     Grade ✓     Snap ✓     Planta 3D             │
+└──────────────────────────────────────────────────────────┘
+
+
+E o mais importante:
+
+não colocar 200 botões na tela.
+
+A biblioteca pode ser pesquisável:
+
+🔎 "casa"
+
+e aparecem:
+
+🏠 Casa 01
+🏠 Casa 02
+🏡 Casa grande
+🏘️ Casas geminadas
+🏢 Condomínio
+
+Sobre o nome
+
+Eu evitaria algo muito genérico como "City Editor".
+
+Algumas ideias:
+
+Mais profissionais
+Urban Designer
+City Layout
+Urban Studio
+City Planner
+Urban Builder
+City Architect
+Urban Editor
+Mais com cara de programa antigo
+CityMaker
+CityCraft
+CityBuilder
+TownMaker
+UrbanMaker
+CitySketch
+CityPaint
+Mais criativos
+UrbanCanvas
+CityCanvas
+CityBlocks
+UrbanBlocks
+BuildCity
+MyCity
+CityForge
+
+Eu particularmente gosto de CityCanvas para o conceito que você descreveu.
+
+Porque a ideia é justamente:
+
+"Uma tela em branco onde você constrói uma cidade."
+
+E CityBlocks também é muito bom se a ideia de montar com peças for central.
+
+O conceito resumido
+
+Eu definiria o programa assim:
+
+CityCanvas é um editor visual de cidades onde você constrói mapas urbanos usando peças inteligentes — ruas, avenidas, casas, prédios, parques e infraestrutura — da mesma forma que você desenharia no Paint ou montaria uma cena em um programa de design 3D.
+
+E a evolução natural seria:
+
+Versão 1
+→ Editor 2D
+→ ruas
+→ terrenos
+→ casas
+→ prédios
+→ árvores
+→ parques
+→ exportar imagem
+
+Versão 2
+→ objetos inteligentes
+→ quarteirões automáticos
+→ conexões entre ruas
+→ ferramentas de alinhamento
+→ biblioteca maior
+
+Versão 3
+→ visão isométrica
+→ altura dos prédios
+→ terreno
+→ 3D
+
+Versão 4
+→ trânsito
+→ população
+→ zoneamento
+→ economia
+→ simulação
+
+Ou seja: você pode começar com algo extremamente simples e, se quiser, evoluir até um City Builder completo sem jogar fora a ideia original.
+
+A parte que eu acho mais interessante é justamente não fazer o usuário "desenhar uma cidade", mas "construir uma cidade". Essa diferença muda completamente como a interface deve funcionar.
+
+Sim — e agora a ideia ficou ainda mais clara. Você está basicamente pensando em separar o programa em um editor + diferentes modos de visualização, e isso é uma arquitetura muito boa.
+
+Eu faria uma pequena mudança: em vez de pensar que cada HTML é um programa separado, pensaria em uma única cidade/projeto compartilhado por várias telas.
+
+A estrutura que eu imaginaria
+CityCanvas/
+│
+├── index.html          ← Editor principal
+│
+├── preview-2d.html     ← Visualização 2D
+│
+├── preview-iso.html    ← Visualização isométrica
+│
+├── preview-3d.html     ← Visualização 3D
+│
+├── assets/
+│   ├── roads/
+│   ├── buildings/
+│   ├── houses/
+│   ├── nature/
+│   └── props/
+│
+├── data/
+│   └── city-format.js  ← formato dos dados da cidade
+│
+├── js/
+│   ├── editor.js
+│   ├── city.js
+│   ├── camera.js
+│   └── objects.js
+│
+└── css/
+    └── style.css
+
+
+Mas existe uma coisa muito importante:
+
+As três telas não podem ter três cidades diferentes.
+
+Todas devem ler o mesmo projeto.
+
+Por exemplo, no editor você cria:
+
+Avenida Central
+       │
+       │
+ 🏠    │    🏠
+ 🏠    │    🏠
+       │
+    🏢 │ 🏢
+       │
+
+
+O projeto internamente poderia guardar algo parecido com:
+
+Cidade
+ ├── Avenida Central
+ ├── Casa #01
+ ├── Casa #02
+ ├── Casa #03
+ ├── Casa #04
+ ├── Prédio #01
+ └── Prédio #02
+
+
+Então:
+
+index.html
+
+edita esses objetos.
+
+preview-2d.html
+
+mostra esses mesmos objetos de cima.
+
+preview-iso.html
+
+mostra os mesmos objetos em isométrico.
+
+preview-3d.html
+
+transforma os mesmos objetos em 3D.
+
+E eu faria o index.html ser o coração do programa
+
+Essa seria sua "oficina".
+
+Você entra e tem:
+
+┌─────────────────────────────────────────────────────────┐
+│ CityCanvas    Arquivo  Editar  Visualizar              │
+├─────────────┬───────────────────────────────┬───────────┤
+│             │                               │           │
+│ ELEMENTOS   │                               │ PROPRIED. │
+│             │                               │           │
+│ 🛣 Avenida  │                               │ Objeto    │
+│ 🛣 Rua      │        ÁREA DE TRABALHO       │           │
+│ 🏠 Casa     │                               │ X: 120    │
+│ 🏢 Prédio   │                               │ Y: 340    │
+│ 🌳 Árvore   │                               │           │
+│ 🏫 Escola   │                               │ Largura   │
+│ 🚦 Trânsito │                               │ 20m       │
+│             │                               │           │
+└─────────────┴───────────────────────────────┴───────────┘
+
+
+E aí:
+
+clicar = selecionar;
+arrastar = mover;
+Ctrl+C / Ctrl+V = copiar;
+Delete = remover;
+cantos = aumentar/diminuir;
+alça de rotação = girar;
+Ctrl+Z = desfazer;
+Ctrl+Y = refazer.
+
+Isso realmente começa a parecer um Paint/Photoshop especializado em cidades.
+
+E seu preview 2D pode ser muito mais interessante
+
+Eu não faria apenas uma imagem parada.
+
+Ele pode ter uma câmera:
+
+       ↑
+       │
+←──────┼──────→
+       │
+       ↓
+
+
+Você pode:
+
+arrastar a câmera;
+zoom;
+girar;
+centralizar;
+mostrar/esconder grade;
+mostrar nomes;
+mostrar medidas.
+
+E talvez um botão:
+
+👤 Modo pessoa
+
+Aí aparece um personagem na planta.
+
+Aí chegamos na sua ideia do personagem
+
+Essa ideia é excelente para validar escala.
+
+Imagine que você tenha uma casa:
+
+      🏠
+   ┌───────┐
+   │       │
+   │       │
+   └───────┘
+
+
+Você coloca um personagem:
+
+      🏠
+   ┌───────┐
+   │   🧍  │
+   │       │
+   └───────┘
+
+
+E consegue perceber:
+
+"Caramba, minha porta está gigantesca."
+
+ou:
+
+"Essa rua está estreita demais."
+
+Isso transforma o programa em algo muito mais interessante do que simplesmente desenhar um mapa.
+
+Eu chamaria isso de "modo exploração"
+
+Você teria:
+
+🛠️ Modo Editor
+
+Constrói a cidade.
+
+🗺️ Modo 2D
+
+Analisa a planta.
+
+◇ Modo Isométrico
+
+Analisa volume e organização.
+
+🧊 Modo 3D
+
+Entra na cidade.
+
+🧍 Modo Exploração
+
+Anda pela cidade.
+
+E o joystick faz sentido principalmente no modo exploração
+
+No PC poderia ser:
+
+       W
+       ↑
+   A ←   → D
+       ↓
+       S
+
+
+E no celular:
+
+       ┌───────┐
+       │   ↑   │
+       │ ← ● → │
+       │   ↓   │
+       └───────┘
+
+
+Mais um segundo controle para a câmera:
+
+                    ┌──────────┐
+                    │     ●    │
+                    │          │
+                    │          │
+                    └──────────┘
+                       câmera
+
+
+No 3D isso seria praticamente um pequeno "Google Street View da sua própria cidade", só que você construiu o lugar.
+
+E tem uma consequência MUITO interessante
+
+Se você fizer isso desde o começo com escala real, tudo pode usar a mesma unidade.
+
+Por exemplo:
+
+1 unidade = 1 metro
+
+
+Então:
+
+Casa
+largura = 8m
+profundidade = 12m
+
+Rua
+largura = 8m
+
+Avenida
+largura = 24m
+
+Pessoa
+altura = 1,75m
+
+
+Quando chegar no 3D, o personagem terá realmente 1,75 m.
+
+A porta terá, por exemplo, 2,10 m.
+
+O prédio terá 30 m.
+
+Aí a cidade deixa de ser apenas uma ilustração e passa a ser uma maquete digital em escala.
+
+Eu ainda colocaria uma ferramenta de medição
+
+Algo tipo:
+
+📏 Medir
+
+Você clica:
+
+A ───────────────── B
+        24,5 m
+
+
+E consegue descobrir:
+
+distância;
+largura da rua;
+tamanho do terreno;
+altura do prédio;
+distância entre prédios.
+
+Isso seria muito útil justamente para construir algo proporcional.
+
+Uma coisa que eu mudaria na sua ideia de vários HTML
+
+Eu manteria os HTMLs como interfaces/modos, mas criaria um núcleo compartilhado.
+
+Algo assim:
+
+                    ┌───────────────┐
+                    │ CITY DATA     │
+                    │               │
+                    │ ruas          │
+                    │ prédios       │
+                    │ casas         │
+                    │ árvores       │
+                    │ terrenos      │
+                    └───────┬───────┘
+                            │
+             ┌──────────────┼──────────────┐
+             ↓              ↓              ↓
+        ┌─────────┐   ┌───────────┐   ┌─────────┐
+        │ Editor  │   │ Isométrico│   │   3D    │
+        │ 2D      │   │           │   │         │
+        └─────────┘   └───────────┘   └────┬────┘
+                                           ↓
+                                      🧍 Explorar
+
+
+Assim você não fica preso ao HTML.
+
+Você pode futuramente fazer:
+
+Salvar cidade → .city
+
+Por exemplo:
+
+MinhaCidade.city
+
+
+E esse arquivo contém tudo:
+
+cidade
+├── terreno
+├── ruas
+├── avenidas
+├── casas
+├── prédios
+├── árvores
+├── iluminação
+├── objetos
+└── configurações
+
+
+Aí você abre o mesmo arquivo em qualquer modo.
+
+E isso abre uma possibilidade ainda maior
+
+No futuro você poderia ter:
+
+Arquivo → Exportar
+
+📁 Cidade
+├── Projeto .city
+├── Imagem PNG
+├── Mapa 2D
+├── Modelo 3D
+└── Dados
+
+
+E até:
+
+"Exportar para jogo"
+
+Imagine construir uma pequena cidade no editor e depois exportar o mapa para um jogo.
+
+Isso já seria uma evolução natural do projeto.
+
+Eu resumiria sua visão assim
+
+Você não está criando simplesmente um editor de mapas.
+
+Está criando uma espécie de:
+
+"SketchUp + Paint + City Builder + ferramenta de exploração"
+
+Só que com uma filosofia bem mais simples:
+
+Construir → visualizar → medir → explorar.
+
+E eu acho que o mais importante para o projeto é começar pelo editor 2D. Se a estrutura dos objetos e do arquivo da cidade for bem planejada desde o início, o 2D, isométrico e 3D podem ser apenas diferentes maneiras de enxergar a mesma cidade. Isso evita você ter que reconstruir o projeto quando chegar a hora do 3D.
+
+Sim. Agora ficou claro o que você está fazendo — e essa gramática muda bastante a forma como eu trataria o projeto do editor de cidades.
+
+O ponto principal é: não devemos criar o editor de cidade como uma aplicação isolada com suas próprias regras. Ele deveria ser uma aplicação que utiliza a Gramática Zero/Biblioteca Zero para descrever o mundo que o usuário está montando.
+
+E olhando o material que você trouxe, eu faria uma distinção importante.
+
+1. O editor de cidade seria um "motor de construção"
+
+A arquitetura poderia ficar assim:
+
+                 BIBLIOTECA ZERO
+                       │
+                       │
+                GRAMÁTICA ZERO
+                       │
+          ┌────────────┴────────────┐
+          │                         │
+     EDITOR DE CIDADE          OUTROS MOTORES
+          │
+          │
+     ┌────┴────┐
+     │         │
+   2D       Isométrico
+     │         │
+     └────┬────┘
+          │
+         3D
+          │
+     Exploração
+
+
+O editor não inventa o significado de "rua", "prédio", "andar", "veículo" etc.
+
+Ele consulta a Biblioteca Zero.
+
+2. E aqui aparece uma coisa muito boa
+
+Quando você arrasta uma Avenida para o mapa, o editor não deveria pensar:
+
+"desenhei um retângulo azul."
+
+Ele deveria pensar:
+
+"uma entidade do arquétipo world.avenue foi instanciada."
+
+Por exemplo, conceitualmente:
+
+ENTIDADE
+ID: avenue.central_001
+
+MANIFESTO
+tipo: avenue
+
+componentes:
+  localização
+  móvel
+  física
+  interagível
+
+estado:
+  existente
+  disponível
+
+manifestação:
+  editor_2d
+  preview_isométrico
+  mundo_3d
+
+
+Então o desenho que você vê é uma manifestação da entidade.
+
+Isso é muito mais coerente com a gramática que você trouxe.
+
+3. A tela 2D não é a cidade
+
+Isso é uma distinção que eu acho que devemos preservar.
+
+A tela:
+
+index.html
+
+
+é apenas o ambiente de edição.
+
+A cidade verdadeira está nos dados:
+
+CITY WORLD
+│
+├── entidades
+├── manifestações
+├── estados
+├── relações
+├── transições
+└── eventos
+
+
+O editor mostra uma manifestação dela.
+
+Por isso você pode ter:
+
+              MESMA CIDADE
+                   │
+       ┌───────────┼───────────┐
+       ↓           ↓           ↓
+      2D       ISOMÉTRICO      3D
+       │           │           │
+       └───────────┼───────────┘
+                   ↓
+              EXPLORAÇÃO
+
+
+Isso encaixa perfeitamente com o que você estava imaginando anteriormente.
+
+4. Avenida, Rua e Casa passam a ser arquétipos
+
+Por exemplo:
+
+ARCH: world.street
+ARCH: world.avenue
+ARCH: world.house
+ARCH: world.building
+ARCH: world.park
+ARCH: world.bridge
+ARCH: world.sidewalk
+ARCH: world.intersection
+
+
+E cada um possui seu manifesto.
+
+Uma casa poderia ter:
+
+ARCH
+└── world.house
+
+componentes
+├── localização
+├── física
+├── interagível
+└── estrutura
+
+estados
+├── existente
+├── disponível
+└── ocupação
+
+manifestações
+├── planta_2d
+├── isométrico
+└── 3d
+
+
+A biblioteca descreve o que uma casa é.
+
+O editor decide onde colocar a casa.
+
+O motor 3D decide como representar a casa.
+
+Isso respeita sua regra:
+
+Biblioteca sabe. Motor executa.
+
+5. E o "Impulso" fica muito interessante no editor
+
+Por exemplo, você pega uma casa e arrasta para o mapa.
+
+Isso poderia ser interpretado pela gramática como:
+
+IMPULSO
+    ↓
+instanciar
+    ↓
+ARQUÉTIPO
+    ↓
+world.house
+    ↓
+CONDIÇÕES
+    ↓
+posição válida
+    espaço disponível
+    terreno compatível
+    conexão permitida
+    ↓
+TRANSIÇÃO
+    ↓
+instanciar entidade
+    ↓
+NOVO ESTADO
+    ↓
+casa existente
+    ↓
+EVENTO
+    ↓
+entity_created
+
+
+Então até uma ação aparentemente simples do editor passa pela mesma lógica.
+
+6. E mover uma casa também deixa de ser simplesmente "alterar X/Y"
+
+Você arrasta:
+
+🏠
+
+
+de:
+
+X: 100
+Y: 200
+
+
+para:
+
+X: 140
+Y: 200
+
+
+Semanticamente:
+
+IMPULSO
+mover
+
+ENTIDADE
+house_001
+
+ESTADO ANTERIOR
+posição = 100,200
+
+CONDIÇÃO
+posição válida
+
+AÇÃO
+mover
+
+NOVO ESTADO
+posição = 140,200
+
+EVENTO
+entity_moved
+
+
+Isso é exatamente o tipo de coisa que sua gramática parece querer capturar.
+
+7. E aí entra uma coisa ainda mais interessante: o editor pode gerar proveniência
+
+Você poderia desfazer uma ação não simplesmente porque o JavaScript guardou uma cópia anterior.
+
+Você pode ter:
+
+EVENTO 001
+Casa criada
+
+      ↓
+
+EVENTO 002
+Casa movida
+
+      ↓
+
+EVENTO 003
+Casa redimensionada
+
+      ↓
+
+EVENTO 004
+Casa rotacionada
+
+
+E a cadeia registra a evolução da cidade.
+
+Então:
+
+o projeto não é apenas o estado atual da cidade; existe uma história verificável de como ele chegou naquele estado.
+
+Isso conversa diretamente com sua parte de:
+
+Evento → Cadeia → Pulso → Âncora.
+
+8. Mas eu faria uma ressalva importante
+
+Eu não colocaria tudo da Gramática Zero dentro do editor imediatamente.
+
+Principalmente:
+
+Pulso
+Âncora
+Merkle
+persistência externa
+mecanismos de verificação
+
+Essas coisas podem existir na arquitetura, mas não precisam aparecer na primeira versão do editor.
+
+O editor inicialmente precisa dominar:
+
+ENTIDADE
+ARQUÉTIPO
+MANIFESTO
+COMPONENTE
+ESTADO
+IMPULSO
+CONDIÇÃO
+TRANSIÇÃO
+AÇÃO
+EVENTO
+
+
+Depois:
+
+EVENTO
+   ↓
+CADEIA
+   ↓
+PULSO
+   ↓
+ÂNCORA
+
+
+Isso mantém o projeto controlável.
+
+9. E o seu conceito de Manifesto ficou ainda mais importante
+
+Eu faria uma correção pequena na formulação que você trouxe.
+
+Em vez de:
+
+Entidade é uma unidade identificável do mundo que possui um manifesto próprio.
+
+Eu trataria isso como:
+
+Entidade é uma unidade identificável do mundo cuja identidade, estado, capacidades, relações e manifestações são descritos por um manifesto.
+
+Porque o manifesto não é necessariamente "a entidade".
+
+Ele é a descrição formal dela dentro da gramática.
+
+Então:
+
+ENTIDADE
+   │
+   ├── identidade
+   │
+   └── MANIFESTO
+        ├── arquétipo
+        ├── componentes
+        ├── estados
+        ├── capacidades
+        ├── relações
+        ├── composição
+        └── manifestações
+
+
+Isso deixa a arquitetura mais limpa.
+
+10. E isso resolve o problema do Shopping / Andar / Loja
+
+Por exemplo:
+
+shopping.central
+│
+└── manifesto
+     │
+     ├── arquétipo: shopping
+     │
+     ├── componentes
+     │
+     ├── estados
+     │
+     ├── manifestações
+     │
+     └── entidades internas
+          │
+          ├── andar.01
+          │    ├── loja.01
+          │    ├── loja.02
+          │    └── elevador.01
+          │
+          ├── andar.02
+          │
+          └── estacionamento
+
+
+E cada uma dessas entidades pode ter seu próprio manifesto.
+
+Portanto:
+
+Entidade → Entidade → Entidade → Entidade...
+
+sem precisar criar uma estrutura rígida específica para "shopping".
+
+Isso é uma das partes mais fortes da arquitetura que você está montando.
+
+11. E para o seu editor de cidades eu acrescentaria uma coisa
+
+Eu criaria uma categoria específica na Biblioteca Zero:
+
+WORLD
+
+Por exemplo:
+
+WORLD
+├── terrain
+├── region
+├── area
+├── district
+├── neighborhood
+├── block
+├── lot
+├── road
+├── street
+├── avenue
+├── intersection
+├── sidewalk
+├── bridge
+├── tunnel
+├── building
+├── house
+├── tower
+├── park
+├── plaza
+├── river
+├── lake
+└── landmark
+
+
+Mas atenção: isso seria o catálogo do mundo, não código do editor.
+
+O editor simplesmente instancia essas entidades.
+
+12. E agora consigo enxergar o projeto inteiro
+
+Você poderia acabar tendo algo assim:
+
+                    GRAMÁTICA ZERO
+                           │
+                    BIBLIOTECA ZERO
+                           │
+        ┌──────────────────┼──────────────────┐
+        │                  │                  │
+      WORLD             PERSON            VEHICLE
+        │                  │                  │
+    ┌───┴───┐          ┌───┴───┐          ┌───┴───┐
+    │       │          │       │          │       │
+  City    Building    Player   NPC       Car    Drone
+    │
+    ├── Road
+    ├── Avenue
+    ├── House
+    ├── Park
+    └── POI
+
+
+E os motores:
+
+             BIBLIOTECA ZERO
+                    │
+             ┌──────┴──────┐
+             │             │
+          EDITOR        RUNTIME
+             │             │
+       ┌─────┼─────┐       │
+       │     │     │       │
+      2D   ISO    3D    SIMULAÇÃO
+                     │
+                 EXPLORAÇÃO
+
+
+Isso é muito mais interessante do que simplesmente fazer index.html, preview.html etc.
+
+Os HTMLs passam a ser interfaces para motores diferentes, enquanto a Gramática/Biblioteca permanece no núcleo.
+
+Minha conclusão
+
+Sim, confere. E depois de ver essa gramática, eu mudaria um pouco a proposta que estávamos fazendo anteriormente.
+
+O seu editor de cidade deveria ser pensado como uma aplicação sobre a Biblioteca Zero, e não como uma ferramenta independente.
+
+A unidade fundamental não seria:
+
+"um desenho"
+
+nem:
+
+"um sprite"
+
+nem:
+
+"um objeto HTML".
+
+Seria:
+
+Entidade + Manifesto + Estado + Transições + Manifestação.
+
+E a cidade seria simplesmente uma coleção estruturada de entidades que obedecem à Gramática Zero.
+
+Isso também significa que sua ideia original de 2D → isométrico → 3D → personagem explorando a cidade não é um conjunto de programas diferentes. São diferentes manifestações/motores de visualização do mesmo estado de mundo.
+
+Eu acho que esse é o ponto em que o projeto começa a ficar realmente coerente com a arquitetura que você já criou.

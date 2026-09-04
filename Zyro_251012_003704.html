@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ZYRO v0.3 - Mapa Infinito</title>
+    <style>
+        /* CSS GERAL E ESSENCIAL PARA MOBILE */
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+            background: #222;
+            /* CRÍTICO: Impede o scroll da página ao tocar */
+            touch-action: none; 
+            font-family: 'Orbitron', Arial, sans-serif;
+        }
+
+        canvas {
+            display: block;
+            background: #4caf50;
+        }
+
+        /* HUDs */
+        #hud, #survival-hud {
+            position: absolute;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 2px solid #00bfff;
+        }
+
+        #hud {
+            top: env(safe-area-inset-top, 10px);
+            left: 10px;
+            font: bold 14px Arial;
+        }
+
+        #survival-hud {
+            top: env(safe-area-inset-top, 10px);
+            right: 10px;
+            font: 12px Arial;
+        }
+
+        .survival-bar {
+            width: 100px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            margin: 3px 0;
+            overflow: hidden;
+        }
+
+        .survival-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        .hunger { background: linear-gradient(90deg, #ff6b35, #f7931e); }
+        .thirst { background: linear-gradient(90deg, #4fc3f7, #29b6f6); }
+        .oxygen { background: linear-gradient(90deg, #66bb6a, #43a047); }
+        .energy { background: linear-gradient(90deg, #ffa726, #ff9800); }
+
+        /* --- CONTROLES - ONDE ESTAVA O PROBLEMA --- */
+
+        #joystick {
+            position: absolute; /* CRÍTICO: Posiciona em relação ao corpo */
+            /* Usa calc() e env() para respeitar a barra de navegação/segurança do celular */
+            bottom: calc(80px + env(safe-area-inset-bottom, 0)); 
+            left: 30px;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(0, 191, 255, 0.3), rgba(0, 191, 255, 0.1));
+            border: 3px solid rgba(0, 191, 255, 0.6);
+            border-radius: 50%;
+            touch-action: none; /* ESSENCIAL para evitar scroll */
+            z-index: 500; /* Garante que fique acima do jogo */
+        }
+
+        #stick {
+            position: absolute; /* O stick é absoluto em relação ao joystick */
+            left: 50%;
+            top: 50%;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #00bfff, #0080ff);
+            border: 2px solid white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(0, 191, 255, 0.6);
+        }
+
+        .button {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            color: white;
+            font: bold 18px Arial;
+            text-align: center;
+            line-height: 60px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid;
+            touch-action: none; 
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 500;
+        }
+
+        .button:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 15px;
+        }
+        
+        /* Posicionamento dos botões (canto inferior direito) */
+        #buttonA { bottom: calc(80px + env(safe-area-inset-bottom, 0)); right: 140px; background: linear-gradient(135deg, #dc2626, #991b1b); border-color: #ef4444; }
+        #buttonB { bottom: calc(150px + env(safe-area-inset-bottom, 0)); right: 70px; background: linear-gradient(135deg, #2563eb, #1d4ed8); border-color: #3b82f6; }
+        #buttonC { bottom: calc(80px + env(safe-area-inset-bottom, 0)); right: 70px; background: linear-gradient(135deg, #16a34a, #15803d); border-color: #22c55e; }
+        #buttonD { bottom: calc(150px + env(safe-area-inset-bottom, 0)); right: 140px; background: linear-gradient(135deg, #ea580c, #c2410c); border-color: #f97316; }
+
+        /* Estilos das Interfaces (Nave, Bunker, Oficina) */
+        .interface-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: white;
+            display: none;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        /* ... (Restante do CSS de interfaces, sem mudanças) ... */
+        .interface-header { background: linear-gradient(90deg, #0ea5e9, #0284c7); padding: 15px; text-align: center; font: bold 18px Arial; border-bottom: 3px solid #00bfff; }
+        .interface-content { padding: 20px; }
+        .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .status-card { background: rgba(0, 0, 0, 0.5); padding: 15px; border-radius: 10px; border: 2px solid #00bfff; }
+        .status-card h3 { margin: 0 0 10px 0; color: #00bfff; font-size: 14px; }
+        .equipment-slot { background: rgba(255, 255, 255, 0.1); border: 2px dashed #666; border-radius: 8px; padding: 20px; text-align: center; margin: 10px 0; cursor: pointer; transition: all 0.3s ease; }
+        .equipment-slot.equipped { border-color: #00ff00; background: rgba(0, 255, 0, 0.1); }
+        .inventory-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin: 15px 0; }
+        .inventory-slot { aspect-ratio: 1; background: rgba(255, 255, 255, 0.1); border: 2px solid #666; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; }
+        .inventory-slot.filled { border-color: #00bfff; background: rgba(0, 191, 255, 0.2); }
+        .action-button { background: linear-gradient(135deg, #00bfff, #0080ff); border: none; color: white; padding: 12px 20px; border-radius: 8px; font: bold 14px Arial; cursor: pointer; margin: 5px; transition: all 0.3s ease; }
+        .action-button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 191, 255, 0.4); }
+        .close-button { position: absolute; top: 15px; right: 15px; background: #dc2626; border: none; color: white; width: 40px; height: 40px; border-radius: 50%; font: bold 20px Arial; cursor: pointer; }
+        #farming-interface { background: linear-gradient(135deg, #166534, #15803d); }
+        .farming-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0; }
+        .farming-plot { aspect-ratio: 1; background: #8b4513; border: 3px solid #654321; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; position: relative; }
+        .farming-plot.planted { background: #228b22; border-color: #32cd32; }
+        .farming-plot.ready { background: #ffd700; border-color: #ffff00; animation: glow 2s ease-in-out infinite alternate; }
+        @keyframes glow { from { box-shadow: 0 0 5px #ffff00; } to { box-shadow: 0 0 20px #ffff00; } }
+        @keyframes fadeMessage { 0% { opacity: 0; transform: translateX(-50%) translateY(-20px); } 20%, 80% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
+    </style>
+</head>
+<body>
+    <div id="hud">Área: Planície ZYRO (0, 0)</div>
+    <div id="survival-hud">
+        <div>🍖 Fome: <div class="survival-bar"><div class="survival-fill hunger" style="width: 80%"></div></div></div>
+        <div>💧 Sede: <div class="survival-bar"><div class="survival-fill thirst" style="width: 60%"></div></div></div>
+        <div>🫁 O²: <div class="survival-bar"><div class="survival-fill oxygen" style="width: 90%"></div></div></div>
+        <div>⚡ Energia: <div class="survival-bar"><div class="survival-fill energy" style="width: 70%"></div></div></div>
+    </div>
+
+    <div id="joystick"><div id="stick"></div></div>
+   
+    <div id="buttonA" class="button">A</div>
+    <div id="buttonB" class="button">B</div>
+    <div id="buttonC" class="button">C</div>
+    <div id="buttonD" class="button">D</div>
+
+    <div id="ship-interface" class="interface-panel">
+        <button class="close-button" onclick="closeInterface('ship-interface')">&times;</button>
+        <div class="interface-header">🚀 NAVE DANIFICADA - SISTEMA DE MANUTENÇÃO</div>
+        <div class="interface-content">
+            <div class="status-grid">
+                <div class="status-card">
+                    <h3>📊 Status Vital</h3>
+                    <div>Fome: <span id="hunger-text">80%</span></div>
+                    <div>Sede: <span id="thirst-text">60%</span></div>
+                    <div>Oxigênio: <span id="oxygen-text">90%</span></div>
+                    <div>Energia: <span id="energy-text">70%</span></div>
+                </div>
+                <div class="status-card">
+                    <h3>🎒 Equipamentos</h3>
+                    <div class="equipment-slot" id="backpack-slot" onclick="equipBackpack()">
+                        <div>Mochila: Nenhuma</div>
+                        <div style="font-size: 12px;">Clique para equipar</div>
+                    </div>
+                </div>
+            </div>
+            <div class="status-card">
+                <h3>📦 Inventário (<span id="inv-count">0</span>/<span id="inv-max">10</span>)</h3>
+                <div class="inventory-grid" id="ship-inventory"></div>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="action-button" onclick="consumeItem('food')">🍖 Comer</button>
+                <button class="action-button" onclick="consumeItem('water')">💧 Beber</button>
+                <button class="action-button" onclick="rest()">😴 Descansar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="bunker-interface" class="interface-panel" style="background: linear-gradient(135deg, #166534, #15803d);">
+        <button class="close-button" onclick="closeInterface('bunker-interface')">&times;</button>
+        <div class="interface-header">🏠 BUNKER AGRÍCOLA - SISTEMA DE CULTIVO</div>
+        <div class="interface-content">
+            <div class="status-card">
+                <h3>🌱 Plantação Hidropônica</h3>
+                <div class="farming-grid" id="farming-plots"></div>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="action-button" onclick="plantCrop('potato')">🥔 Plantar Batata</button>
+                <button class="action-button" onclick="plantCrop('oxygen-plant')">🌿 Plantar O² Plant</button>
+                <button class="action-button" onclick="waterPlants()">💧 Regar Plantas</button>
+                <button class="action-button" onclick="harvestAll()">🌾 Colher Tudo</button>
+            </div>
+            <div class="status-card" style="margin-top: 20px;">
+                <h3>📊 Recursos Disponíveis</h3>
+                <div>💧 Água: <span id="water-count">0</span></div>
+                <div>🥔 Sementes de Batata: <span id="potato-seeds">0</span></div>
+                <div>🌿 Mudas de O²: <span id="oxygen-seeds">0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="workshop-interface" class="interface-panel">
+        <button class="close-button" onclick="closeInterface('workshop-interface')">&times;</button>
+        <div class="interface-header">🔧 OFICINA DE CONSTRUÇÃO</div>
+        <div class="interface-content" style="text-align:center;">
+            <div class="status-card">
+                <h3>🛠️ Receitas Disponíveis</h3>
+                <p>💊 Kit Médico: 1 Água + 1 Batata</p>
+                <p>🌿 Filtro de O²: 1 Planta + 1 Água</p>
+                <p>⚡ Painel Solar: Requer Mochila</p>
+            </div>
+            <button class="action-button" onclick="craftItem('medkit')">💊 Criar Kit Médico</button>
+            <button class="action-button" onclick="craftItem('filter')">🌿 Criar Filtro de O²</button>
+            <button class="action-button" onclick="craftItem('solar')">⚡ Montar Painel Solar</button>
+        </div>
+    </div>
+
+    <canvas id="game"></canvas>
+
+    <script>
+        const canvas = document.getElementById("game");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // --- SISTEMA DE MAPA INFINITO E BIOMAS ---
+        const CHUNK_SIZE = 1200; 
+
+        const BIOMES = {
+            'zyro_plains': { name: "Planície ZYRO", backgroundGradient: ["#4a5568", "#2d3748"], poiDensity: 4, enemyDensity: 2, },
+            'lava_wasteland': { name: "Ermo de Lava", backgroundGradient: ["#ff5722", "#d84315"], poiDensity: 1, enemyDensity: 5, },
+            'ice_tundra': { name: "Tundra Congelada", backgroundGradient: ["#b3e5fc", "#81d4fa"], poiDensity: 3, enemyDensity: 1, }
+        };
+
+        const GENERATED_POIS = [
+            { type: "water", name: "Mina de Água", icon: "💧", color: "#4fc3f7" },
+            { type: "oxygen", name: "Ponto de O²", icon: "🌿", color: "#66bb6a" },
+            { type: "equipment", name: "Equipamentos", icon: "🎒", color: "#ffa726" },
+        ];
+
+        const BASE_POIS = [
+            {x: 600, y: 400, type: "ship", name: "Nave Danificada", icon: "🚀", color: "#ff6b35"},
+            {x: 200, y: 600, type: "bunker", name: "Bunker Agrícola", icon: "🏠", color: "#8b4513"},
+            {x: 600, y: 700, type: "workshop", name: "Oficina", icon: "🔧", color: "#9ca3af"}
+        ];
+
+        let currentChunkData = {
+            biome: BIOMES.zyro_plains,
+            pointsOfInterest: BASE_POIS,
+            enemies: [], 
+        };
+
+        let player = {
+            x: 600, 
+            y: 400,
+            r: 25,
+            speed: 4,
+            inventory: [],
+            maxInventory: 10,
+            backpack: null,
+            hunger: 80,
+            thirst: 60,
+            oxygen: 90,
+            energy: 70,
+            health: 100,
+            chunkX: 0, 
+            chunkY: 0  
+        };
+
+        let gameState = {
+            water: 0,
+            potatoSeeds: 2,
+            oxygenSeeds: 1,
+            farmingPlots: Array(16).fill(null),
+            lastSurvivalUpdate: Date.now()
+        };
+        
+        let missions = [
+            { id: 1, text: "Explore a Mina de Água 💧", completed: false },
+            { id: 2, text: "Colete 5 unidades de Água 💧", completed: false },
+            { id: 3, text: "Plante e colha uma Batata 🥔", completed: false },
+            { id: 4, text: "Equipe uma Mochila 🎒", completed: false },
+            { id: 5, text: "Repare o Módulo da Nave ⚡", completed: false }
+        ];
+
+        let pointsOfInterest = []; 
+        let enemies = [];
+
+        const missionPanel = document.createElement("div");
+        missionPanel.id = "mission-panel";
+        missionPanel.style.cssText = `
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            border: 2px solid #00bfff;
+            color: white;
+            font: 12px Arial;
+            border-radius: 10px;
+            padding: 10px;
+            z-index: 200;
+            width: 220px;
+        `;
+        document.body.appendChild(missionPanel);
+
+        function updateMissions() {
+            missionPanel.innerHTML = "<b>📜 Missões</b><br>";
+            let completedCount = 0;
+            missions.forEach(m => {
+                if (m.completed) completedCount++;
+                missionPanel.innerHTML += (m.completed ? "✅ " : "🔸 ") + m.text + "<br>";
+            });
+            missionPanel.innerHTML += `<hr>Progresso: ${completedCount}/${missions.length}`;
+        }
+        
+        function simpleRandom(seed) {
+            let x = Math.sin(seed) * 10000;
+            return x - Math.floor(x);
+        }
+
+        function generateChunk(chunkX, chunkY) {
+            const seed = (chunkX * 1000 + chunkY) * 100 + 12345;
+            const rng = simpleRandom(seed);
+            const biomeKeys = Object.keys(BIOMES);
+            let selectedBiome;
+
+            if (chunkX === 0 && chunkY === 0) {
+                selectedBiome = BIOMES.zyro_plains;
+            } else {
+                const index = Math.floor(rng * (biomeKeys.length - 1)) + 1;
+                selectedBiome = BIOMES[biomeKeys[index]];
+            }
+
+            let pois = [];
+            if (chunkX === 0 && chunkY === 0) {
+                pois = [...BASE_POIS]; 
+            }
+
+            const numPOIs = Math.floor(selectedBiome.poiDensity * simpleRandom(seed + 1) * 0.8 + 1);
+            for (let i = 0; i < numPOIs; i++) {
+                const poiType = GENERATED_POIS[Math.floor(simpleRandom(seed + 2 + i) * GENERATED_POIS.length)];
+                pois.push({
+                    x: Math.floor(simpleRandom(seed + 3 + i) * (CHUNK_SIZE - 200)) + 100,
+                    y: Math.floor(simpleRandom(seed + 4 + i) * (CHUNK_SIZE - 200)) + 100,
+                    type: poiType.type,
+                    name: poiType.name,
+                    icon: poiType.icon,
+                    color: poiType.color,
+                });
+            }
+
+            let newEnemies = [];
+            const numEnemies = Math.floor(selectedBiome.enemyDensity * simpleRandom(seed + 5) * 0.8 + 1);
+            for (let i = 0; i < numEnemies; i++) {
+                newEnemies.push({
+                    x: Math.floor(simpleRandom(seed + 6 + i) * (CHUNK_SIZE - 200)) + 100,
+                    y: Math.floor(simpleRandom(seed + 7 + i) * (CHUNK_SIZE - 200)) + 100,
+                    hp: 30, maxHp: 30, active: true, lastAttack: 0
+                });
+            }
+
+            return {
+                biome: selectedBiome,
+                pointsOfInterest: pois,
+                enemies: newEnemies
+            };
+        }
+
+        function loadChunk(chunkX, chunkY) {
+            const newChunk = generateChunk(chunkX, chunkY);
+            currentChunkData = newChunk;
+            
+            pointsOfInterest = newChunk.pointsOfInterest; 
+            enemies = newChunk.enemies;
+            
+            document.getElementById("hud").textContent = `Área: ${newChunk.biome.name} (${chunkX}, ${chunkY})`;
+            showMessage(`Explorando novo bioma: ${newChunk.biome.name}!`);
+        }
+
+        function drawEnemies() {
+            enemies.forEach(e => {
+                if (!e.active) return;
+                
+                const dx = player.x - e.x;
+                const dy = player.y - e.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist < 200) {
+                    e.x += dx / dist * 0.5;
+                    e.y += dy / dist * 0.5;
+                    
+                    if (dist < 50 && Date.now() - e.lastAttack > 2000) {
+                        player.health = Math.max(0, player.health - 10);
+                        e.lastAttack = Date.now();
+                        showMessage("👾 Criatura alienígena atacou!");
+                        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                    }
+                }
+                
+                ctx.fillStyle = "#8b0000";
+                ctx.beginPath();
+                ctx.arc(e.x, e.y, 20, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = "#ff0000";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+                ctx.fillRect(e.x - 25, e.y - 35, 50, 8);
+                ctx.fillStyle = "#ff0000";
+                ctx.fillRect(e.x - 23, e.y - 33, (e.hp / e.maxHp) * 46, 4);
+                ctx.fillStyle = "#ffff00";
+                ctx.beginPath();
+                ctx.arc(e.x - 8, e.y - 5, 3, 0, Math.PI * 2);
+                ctx.arc(e.x + 8, e.y - 5, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        let cam = { x: 0, y: 0 };
+        let timeOfDay = 12;
+
+        function updateDayCycle() {
+            timeOfDay = (timeOfDay + 0.01) % 24;
+            const isNight = timeOfDay >= 18 || timeOfDay < 6;
+            const brightness = isNight ? 0.6 : 1;
+            canvas.style.filter = `brightness(${brightness})`;
+            
+            if (isNight && Math.random() < 0.001) {
+                showMessage("🌒 A noite cai... o frio aumenta.");
+                player.energy = Math.max(0, player.energy - 2);
+            }
+        }
+
+        // --- INÍCIO: LÓGICA REVISADA DO JOYSTICK (MOBILE) ---
+        const joystick = document.getElementById("joystick");
+        const stick = document.getElementById("stick");
+        let joy = { active: false, x: 0, y: 0 };
+        
+        // CRÍTICO: passive: false e e.preventDefault() garantem que o toque controle o stick.
+        joystick.addEventListener("touchstart", handleJoystickStart, { passive: false });
+        joystick.addEventListener("touchend", handleJoystickEnd);
+        joystick.addEventListener("touchmove", handleJoystickMove, { passive: false });
+
+        function handleJoystickStart(e) {
+            e.preventDefault(); 
+            joy.active = true;
+            if (navigator.vibrate) navigator.vibrate(10);
+            if (e.touches) handleJoystickMove(e); 
+        }
+
+        function handleJoystickEnd(e) {
+            e.preventDefault();
+            joy.active = false;
+            stick.style.left = "50%";
+            stick.style.top = "50%";
+            joy.x = 0;
+            joy.y = 0;
+        }
+
+        function handleJoystickMove(e) {
+            e.preventDefault(); 
+            if (!joy.active) return;
+            
+            // Pega as coordenadas de toque (para mobile)
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            const rect = joystick.getBoundingClientRect();
+            let dx = clientX - (rect.left + rect.width / 2);
+            let dy = clientY - (rect.top + rect.height / 2);
+            const dist = Math.min(Math.sqrt(dx * dx + dy * dy), rect.width / 2);
+            const angle = Math.atan2(dy, dx);
+            
+            // Move o Stick Visível
+            stick.style.left = rect.width / 2 + dist * Math.cos(angle) + "px";
+            stick.style.top = rect.height / 2 + dist * Math.sin(angle) + "px";
+            
+            // Atualiza as coordenadas de movimento (joy.x e joy.y)
+            joy.x = Math.cos(angle) * (dist / (rect.width / 2));
+            joy.y = Math.sin(angle) * (dist / (rect.width / 2));
+        }
+
+        // Botões de ação também usam touchstart para mobile
+        document.getElementById("buttonA").addEventListener("touchstart", e => {
+            e.preventDefault();
+            if (navigator.vibrate) navigator.vibrate(20);
+            if (!attackNearestEnemy()) {
+                interactWithNearestPOI();
+            }
+        });
+        document.getElementById("buttonB").addEventListener("touchstart", e => {
+            e.preventDefault();
+            if (navigator.vibrate) navigator.vibrate(15);
+            showMessage("📦 Inventário: " + player.inventory.length + "/" + player.maxInventory);
+        });
+        document.getElementById("buttonC").addEventListener("touchstart", e => {
+            e.preventDefault();
+            if (navigator.vibrate) navigator.vibrate(15);
+            showMessage("🗺️ Mapa: Nave🚀 Água💧 O²🌿 Bunker🏠 Equip🎒 Oficina🔧");
+        });
+        document.getElementById("buttonD").addEventListener("touchstart", e => {
+            e.preventDefault();
+            if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
+            scanArea();
+        });
+        // --- FIM: LÓGICA REVISADA DO JOYSTICK (MOBILE) ---
+
+        function attackNearestEnemy() {
+            const nearest = enemies.find(e => e.active && Math.hypot(player.x - e.x, player.y - e.y) < 100);
+            if (nearest) {
+                nearest.hp -= 15;
+                showMessage("💥 Ataque alienígena!");
+                if (navigator.vibrate) navigator.vibrate(30);
+                if (nearest.hp <= 0) {
+                    nearest.active = false;
+                    showMessage("👾 Inimigo derrotado! +1 recurso raro");
+                    if (player.inventory.length < player.maxInventory) {
+                        player.inventory.push("💎");
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+
+        function interactWithNearestPOI() {
+            let nearestPOI = null;
+            let minDistance = Infinity;
+            
+            pointsOfInterest.forEach(poi => {
+                let dx = player.x - poi.x;
+                let dy = player.y - poi.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 80 && distance < minDistance) {
+                    minDistance = distance;
+                    nearestPOI = poi;
+                }
+            });
+            if (nearestPOI) {
+                handlePOIInteraction(nearestPOI);
+            } else {
+                showMessage("❌ Nenhum ponto de interesse próximo");
+            }
+        }
+        
+        function handlePOIInteraction(poi) {
+            switch(poi.type) {
+                case "ship":
+                    if (player.chunkX !== 0 || player.chunkY !== 0) {
+                        showMessage("❌ A nave está no chunk inicial (0, 0)!");
+                        return;
+                    }
+                    document.getElementById("ship-interface").style.display = "block";
+                    updateShipInterface();
+                    break;
+                    
+                case "water":
+                    if (player.inventory.length < player.maxInventory) {
+                        gameState.water += 3;
+                        player.inventory.push("💧");
+                        showMessage("💧 Coletou 3 unidades de água!");
+                        missions[0].completed = true;
+                        if (gameState.water >= 5) missions[1].completed = true;
+                        updateMissions();
+                        if (navigator.vibrate) navigator.vibrate(30);
+                    } else {
+                        showMessage("❌ Inventário cheio!");
+                    }
+                    break;
+                case "oxygen":
+                    if (player.inventory.length < player.maxInventory) {
+                        gameState.oxygenSeeds += 2;
+                        player.inventory.push("🌿");
+                        player.oxygen = Math.min(100, player.oxygen + 20);
+                        showMessage("🌿 Coletou mudas de O² e respirou ar puro!");
+                        if (navigator.vibrate) navigator.vibrate(30);
+                    } else {
+                        showMessage("❌ Inventário cheio!");
+                    }
+                    break;
+                case "bunker":
+                    if (player.chunkX !== 0 || player.chunkY !== 0) {
+                        showMessage("❌ O bunker está no chunk inicial (0, 0)!");
+                        return;
+                    }
+                    document.getElementById("bunker-interface").style.display = "block";
+                    updateBunkerInterface();
+                    break;
+                    
+                case "equipment":
+                    if (!player.backpack && player.inventory.length < player.maxInventory) {
+                        player.inventory.push("🎒");
+                        showMessage("🎒 Encontrou uma mochila! Use na nave para equipar.");
+                        if (navigator.vibrate) navigator.vibrate(30);
+                    } else if (player.backpack) {
+                        showMessage("✅ Você já tem uma mochila equipada!");
+                    } else {
+                        showMessage("❌ Inventário cheio!");
+                    }
+                    break;
+                case "workshop":
+                    if (player.chunkX !== 0 || player.chunkY !== 0) {
+                        showMessage("❌ A oficina está no chunk inicial (0, 0)!");
+                        return;
+                    }
+                    document.getElementById("workshop-interface").style.display = "block";
+                    break;
+            }
+        }
+
+        function scanArea() {
+            let nearbyPOIs = [];
+            let nearbyEnemies = 0;
+            
+            pointsOfInterest.forEach(poi => {
+                let dx = player.x - poi.x;
+                let dy = player.y - poi.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 200) {
+                    nearbyPOIs.push(poi.name);
+                }
+            });
+            enemies.forEach(e => {
+                if (e.active) {
+                    let dx = player.x - e.x;
+                    let dy = player.y - e.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 200) {
+                        nearbyEnemies++;
+                    }
+                }
+            });
+            let message = `🔍 ${currentChunkData.biome.name} (${player.chunkX}, ${player.chunkY}) - Detectado: `;
+            if (nearbyPOIs.length > 0) {
+                message += nearbyPOIs.join(", ");
+            }
+            if (nearbyEnemies > 0) {
+                message += (nearbyPOIs.length > 0 ? ", " : "") + `${nearbyEnemies} inimigo(s)`;
+            }
+            if (nearbyPOIs.length === 0 && nearbyEnemies === 0) {
+                message = "🔍 Nenhum ponto de interesse detectado";
+            }
+            
+            showMessage(message);
+        }
+
+        function updateShipInterface() {
+            document.getElementById("hunger-text").textContent = Math.round(player.hunger) + "%";
+            document.getElementById("thirst-text").textContent = Math.round(player.thirst) + "%";
+            document.getElementById("oxygen-text").textContent = Math.round(player.oxygen) + "%";
+            document.getElementById("energy-text").textContent = Math.round(player.energy) + "%";
+            document.getElementById("inv-count").textContent = player.inventory.length;
+            document.getElementById("inv-max").textContent = player.maxInventory;
+            
+            const backpackSlot = document.getElementById("backpack-slot");
+            if (player.backpack) {
+                backpackSlot.className = "equipment-slot equipped";
+                backpackSlot.innerHTML = "<div>Mochila: Equipada ✅</div><div style='font-size: 12px;'>+5 slots de inventário</div>";
+            }
+            
+            const inventoryGrid = document.getElementById("ship-inventory");
+            inventoryGrid.innerHTML = "";
+            for (let i = 0; i < player.maxInventory; i++) {
+                const slot = document.createElement("div");
+                slot.className = "inventory-slot";
+                if (i < player.inventory.length) {
+                    slot.className += " filled";
+                    slot.textContent = player.inventory[i];
+                }
+                inventoryGrid.appendChild(slot);
+            }
+        }
+
+        function equipBackpack() {
+            const backpackIndex = player.inventory.indexOf("🎒");
+            if (backpackIndex !== -1 && !player.backpack) {
+                player.inventory.splice(backpackIndex, 1);
+                player.backpack = "equipped";
+                player.maxInventory = 15;
+                missions[3].completed = true; 
+                updateMissions();
+                showMessage("🎒 Mochila equipada! +5 slots de inventário");
+                updateShipInterface();
+            } else if (player.backpack) {
+                showMessage("✅ Mochila já equipada!");
+            } else {
+                showMessage("❌ Você precisa de uma mochila no inventário!");
+            }
+        }
+
+        function consumeItem(type) {
+            let consumed = false;
+            if (type === "food") {
+                const foodIndex = player.inventory.findIndex(item => ["🍖", "🥔", "🍞"].includes(item));
+                if (foodIndex !== -1) {
+                    player.inventory.splice(foodIndex, 1);
+                    player.hunger = Math.min(100, player.hunger + 30);
+                    consumed = true;
+                    showMessage("🍖 Comeu e recuperou fome!");
+                }
+            } else if (type === "water") {
+                if (gameState.water > 0) {
+                    gameState.water--;
+                    player.thirst = Math.min(100, player.thirst + 40);
+                    consumed = true;
+                    showMessage("💧 Bebeu água e recuperou sede!");
+                }
+            }
+            
+            if (!consumed) {
+                showMessage("❌ Item não disponível!");
+            } else {
+                updateShipInterface();
+                updateSurvivalHUD();
+            }
+        }
+
+        function rest() {
+            player.energy = Math.min(100, player.energy + 50);
+            showMessage("😴 Descansou e recuperou energia!");
+            updateShipInterface();
+            updateSurvivalHUD();
+        }
+
+        function updateBunkerInterface() {
+            document.getElementById("water-count").textContent = gameState.water;
+            document.getElementById("potato-seeds").textContent = gameState.potatoSeeds;
+            document.getElementById("oxygen-seeds").textContent = gameState.oxygenSeeds;
+            
+            const farmingGrid = document.getElementById("farming-plots");
+            farmingGrid.innerHTML = "";
+            gameState.farmingPlots.forEach((plot, index) => {
+                const plotDiv = document.createElement("div");
+                plotDiv.className = "farming-plot";
+                plotDiv.onclick = () => harvestPlot(index);
+                
+                if (plot === null) {
+                    plotDiv.textContent = "🟫";
+                } else if (plot.type === "potato") {
+                    if (plot.ready) {
+                        plotDiv.className += " ready";
+                        plotDiv.textContent = "🥔";
+                    } else {
+                        plotDiv.className += " planted";
+                        plotDiv.textContent = "🌱";
+                    }
+                } else if (plot.type === "oxygen-plant") {
+                    if (plot.ready) {
+                        plotDiv.className += " ready";
+                        plotDiv.textContent = "🌿";
+                    } else {
+                        plotDiv.className += " planted";
+                        plotDiv.textContent = "🌱";
+                    }
+                }
+                
+                farmingGrid.appendChild(plotDiv);
+            });
+        }
+
+        function plantCrop(cropType) {
+            const emptyPlot = gameState.farmingPlots.findIndex(plot => plot === null);
+            if (emptyPlot === -1) {
+                showMessage("❌ Não há espaço disponível!");
+                return;
+            }
+            
+            if (cropType === "potato" && gameState.potatoSeeds > 0) {
+                gameState.potatoSeeds--;
+                gameState.farmingPlots[emptyPlot] = {
+                    type: "potato",
+                    plantedAt: Date.now(),
+                    ready: false
+                };
+                showMessage("🥔 Batata plantada!");
+            } else if (cropType === "oxygen-plant" && gameState.oxygenSeeds > 0) {
+                gameState.oxygenSeeds--;
+                gameState.farmingPlots[emptyPlot] = {
+                    type: "oxygen-plant",
+                    plantedAt: Date.now(),
+                    ready: false
+                };
+                showMessage("🌿 Planta de O² plantada!");
+            } else {
+                showMessage("❌ Sementes insuficientes!");
+            }
+            
+            updateBunkerInterface();
+        }
+
+        function waterPlants() {
+            if (gameState.water < 2) {
+                showMessage("❌ Água insuficiente! (Precisa de 2)");
+                return;
+            }
+            
+            gameState.water -= 2;
+            let wateredCount = 0;
+            
+            gameState.farmingPlots.forEach(plot => {
+                if (plot && !plot.ready) {
+                    plot.plantedAt -= 30000; // Acelera crescimento
+                    wateredCount++;
+                }
+            });
+            if (wateredCount > 0) {
+                showMessage(`💧 Regou ${wateredCount} plantas! Crescimento acelerado.`);
+            } else {
+                showMessage("❌ Nenhuma planta para regar!");
+            }
+            
+            updateBunkerInterface();
+        }
+
+        function harvestPlot(index) {
+            const plot = gameState.farmingPlots[index];
+            if (!plot) {
+                showMessage("❌ Nenhuma planta neste local!");
+                return;
+            }
+            
+            if (!plot.ready) {
+                showMessage("❌ Planta ainda não está pronta!");
+                return;
+            }
+            
+            if (player.inventory.length >= player.maxInventory) {
+                showMessage("❌ Inventário cheio!");
+                return;
+            }
+            
+            if (plot.type === "potato") {
+                player.inventory.push("🥔");
+                gameState.potatoSeeds += 2; 
+                missions[2].completed = true;
+                updateMissions();
+                showMessage("🥔 Colheu batata! +2 sementes extras");
+            } else if (plot.type === "oxygen-plant") {
+                player.oxygen = Math.min(100, player.oxygen + 15);
+                gameState.oxygenSeeds += 1;
+                showMessage("🌿 Colheu planta de O²! Oxigênio restaurado");
+            }
+            
+            gameState.farmingPlots[index] = null;
+            updateBunkerInterface();
+            updateSurvivalHUD();
+        }
+
+        function harvestAll() {
+            let harvested = 0;
+            gameState.farmingPlots.forEach((plot, index) => {
+                if (plot && plot.ready && player.inventory.length < player.maxInventory) {
+                    harvestPlot(index);
+                    harvested++;
+                }
+            });
+            if (harvested === 0) {
+                showMessage("❌ Nenhuma planta pronta ou inventário cheio!");
+            } else {
+                showMessage(`🌾 Colheu ${harvested} plantas!`);
+            }
+        }
+
+        function craftItem(type) {
+            switch(type) {
+                case "medkit":
+                    if (gameState.water >= 1 && player.inventory.includes("🥔")) {
+                        gameState.water--;
+                        player.inventory.splice(player.inventory.indexOf("🥔"), 1);
+                        player.hunger = Math.min(100, player.hunger + 20);
+                        player.health = Math.min(100, player.health + 30);
+                        showMessage("💊 Kit Médico criado e usado!");
+                    } else {
+                        showMessage("❌ Falta Água ou Batata!");
+                    }
+                    break;
+                case "filter":
+                    if (player.inventory.includes("🌿") && gameState.water >= 1) {
+                        player.inventory.splice(player.inventory.indexOf("🌿"), 1);
+                        gameState.water--;
+                        player.oxygen = Math.min(100, player.oxygen + 30);
+                        showMessage("🌿 Filtro de O² criado e usado!");
+                    } else {
+                        showMessage("❌ Recurso insuficiente!");
+                    }
+                    break;
+                case "solar":
+                    if (player.backpack && player.energy < 100) {
+                        player.energy = Math.min(100, player.energy + 50);
+                        showMessage("⚡ Painel Solar ativado! Energia restaurada.");
+                        missions[4].completed = true; 
+                        updateMissions();
+                    } else if (!player.backpack) {
+                        showMessage("❌ Você precisa de uma mochila equipada!");
+                    } else {
+                        showMessage("❌ Energia já está cheia!");
+                    }
+                    break;
+            }
+            updateSurvivalHUD();
+        }
+
+        function closeInterface(interfaceId) {
+            document.getElementById(interfaceId).style.display = "none";
+        }
+
+        function updateSurvival() {
+            const now = Date.now();
+            const timeDiff = (now - gameState.lastSurvivalUpdate) / 1000;
+            
+            if (timeDiff >= 5) { 
+                player.hunger = Math.max(0, player.hunger - 1);
+                player.thirst = Math.max(0, player.thirst - 1.5);
+                player.oxygen = Math.max(0, player.oxygen - 0.5);
+                player.energy = Math.max(0, player.energy - 0.8);
+                gameState.lastSurvivalUpdate = now;
+                updateSurvivalHUD();
+                
+                if (player.hunger <= 0 || player.thirst <= 0 || player.oxygen <= 0) {
+                    showMessage("💀 CRÍTICO! Você precisa de recursos urgentemente!");
+                }
+            }
+        }
+
+        function updateSurvivalHUD() {
+            document.querySelector(".hunger").style.width = player.hunger + "%";
+            document.querySelector(".thirst").style.width = player.thirst + "%";
+            document.querySelector(".oxygen").style.width = player.oxygen + "%";
+            document.querySelector(".energy").style.width = player.energy + "%";
+        }
+
+        function updatePlants() {
+            const now = Date.now();
+            gameState.farmingPlots.forEach(plot => {
+                if (plot && !plot.ready) {
+                    const growthTime = (now - plot.plantedAt) / 1000;
+                    if (growthTime >= 60) { 
+                        plot.ready = true;
+                    }
+                }
+            });
+        }
+
+        function saveGame() {
+            const saveData = {
+                player,
+                gameState,
+                missions,
+                timeOfDay,
+                enemies,
+                currentChunkData: { 
+                    chunkX: player.chunkX,
+                    chunkY: player.chunkY,
+                    biomeName: currentChunkData.biome.name 
+                }
+            };
+            localStorage.setItem("zyroSave", JSON.stringify(saveData));
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem("zyroSave");
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    Object.assign(player, data.player);
+                    Object.assign(gameState, data.gameState);
+                    missions = data.missions || missions;
+                    timeOfDay = data.timeOfDay || 12;
+                    
+                    loadChunk(data.player.chunkX, data.player.chunkY);
+
+                    showMessage("💾 Progresso carregado!");
+                    updateMissions();
+                    updateSurvivalHUD();
+                } catch (e) {
+                    console.log("Erro ao carregar save:", e);
+                    loadChunk(0, 0); 
+                }
+            } else {
+                 loadChunk(0, 0); 
+            }
+        }
+
+        function showMessage(text) {
+            const existing = document.querySelector(".message");
+            if (existing) existing.remove();
+            
+            const message = document.createElement("div");
+            message.className = "message";
+            message.textContent = text;
+            message.style.cssText = `
+                position: fixed;
+                top: 100px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.9);
+                color: #00bfff;
+                padding: 10px 20px;
+                border-radius: 10px;
+                border: 2px solid #00bfff;
+                font-weight: bold;
+                z-index: 1000;
+                animation: fadeMessage 3s ease-in-out forwards;
+            `;
+            
+            document.body.appendChild(message);
+            setTimeout(() => message.remove(), 3000);
+        }
+
+        function updateHUD() {
+            const nearestPOI = findNearestPOI();
+            if (nearestPOI) {
+                document.getElementById("hud").textContent = `Próximo: ${nearestPOI.name}`;
+            } else {
+                 document.getElementById("hud").textContent = `Área: ${currentChunkData.biome.name} (${player.chunkX}, ${player.chunkY})`;
+            }
+        }
+
+        function findNearestPOI() {
+            let nearest = null;
+            let minDistance = 100;
+            
+            pointsOfInterest.forEach(poi => {
+                let dx = player.x - poi.x;
+                let dy = player.y - poi.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearest = poi;
+                }
+            });
+            return nearest;
+        }
+
+        // Loop principal (onde o movimento é aplicado)
+        function loop() {
+            // Movimentação do Player: Usa os valores de joy.x e joy.y definidos pelos eventos de toque
+            if (joy.x !== 0 || joy.y !== 0) {
+                player.x += joy.x * player.speed;
+                player.y += joy.y * player.speed;
+                
+                // Consumir energia ao se mover
+                player.energy = Math.max(0, player.energy - 0.01);
+            }
+
+            // --- LÓGICA DE TRANSIÇÃO DE CHUNK ---
+            let movedChunk = false;
+            
+            if (player.x < 0) {
+                player.chunkX--;
+                player.x += CHUNK_SIZE;
+                movedChunk = true;
+            } else if (player.x > CHUNK_SIZE) {
+                player.chunkX++;
+                player.x -= CHUNK_SIZE;
+                movedChunk = true;
+            }
+
+            if (player.y < 0) {
+                player.chunkY--;
+                player.y += CHUNK_SIZE;
+                movedChunk = true;
+            } else if (player.y > CHUNK_SIZE) {
+                player.chunkY++;
+                player.y -= CHUNK_SIZE;
+                movedChunk = true;
+            }
+            
+            if (movedChunk) {
+                loadChunk(player.chunkX, player.chunkY);
+            }
+            // --- FIM LÓGICA DE TRANSIÇÃO DE CHUNK ---
+
+            cam.x = Math.max(0, Math.min(CHUNK_SIZE - canvas.width, player.x - canvas.width / 2));
+            cam.y = Math.max(0, Math.min(CHUNK_SIZE - canvas.height, player.y - canvas.height / 2));
+
+            updateSurvival();
+            updatePlants();
+            updateDayCycle();
+            saveGame();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.translate(-cam.x, -cam.y);
+
+            drawBackground();
+            drawPointsOfInterest();
+            drawEnemies();
+            drawPlayer();
+
+            ctx.restore();
+            updateHUD();
+            requestAnimationFrame(loop);
+        }
+
+        function drawBackground() {
+            const gradient = ctx.createRadialGradient(CHUNK_SIZE/2, CHUNK_SIZE/2, 0, CHUNK_SIZE/2, CHUNK_SIZE/2, CHUNK_SIZE);
+            gradient.addColorStop(0, currentChunkData.biome.backgroundGradient[0]);
+            gradient.addColorStop(1, currentChunkData.biome.backgroundGradient[1]);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, CHUNK_SIZE, CHUNK_SIZE);
+            
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+            ctx.lineWidth = 1;
+            for (let x = 0; x <= CHUNK_SIZE; x += 100) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, CHUNK_SIZE);
+                ctx.stroke();
+            }
+            for (let y = 0; y <= CHUNK_SIZE; y += 100) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(CHUNK_SIZE, y);
+                ctx.stroke();
+            }
+            
+            if (player.chunkX === 0 && player.chunkY === 0) {
+                ctx.strokeStyle = "rgba(139, 115, 85, 0.6)";
+                ctx.lineWidth = 8;
+                ctx.beginPath();
+                ctx.moveTo(600, 400);
+                ctx.lineTo(200, 600); 
+                ctx.moveTo(600, 400);
+                ctx.lineTo(600, 700); 
+                ctx.stroke();
+            }
+        }
+
+        function drawPointsOfInterest() {
+            pointsOfInterest.forEach(poi => {
+                let dx = player.x - poi.x;
+                let dy = player.y - poi.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 80) {
+                    ctx.strokeStyle = "rgba(0, 255, 0, 0.5)";
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(poi.x, poi.y, 80, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                
+                ctx.fillStyle = poi.color;
+                ctx.beginPath();
+                ctx.arc(poi.x, poi.y, 40, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                ctx.font = "30px Arial";
+                ctx.fillStyle = "#ffffff";
+                ctx.textAlign = "center";
+                ctx.fillText(poi.icon, poi.x, poi.y + 10);
+                ctx.font = "14px Arial";
+                ctx.fillStyle = "#ffffff";
+                ctx.fillText(poi.name, poi.x, poi.y + 60);
+                
+                if (distance < 100) {
+                    const pulse = Math.sin(Date.now() / 200) * 0.3 + 0.7;
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${pulse})`;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(poi.x, poi.y, 50, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            });
+        }
+
+        function drawPlayer() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+            ctx.beginPath();
+            ctx.ellipse(player.x, player.y + player.r + 5, player.r * 0.8, player.r * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#1e40af";
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.strokeStyle = "#3b82f6";
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            ctx.fillStyle = "rgba(0, 191, 255, 0.8)";
+            ctx.beginPath();
+            ctx.arc(player.x, player.y - 3, player.r * 0.6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+            ctx.beginPath();
+            ctx.arc(player.x - 8, player.y - 8, player.r * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            if (player.backpack) {
+                ctx.fillStyle = "#8b4513";
+                ctx.fillRect(player.x - 15, player.y + 10, 30, 20);
+                ctx.strokeStyle = "#654321";
+                ctx.lineWidth = 2;
+                ctx.strokeRect(player.x - 15, player.y + 10, 30, 20);
+            }
+
+            if (joy.x !== 0 || joy.y !== 0) {
+                ctx.strokeStyle = "#00ff00";
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(player.x, player.y);
+                ctx.lineTo(player.x + joy.x * 40, player.y + joy.y * 40);
+                ctx.stroke();
+                ctx.fillStyle = "#00ff00";
+                ctx.beginPath();
+                ctx.arc(player.x + joy.x * 40, player.y + joy.y * 40, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            if (player.hunger <= 20 || player.thirst <= 20 || player.oxygen <= 20) {
+                const flash = Math.sin(Date.now() / 200) > 0;
+                if (flash) {
+                    ctx.strokeStyle = "#ff0000";
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(player.x, player.y, player.r + 10, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+            
+            if (player.health < 100) {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+                ctx.fillRect(player.x - 30, player.y - 45, 60, 8);
+                ctx.fillStyle = "#ff0000";
+                ctx.fillRect(player.x - 28, player.y - 43, (player.health / 100) * 56, 4);
+            }
+        }
+
+        loadGame();
+        updateMissions();
+        showMessage("🚀 ZYRO v0.3 - Controles de Toque Ativos!");
+        loop();
+
+        // Linha crítica para evitar o scroll da página enquanto o usuário joga
+        document.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+
+        console.log("🌍 ZYRO v0.3 - Sistema de Chunking/Biomas Carregado!");
+        </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98ac29bfe648f1ff',t:'MTc1OTgyNzE1NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

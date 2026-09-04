@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Labriolag · Arquitetura de Governança v1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;0,700;1,300;1,600&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:    #05070A;
+  --ink2:   #0A0D14;
+  --ink3:   #111520;
+  --ink4:   #181E2C;
+  --gold:   #D4AF37;
+  --gold-l: #E8CC6A;
+  --gold-d: #A08020;
+  --gold-p: rgba(212,175,55,.08);
+  --gold-b: rgba(212,175,55,.20);
+  --cyber:  #00E5FF;
+  --cyber-d:rgba(0,229,255,.08);
+  --cyber-b:rgba(0,229,255,.18);
+  --green:  #00E096;
+  --red:    #FF4D6D;
+  --off:    #8A8A90;
+  --muted:  #444450;
+  --line:   rgba(255,255,255,.06);
+  --line2:  rgba(255,255,255,.11);
+  --white:  #F0EDE8;
+}
+
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  font-family:'DM Sans',sans-serif;
+  background:var(--ink);
+  color:var(--white);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+/* NOISE */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px;
+}
+
+/* TOPBAR */
+.topbar {
+  position:fixed; top:0; left:0; right:0; z-index:900;
+  height:52px;
+  background:rgba(5,7,10,.95);
+  border-bottom:1px solid var(--line);
+  backdrop-filter:blur(24px);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 32px;
+}
+.tb-brand {
+  display:flex; align-items:center; gap:10px;
+}
+.tb-logo {
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.1rem; font-weight:700;
+  letter-spacing:3px; color:var(--gold);
+  text-transform:uppercase;
+}
+.tb-sep { width:1px; height:16px; background:var(--line2); }
+.tb-doc {
+  font-family:'Space Mono',monospace;
+  font-size:.58rem; letter-spacing:2px;
+  color:var(--muted); text-transform:uppercase;
+}
+.tb-right {
+  display:flex; align-items:center; gap:8px;
+}
+.tb-badge {
+  font-family:'Space Mono',monospace;
+  font-size:.55rem; letter-spacing:1.5px;
+  padding:3px 10px; border-radius:20px;
+  text-transform:uppercase;
+}
+.tb-version { background:var(--gold-p); border:1px solid var(--gold-b); color:var(--gold); }
+.tb-lgpd { background:var(--cyber-d); border:1px solid var(--cyber-b); color:var(--cyber); }
+
+/* SIDEBAR NAV */
+.sidebar {
+  position:fixed; left:0; top:52px; bottom:0; z-index:800;
+  width:240px;
+  background:rgba(10,13,20,.7);
+  border-right:1px solid var(--line);
+  padding:24px 0;
+  overflow-y:auto;
+  scrollbar-width:none;
+  backdrop-filter:blur(12px);
+}
+.sidebar::-webkit-scrollbar { display:none; }
+.nav-section-title {
+  font-family:'Space Mono',monospace;
+  font-size:.5rem; letter-spacing:3px; text-transform:uppercase;
+  color:var(--muted); padding:12px 20px 4px;
+}
+.nav-link {
+  display:flex; align-items:center; gap:8px;
+  padding:9px 20px;
+  cursor:pointer;
+  font-size:.78rem; color:var(--off);
+  border-left:2px solid transparent;
+  transition:all .15s;
+  text-decoration:none;
+}
+.nav-link:hover { background:var(--gold-p); color:var(--white); }
+.nav-link.active { border-left-color:var(--gold); color:var(--gold); background:var(--gold-p); }
+.nav-icon { font-size:.85rem; width:18px; text-align:center; }
+.nav-num {
+  margin-left:auto;
+  font-family:'Space Mono',monospace;
+  font-size:.5rem; color:var(--muted);
+}
+
+/* MAIN */
+.main {
+  margin-left:240px;
+  padding-top:52px;
+  min-height:100vh;
+  position:relative; z-index:1;
+}
+
+.content { padding:48px 56px 80px; max-width:960px; }
+
+/* HERO */
+.hero {
+  margin-bottom:60px;
+  padding:40px 0 32px;
+  border-bottom:1px solid var(--line);
+  position:relative;
+}
+.hero::after {
+  content:'';
+  position:absolute; bottom:-1px; left:0;
+  width:120px; height:1px; background:var(--gold);
+}
+.hero-eyebrow {
+  font-family:'Space Mono',monospace;
+  font-size:.58rem; letter-spacing:3px; color:var(--gold);
+  text-transform:uppercase; margin-bottom:14px;
+  display:flex; align-items:center; gap:10px;
+}
+.hero-eyebrow::before { content:''; width:24px; height:1px; background:var(--gold); }
+.hero-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:2.8rem; font-weight:300; line-height:1.15;
+  color:var(--white); margin-bottom:10px;
+}
+.hero-title em { color:var(--gold); font-style:italic; font-weight:600; }
+.hero-sub {
+  font-size:.85rem; color:var(--off); line-height:1.7;
+  max-width:540px; margin-bottom:24px;
+}
+.hero-tags { display:flex; gap:8px; flex-wrap:wrap; }
+.htag {
+  font-family:'Space Mono',monospace;
+  font-size:.58rem; letter-spacing:1px;
+  padding:5px 12px; border-radius:20px;
+  border:1px solid; text-transform:uppercase;
+}
+.ht-gold { border-color:var(--gold-b); color:var(--gold); background:var(--gold-p); }
+.ht-cyber { border-color:var(--cyber-b); color:var(--cyber); background:var(--cyber-d); }
+.ht-green { border-color:rgba(0,224,150,.2); color:var(--green); background:rgba(0,224,150,.06); }
+
+/* SECTION */
+.section { margin-bottom:64px; }
+.section-anchor { position:relative; top:-80px; }
+
+.section-header {
+  display:flex; align-items:flex-start; gap:16px;
+  margin-bottom:28px;
+  padding-bottom:16px;
+  border-bottom:1px solid var(--line);
+  position:relative;
+}
+.section-header::after {
+  content:''; position:absolute; bottom:-1px; left:0;
+  width:40px; height:1px; background:var(--gold);
+}
+.section-num {
+  font-family:'Space Mono',monospace;
+  font-size:2rem; font-weight:700; color:var(--muted);
+  line-height:1; flex-shrink:0; padding-top:4px;
+}
+.section-info {}
+.section-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.7rem; font-weight:600;
+  color:var(--white); line-height:1.2; margin-bottom:4px;
+}
+.section-title em { color:var(--gold); font-style:italic; }
+.section-desc { font-size:.8rem; color:var(--off); line-height:1.6; }
+
+/* CARDS */
+.card-grid { display:grid; gap:12px; margin-bottom:20px; }
+.cg-2 { grid-template-columns:1fr 1fr; }
+.cg-3 { grid-template-columns:1fr 1fr 1fr; }
+.cg-4 { grid-template-columns:repeat(4,1fr); }
+
+.card {
+  background:var(--ink3);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:16px 18px;
+  transition:border-color .2s;
+}
+.card:hover { border-color:var(--line2); }
+.card-gold { border-color:var(--gold-b); }
+.card-cyber { border-color:var(--cyber-b); }
+.card-green { border-color:rgba(0,224,150,.2); }
+.card-red { border-color:rgba(255,77,109,.2); }
+
+.card-icon { font-size:1.2rem; margin-bottom:8px; }
+.card-title {
+  font-size:.78rem; font-weight:700; letter-spacing:.3px;
+  color:var(--white); margin-bottom:4px;
+}
+.card-desc { font-size:.73rem; color:var(--off); line-height:1.55; }
+.card-tag {
+  display:inline-block; margin-top:8px;
+  font-family:'Space Mono',monospace;
+  font-size:.5rem; letter-spacing:1px; padding:2px 8px;
+  border-radius:10px; text-transform:uppercase;
+}
+.ct-safe { background:rgba(0,224,150,.08); border:1px solid rgba(0,224,150,.2); color:var(--green); }
+.ct-risk { background:rgba(255,77,109,.08); border:1px solid rgba(255,77,109,.2); color:var(--red); }
+.ct-warn { background:rgba(212,175,55,.08); border:1px solid rgba(212,175,55,.2); color:var(--gold); }
+
+/* LAYER STACK */
+.layer-stack { display:flex; flex-direction:column; gap:2px; margin:20px 0; }
+.layer {
+  display:flex; align-items:stretch; gap:0;
+  border-radius:8px; overflow:hidden;
+  background:var(--ink3);
+  border:1px solid var(--line);
+  transition:all .2s;
+}
+.layer:hover { border-color:var(--line2); }
+.layer-num {
+  width:48px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Space Mono',monospace;
+  font-size:.65rem; font-weight:700;
+  background:var(--ink4);
+  border-right:1px solid var(--line);
+  color:var(--muted);
+}
+.layer-body { padding:14px 18px; flex:1; }
+.layer-title {
+  font-size:.82rem; font-weight:700;
+  color:var(--gold); margin-bottom:3px;
+}
+.layer-desc { font-size:.74rem; color:var(--off); line-height:1.5; }
+.layer-badges { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+.lbadge {
+  font-family:'Space Mono',monospace;
+  font-size:.5rem; padding:2px 8px; border-radius:10px;
+  letter-spacing:.5px; text-transform:uppercase;
+}
+.lb-cyber { background:var(--cyber-d); border:1px solid var(--cyber-b); color:var(--cyber); }
+.lb-gold { background:var(--gold-p); border:1px solid var(--gold-b); color:var(--gold); }
+.lb-green { background:rgba(0,224,150,.08); border:1px solid rgba(0,224,150,.2); color:var(--green); }
+.lb-muted { background:rgba(255,255,255,.04); border:1px solid var(--line); color:var(--muted); }
+
+/* FLOW DIAGRAM */
+.flow { margin:24px 0; }
+.flow-title {
+  font-family:'Space Mono',monospace;
+  font-size:.58rem; letter-spacing:2px; color:var(--gold);
+  text-transform:uppercase; margin-bottom:14px;
+  display:flex; align-items:center; gap:8px;
+}
+.flow-title::after { content:''; flex:1; height:1px; background:var(--line); }
+
+.flow-steps {
+  display:flex; align-items:flex-start; gap:0;
+  overflow-x:auto; padding-bottom:4px;
+}
+.flow-step {
+  display:flex; flex-direction:column; align-items:center;
+  min-width:110px; flex-shrink:0;
+}
+.flow-node {
+  width:80px; height:80px;
+  border-radius:12px;
+  background:var(--ink3);
+  border:1px solid var(--line2);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:6px; text-align:center;
+  padding:8px;
+  transition:all .2s;
+}
+.flow-node:hover { border-color:var(--gold-b); }
+.flow-node-icon { font-size:1.3rem; }
+.flow-node-label { font-size:.62rem; font-weight:700; color:var(--off); line-height:1.2; }
+.flow-node-sub { font-family:'Space Mono',monospace; font-size:.48rem; color:var(--muted); }
+.flow-arrow {
+  flex:1; display:flex; align-items:center; justify-content:center;
+  padding:0 2px; margin-top:30px;
+  min-width:24px;
+}
+.flow-arrow::after {
+  content:'→';
+  font-size:.9rem; color:var(--muted);
+}
+.flow-step-label {
+  font-size:.6rem; color:var(--muted); text-align:center;
+  margin-top:6px; max-width:90px; line-height:1.3;
+}
+.fn-gold { border-color:var(--gold-b); background:var(--gold-p); }
+.fn-gold .flow-node-label { color:var(--gold-l); }
+.fn-cyber { border-color:var(--cyber-b); background:var(--cyber-d); }
+.fn-cyber .flow-node-label { color:var(--cyber); }
+.fn-green { border-color:rgba(0,224,150,.2); background:rgba(0,224,150,.06); }
+.fn-green .flow-node-label { color:var(--green); }
+
+/* COMPARE TABLE */
+.compare { margin:20px 0; }
+.compare-table {
+  width:100%; border-collapse:collapse;
+  font-size:.78rem;
+}
+.compare-table thead tr {
+  border-bottom:1px solid var(--gold-b);
+}
+.compare-table th {
+  font-family:'Space Mono',monospace;
+  font-size:.55rem; letter-spacing:1.5px; text-transform:uppercase;
+  color:var(--gold); padding:10px 14px; text-align:left;
+  font-weight:400;
+}
+.compare-table td {
+  padding:10px 14px; color:var(--off);
+  border-bottom:1px solid var(--line);
+  vertical-align:middle;
+}
+.compare-table tr:last-child td { border-bottom:none; }
+.compare-table tr:hover td { background:rgba(255,255,255,.02); }
+.td-name { color:var(--white); font-weight:600; }
+.td-safe { color:var(--green); font-weight:600; }
+.td-warn { color:var(--gold); font-weight:600; }
+.td-risk { color:var(--red); font-weight:600; }
+
+/* PRINCIPLE BOX */
+.principle {
+  background:var(--ink3);
+  border:1px solid var(--line);
+  border-left:3px solid var(--gold);
+  border-radius:0 10px 10px 0;
+  padding:14px 18px;
+  margin:12px 0;
+}
+.principle-label {
+  font-family:'Space Mono',monospace;
+  font-size:.5rem; letter-spacing:2px; color:var(--gold);
+  text-transform:uppercase; margin-bottom:4px;
+}
+.principle-text {
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.1rem; font-weight:600; color:var(--white);
+  font-style:italic; line-height:1.4;
+}
+
+/* RULE BLOCK */
+.rules { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:16px 0; }
+.rule-block {
+  padding:16px;
+  border-radius:10px;
+}
+.rb-ok {
+  background:rgba(0,224,150,.05);
+  border:1px solid rgba(0,224,150,.15);
+}
+.rb-no {
+  background:rgba(255,77,109,.05);
+  border:1px solid rgba(255,77,109,.15);
+}
+.rb-header {
+  display:flex; align-items:center; gap:6px;
+  font-family:'Space Mono',monospace;
+  font-size:.58rem; letter-spacing:1.5px;
+  text-transform:uppercase; margin-bottom:10px;
+  font-weight:700;
+}
+.rb-ok .rb-header { color:var(--green); }
+.rb-no .rb-header { color:var(--red); }
+.rb-item {
+  display:flex; align-items:flex-start; gap:8px;
+  font-size:.76rem; color:var(--off); line-height:1.5;
+  margin-bottom:6px;
+}
+.rb-dot { flex-shrink:0; margin-top:3px; }
+.rb-ok .rb-dot { color:var(--green); }
+.rb-no .rb-dot { color:var(--red); }
+
+/* DEFINITION */
+.definition {
+  margin:16px 0;
+  display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;
+}
+.def-item {
+  background:var(--ink3);
+  border:1px solid var(--line);
+  border-radius:10px; padding:16px;
+}
+.def-role {
+  font-family:'Space Mono',monospace;
+  font-size:.52rem; letter-spacing:2px;
+  text-transform:uppercase; color:var(--gold);
+  margin-bottom:6px;
+}
+.def-name { font-size:.85rem; font-weight:700; color:var(--white); margin-bottom:4px; }
+.def-desc { font-size:.72rem; color:var(--off); line-height:1.5; }
+
+/* CODE BLOCK */
+.code-block {
+  background:var(--ink2);
+  border:1px solid var(--line2);
+  border-radius:10px;
+  padding:20px 22px;
+  margin:16px 0;
+  font-family:'Space Mono',monospace;
+  font-size:.7rem; line-height:1.7;
+  color:#7A8090;
+  overflow-x:auto;
+  position:relative;
+}
+.code-block .cb-label {
+  position:absolute; top:10px; right:12px;
+  font-size:.5rem; letter-spacing:1.5px;
+  text-transform:uppercase; color:var(--muted);
+}
+.code-comment { color:var(--muted); }
+.code-key { color:var(--gold); }
+.code-val { color:var(--cyber); }
+.code-str { color:var(--green); }
+.code-ok { color:var(--green); }
+.code-no { color:var(--red); }
+
+/* TIMELINE */
+.timeline { margin:20px 0; position:relative; }
+.timeline::before {
+  content:''; position:absolute;
+  left:24px; top:0; bottom:0;
+  width:1px; background:var(--line2);
+}
+.tl-item {
+  display:flex; gap:16px; margin-bottom:20px;
+  position:relative;
+}
+.tl-dot {
+  width:48px; height:48px; flex-shrink:0;
+  border-radius:12px;
+  background:var(--ink3);
+  border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1rem; z-index:1;
+  position:relative;
+}
+.tl-dot::after {
+  content:''; position:absolute;
+  bottom:-20px; left:50%; transform:translateX(-50%);
+  width:1px; height:20px; background:var(--line);
+}
+.tl-item:last-child .tl-dot::after { display:none; }
+.tl-body { flex:1; padding-top:4px; }
+.tl-phase {
+  font-family:'Space Mono',monospace;
+  font-size:.52rem; letter-spacing:2px;
+  text-transform:uppercase; color:var(--muted);
+  margin-bottom:2px;
+}
+.tl-title { font-size:.88rem; font-weight:700; color:var(--white); margin-bottom:4px; }
+.tl-desc { font-size:.74rem; color:var(--off); line-height:1.55; }
+.tl-tags { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+.tl-tag {
+  font-family:'Space Mono',monospace;
+  font-size:.48rem; padding:2px 8px; border-radius:10px;
+  letter-spacing:.5px; text-transform:uppercase;
+}
+.tt-gold { background:var(--gold-p); border:1px solid var(--gold-b); color:var(--gold); }
+.tt-cyber { background:var(--cyber-d); border:1px solid var(--cyber-b); color:var(--cyber); }
+.tt-green { background:rgba(0,224,150,.08); border:1px solid rgba(0,224,150,.2); color:var(--green); }
+.tt-muted { background:rgba(255,255,255,.04); border:1px solid var(--line); color:var(--muted); }
+
+/* DIVIDER */
+.divider { height:1px; background:var(--line); margin:32px 0; position:relative; }
+.divider::after {
+  content:''; position:absolute;
+  left:0; top:0; width:60px; height:1px; background:var(--gold-d);
+}
+
+/* NOTICE */
+.notice {
+  display:flex; align-items:flex-start; gap:12px;
+  padding:14px 16px; border-radius:10px; margin:16px 0;
+  font-size:.78rem; line-height:1.6;
+}
+.n-gold { background:var(--gold-p); border:1px solid var(--gold-b); color:var(--gold-l); }
+.n-cyber { background:var(--cyber-d); border:1px solid var(--cyber-b); color:var(--cyber); }
+.n-green { background:rgba(0,224,150,.07); border:1px solid rgba(0,224,150,.18); color:var(--green); }
+.notice-icon { flex-shrink:0; font-size:1rem; }
+
+/* RESULT BANNER */
+.result-banner {
+  background:var(--ink3);
+  border:1px solid var(--gold-b);
+  border-radius:14px; padding:28px 32px;
+  margin:28px 0;
+  position:relative; overflow:hidden;
+}
+.result-banner::before {
+  content:''; position:absolute;
+  top:-60px; right:-60px;
+  width:180px; height:180px; border-radius:50%;
+  background:radial-gradient(circle, rgba(212,175,55,.12), transparent 70%);
+  pointer-events:none;
+}
+.rb-eyebrow {
+  font-family:'Space Mono',monospace;
+  font-size:.52rem; letter-spacing:3px; color:var(--gold);
+  text-transform:uppercase; margin-bottom:10px;
+}
+.rb-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.5rem; font-weight:600; color:var(--gold);
+  margin-bottom:8px;
+}
+.rb-text { font-size:.8rem; color:var(--off); line-height:1.65; }
+
+/* PRINT */
+@media print {
+  .sidebar, .topbar { display:none; }
+  .main { margin-left:0; padding-top:0; }
+  .content { padding:20px; }
+  body { background:white; color:black; }
+}
+
+@media (max-width:768px) {
+  .sidebar { display:none; }
+  .main { margin-left:0; }
+  .content { padding:24px 20px 60px; }
+  .cg-2,.cg-3,.cg-4 { grid-template-columns:1fr; }
+  .rules { grid-template-columns:1fr; }
+  .definition { grid-template-columns:1fr; }
+  .hero-title { font-size:2rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="tb-brand">
+    <span class="tb-logo">Labriolag</span>
+    <div class="tb-sep"></div>
+    <span class="tb-doc">Arquitetura de Governança</span>
+  </div>
+  <div class="tb-right">
+    <span class="tb-badge tb-version">v1.0 · 2025</span>
+    <span class="tb-badge tb-lgpd">LGPD-Safe</span>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="nav-section-title">Documento</div>
+  <a href="#intro" class="nav-link active">
+    <span class="nav-icon">🏛️</span> Visão Geral
+  </a>
+  <div class="nav-section-title">Governança</div>
+  <a href="#telemetria" class="nav-link">
+    <span class="nav-icon">📡</span> Telemetria LGPD
+    <span class="nav-num">01</span>
+  </a>
+  <a href="#lgpd" class="nav-link">
+    <span class="nav-icon">⚖️</span> Compliance LGPD
+    <span class="nav-num">02</span>
+  </a>
+  <a href="#blindagem" class="nav-link">
+    <span class="nav-icon">🛡️</span> Blindagem Jurídica
+    <span class="nav-num">03</span>
+  </a>
+  <div class="nav-section-title">Produtos</div>
+  <a href="#labpay" class="nav-link">
+    <span class="nav-icon">💳</span> LabPay · Orquestração
+    <span class="nav-num">04</span>
+  </a>
+  <a href="#labads" class="nav-link">
+    <span class="nav-icon">📢</span> LabAds · Safe
+    <span class="nav-num">05</span>
+  </a>
+  <a href="#labcoins" class="nav-link">
+    <span class="nav-icon">🪙</span> LabCoins · Crédito
+    <span class="nav-num">06</span>
+  </a>
+  <div class="nav-section-title">Expansão</div>
+  <a href="#territorial" class="nav-link">
+    <span class="nav-icon">🗺️</span> Modelo Territorial
+    <span class="nav-num">07</span>
+  </a>
+  <a href="#resultado" class="nav-link">
+    <span class="nav-icon">🎯</span> Resultado Final
+  </a>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+<div class="content">
+
+  <!-- HERO -->
+  <div id="intro">
+  <div class="hero">
+    <div class="hero-eyebrow">Labriolag Holding · Documento Interno</div>
+    <h1 class="hero-title">Arquitetura de <em>Governança</em><br>e Compliance Digital</h1>
+    <p class="hero-sub">Modelo estruturado para escalar, ser auditado, vender para prefeituras e redes grandes sem risco jurídico, regulatório ou reputacional.</p>
+    <div class="hero-tags">
+      <span class="htag ht-green">✓ LGPD-Safe</span>
+      <span class="htag ht-gold">✓ Auditável</span>
+      <span class="htag ht-cyber">✓ Escalável</span>
+      <span class="htag ht-gold">✓ Sem Custódia</span>
+      <span class="htag ht-green">✓ Pré-Franquia</span>
+    </div>
+  </div>
+
+  <div class="principle">
+    <div class="principle-label">Princípio Fundador</div>
+    <div class="principle-text">"Você não coleta pessoas. Você coleta eventos."</div>
+  </div>
+
+  <div class="notice n-gold">
+    <span class="notice-icon">⚡</span>
+    <span>Este documento consolida a arquitetura técnica e jurídica da Holding. É o manual de defesa para qualquer auditoria, parceria institucional ou captação de investimento.</span>
+  </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 01 TELEMETRIA -->
+  <div class="section">
+    <span class="section-anchor" id="telemetria"></span>
+    <div class="section-header">
+      <div class="section-num">01</div>
+      <div class="section-info">
+        <h2 class="section-title">Telemetria <em>LGPD-Safe</em></h2>
+        <p class="section-desc">Arquitetura de coleta de dados que gera inteligência real sem expor a Holding ao risco da Lei 13.709/18.</p>
+      </div>
+    </div>
+
+    <div class="rules">
+      <div class="rule-block rb-ok">
+        <div class="rb-header">✓ Modelo Seguro</div>
+        <div class="rb-item"><span class="rb-dot">●</span>Evento de clique com timestamp</div>
+        <div class="rb-item"><span class="rb-dot">●</span>Valor agregado por categoria</div>
+        <div class="rb-item"><span class="rb-dot">●</span>Região anonimizada (cidade/bairro)</div>
+        <div class="rb-item"><span class="rb-dot">●</span>Tipo de dispositivo genérico</div>
+        <div class="rb-item"><span class="rb-dot">●</span>ID de sessão criptográfico rotativo</div>
+        <div class="rb-item"><span class="rb-dot">●</span>Expiração automática 30/60/90 dias</div>
+      </div>
+      <div class="rule-block rb-no">
+        <div class="rb-header">✕ Nunca Coletar</div>
+        <div class="rb-item"><span class="rb-dot">●</span>Nome ou CPF</div>
+        <div class="rb-item"><span class="rb-dot">●</span>Telefone ou e-mail sem consentimento</div>
+        <div class="rb-item"><span class="rb-dot">●</span>IP armazenado de forma permanente</div>
+        <div class="rb-item"><span class="rb-dot">●</span>Identificador permanente e rastreável</div>
+        <div class="rb-item"><span class="rb-dot">●</span>Histórico nominal por cliente</div>
+        <div class="rb-item"><span class="rb-dot">●</span>Cruzamento inter-comerciantes</div>
+      </div>
+    </div>
+
+    <div class="flow">
+      <div class="flow-title">Fluxo de Evento · Anonimização na Origem</div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-node fn-cyber">
+            <div class="flow-node-icon">📱</div>
+            <div class="flow-node-label">Usuário Interage</div>
+          </div>
+          <div class="flow-step-label">Clique no menu ou QR scan</div>
+        </div>
+        <div class="flow-arrow"></div>
+        <div class="flow-step">
+          <div class="flow-node">
+            <div class="flow-node-icon">🔐</div>
+            <div class="flow-node-label">Hash Rotativo</div>
+            <div class="flow-node-sub">8aF93ks · 30d</div>
+          </div>
+          <div class="flow-step-label">Sem nome. Sem CPF. Sem IP</div>
+        </div>
+        <div class="flow-arrow"></div>
+        <div class="flow-step">
+          <div class="flow-node fn-gold">
+            <div class="flow-node-icon">📊</div>
+            <div class="flow-node-label">Evento Registrado</div>
+          </div>
+          <div class="flow-step-label">Categoria, hora, cidade</div>
+        </div>
+        <div class="flow-arrow"></div>
+        <div class="flow-step">
+          <div class="flow-node">
+            <div class="flow-node-icon">🗄️</div>
+            <div class="flow-node-label">Banco Analítico</div>
+          </div>
+          <div class="flow-step-label">Separado do transacional</div>
+        </div>
+        <div class="flow-arrow"></div>
+        <div class="flow-step">
+          <div class="flow-node fn-green">
+            <div class="flow-node-icon">🧠</div>
+            <div class="flow-node-label">Inteligência</div>
+          </div>
+          <div class="flow-step-label">Painel · Relatório · ISTD</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <span class="cb-label">Estrutura do Evento</span>
+<span class="code-comment">// O que é salvo no banco analítico (LGPD-Safe)</span>
+{
+  <span class="code-key">"hash_session_id"</span>: <span class="code-str">"8aF93ks"</span>,       <span class="code-comment">// rotativo · expira em 30 dias</span>
+  <span class="code-key">"evento"</span>:          <span class="code-str">"click_item"</span>,      <span class="code-comment">// tipo de interação</span>
+  <span class="code-key">"categoria"</span>:       <span class="code-str">"pizza_grande"</span>,    <span class="code-comment">// agregado, não nominal</span>
+  <span class="code-key">"cidade"</span>:          <span class="code-str">"Pirapora"</span>,         <span class="code-comment">// regional, não endereço</span>
+  <span class="code-key">"hora"</span>:            <span class="code-str">"19:43"</span>,            <span class="code-comment">// timestamp</span>
+  <span class="code-key">"device_type"</span>:    <span class="code-str">"mobile_android"</span>   <span class="code-comment">// genérico, não modelo</span>
+}
+
+<span class="code-comment">// O que NUNCA é salvo</span>
+<span class="code-no">// "nome": "João Silva"          ← PROIBIDO</span>
+<span class="code-no">// "cpf": "123.456.789-00"       ← PROIBIDO</span>
+<span class="code-no">// "ip": "177.xxx.xxx.xxx"       ← PROIBIDO (permanente)</span>
+<span class="code-no">// "telefone": "11 9 9999-0000"  ← PROIBIDO sem consentimento</span>
+    </div>
+
+    <div class="layer-stack">
+      <div class="layer">
+        <div class="layer-num">C1</div>
+        <div class="layer-body">
+          <div class="layer-title">Anonimização na Origem</div>
+          <div class="layer-desc">Dados pessoais nunca chegam ao banco. A anonimização acontece no ponto de captura, antes de qualquer persistência.</div>
+          <div class="layer-badges"><span class="lbadge lb-green">LGPD Art. 12</span><span class="lbadge lb-muted">Hash SHA-256</span></div>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-num">C2</div>
+        <div class="layer-body">
+          <div class="layer-title">Pseudonimização Temporária</div>
+          <div class="layer-desc">Para fidelidade: ID criptográfico com expiração automática. Nada permanente, nada vinculável a CPF.</div>
+          <div class="layer-badges"><span class="lbadge lb-cyber">Rotativo 30/60/90d</span><span class="lbadge lb-muted">Expiração Automática</span></div>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-num">C3</div>
+        <div class="layer-body">
+          <div class="layer-title">Dados Agregados no Painel</div>
+          <div class="layer-desc">Comerciante vê: total de acessos, ticket médio, horário de pico, conversão por QR. Nunca histórico nominal de clientes.</div>
+          <div class="layer-badges"><span class="lbadge lb-gold">KPIs Macro</span><span class="lbadge lb-muted">Sem Individual</span></div>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-num">C4</div>
+        <div class="layer-body">
+          <div class="layer-title">Minimização de Dados</div>
+          <div class="layer-desc">Pergunta obrigatória para cada campo: "Eu realmente preciso disso para operar?" Se não precisa, não coleta. Coração da LGPD.</div>
+          <div class="layer-badges"><span class="lbadge lb-green">Art. 6º LGPD</span><span class="lbadge lb-muted">Princípio da Necessidade</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 02 LGPD COMPLIANCE -->
+  <div class="section">
+    <span class="section-anchor" id="lgpd"></span>
+    <div class="section-header">
+      <div class="section-num">02</div>
+      <div class="section-info">
+        <h2 class="section-title">Governança <em>& Compliance</em></h2>
+        <p class="section-desc">Estrutura formal para ser auditado, vender para prefeituras e atrair parceiros institucionais.</p>
+      </div>
+    </div>
+
+    <div class="principle">
+      <div class="principle-label">Resultado Estratégico</div>
+      <div class="principle-text">"Labriolag deixa de ser 'app esperto' e vira Infraestrutura Digital com Governança."</div>
+    </div>
+
+    <div style="margin:20px 0;">
+      <div class="flow-title">Papéis Legais LGPD</div>
+      <div class="definition">
+        <div class="def-item">
+          <div class="def-role">Controlador</div>
+          <div class="def-name">🏪 Comerciante</div>
+          <div class="def-desc">Decide finalidade e uso dos dados dos clientes dele. Responsável pela base legal do tratamento (consentimento, legítimo interesse).</div>
+        </div>
+        <div class="def-item" style="border-color:var(--gold-b);">
+          <div class="def-role" style="color:var(--gold);">Operador</div>
+          <div class="def-name">🏛️ Labriolag</div>
+          <div class="def-desc">Processa dados em nome do controlador. Labriolag é operador da infraestrutura, não controlador dos dados dos consumidores finais.</div>
+        </div>
+        <div class="def-item">
+          <div class="def-role">Encarregado/DPO</div>
+          <div class="def-name">👤 A Nomear</div>
+          <div class="def-desc">Responsável interno pela proteção de dados. Ponto de contato com a ANPD (Autoridade Nacional de Proteção de Dados).</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-grid cg-2">
+      <div class="card">
+        <div class="card-icon">📜</div>
+        <div class="card-title">Política de Privacidade Estrutural</div>
+        <div class="card-desc">Não um modelo genérico. Reflete a arquitetura real: o que é coletado, por quê, onde armazenado, tempo de retenção e base legal para cada dado.</div>
+        <span class="card-tag ct-safe">Obrigatório</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧾</div>
+        <div class="card-title">Registro de Operações de Tratamento</div>
+        <div class="card-desc">Documento interno mapeando cada dado coletado. Ouro em caso de fiscalização da ANPD. Demonstra que há método, não improviso.</div>
+        <span class="card-tag ct-safe">Ouro na Auditoria</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🛡️</div>
+        <div class="card-title">Plano de Incidente de Dados</div>
+        <div class="card-desc">Protocolo: Identificar → Conter → Notificar ANPD (72h) → Corrigir. Sem isso, qualquer vazamento vira multa automática de até R$ 50M.</div>
+        <span class="card-tag ct-warn">Crítico</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">📋</div>
+        <div class="card-title">Termos e Documentos</div>
+        <div class="card-desc">Política pública + Termos de uso + Termo do comerciante + Termo do operador territorial. Cada audiência recebe o documento certo.</div>
+        <span class="card-tag ct-safe">4 Documentos</span>
+      </div>
+    </div>
+
+    <div class="notice n-cyber">
+      <span class="notice-icon">⚖️</span>
+      <span><strong>Base Legal Recomendada:</strong> Legítimo Interesse para dados analíticos agregados (Art. 7, IX LGPD). Consentimento expresso para comunicação direta com cliente final. Contrato para dados necessários à prestação do serviço SaaS.</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 03 BLINDAGEM JURÍDICA -->
+  <div class="section">
+    <span class="section-anchor" id="blindagem"></span>
+    <div class="section-header">
+      <div class="section-num">03</div>
+      <div class="section-info">
+        <h2 class="section-title">Blindagem <em>Jurídica</em></h2>
+        <p class="section-desc">Estrutura contratual que protege a Holding em três dimensões: propriedade intelectual, dados e responsabilidade.</p>
+      </div>
+    </div>
+
+    <div class="layer-stack">
+      <div class="layer" style="border-color:var(--gold-b);">
+        <div class="layer-num" style="color:var(--gold);">3.1</div>
+        <div class="layer-body">
+          <div class="layer-title">Contrato Comercial Blindado</div>
+          <div class="layer-desc">Comerciante é responsável pelos dados inseridos manualmente e garante consentimento dos clientes. Labriolag atua como processador técnico. Dados agregados podem ser usados para melhoria do sistema e inteligência de mercado.</div>
+          <div class="layer-badges"><span class="lbadge lb-gold">Responsabilidade clara</span><span class="lbadge lb-muted">PI protegida</span><span class="lbadge lb-green">Dados estatísticos = ativo</span></div>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-num">3.2</div>
+        <div class="layer-body">
+          <div class="layer-title">Dados Estatísticos como Ativo Labriolag</div>
+          <div class="layer-desc">Cláusula explícita: "Dados anonimizados e agregados pertencem à Labriolag para fins de melhoria, estatística e inteligência de mercado." Dados anonimizados não são dados pessoais pela LGPD (Art. 12). Esta é a mina de ouro legal.</div>
+          <div class="layer-badges"><span class="lbadge lb-green">Art. 12 LGPD</span><span class="lbadge lb-gold">Ativo da Holding</span></div>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-num">3.3</div>
+        <div class="layer-body">
+          <div class="layer-title">Arquitetura Técnica Protetiva</div>
+          <div class="layer-desc">Criptografia em repouso (AES-256) + em trânsito (HTTPS/TLS 1.3). Separação física entre banco transacional e banco analítico. Logs sem dados sensíveis. Acesso por role.</div>
+          <div class="layer-badges"><span class="lbadge lb-cyber">AES-256</span><span class="lbadge lb-cyber">TLS 1.3</span><span class="lbadge lb-muted">DB Separation</span><span class="lbadge lb-muted">RBAC</span></div>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-num">3.4</div>
+        <div class="layer-body">
+          <div class="layer-title">Limites Inegociáveis</div>
+          <div class="layer-desc">Nunca: cruzar dados pessoais entre comerciantes, vender lista de clientes, compartilhar comportamento individual. Sempre: padrões macro, estatística, tendências de mercado.</div>
+          <div class="layer-badges"><span class="lbadge lb-muted">Zona Cinza: Zero</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notice n-green">
+      <span class="notice-icon">🎯</span>
+      <span><strong>Dado anonimizado ≠ dado pessoal (LGPD Art. 12).</strong> Uma vez que não é possível identificar o titular, o dado sai da proteção da lei e vira ativo comercial puro da Labriolag. Essa é a distinção que sustenta o modelo de inteligência territorial.</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 04 LABPAY -->
+  <div class="section">
+    <span class="section-anchor" id="labpay"></span>
+    <div class="section-header">
+      <div class="section-num">04</div>
+      <div class="section-info">
+        <h2 class="section-title">LabPay · <em>Orquestração sem Custódia</em></h2>
+        <p class="section-desc">Infraestrutura de pagamento que não é banco, não custodia dinheiro e não precisa de autorização do Banco Central.</p>
+      </div>
+    </div>
+
+    <div class="principle">
+      <div class="principle-label">Princípio Absoluto</div>
+      <div class="principle-text">"Dinheiro nunca entra na conta da Labriolag."</div>
+    </div>
+
+    <div class="card-grid cg-3">
+      <div class="card card-red" style="text-align:center;">
+        <div class="card-icon">🏦</div>
+        <div class="card-title" style="color:var(--red);">O LabPay NÃO é</div>
+        <div class="card-desc">Banco · Carteira digital · Instituição de pagamento · Custodiante de saldo · Liquidante de transações</div>
+        <span class="card-tag ct-risk">Fora do escopo</span>
+      </div>
+      <div class="card card-green" style="text-align:center;">
+        <div class="card-icon">⚙️</div>
+        <div class="card-title" style="color:var(--green);">O LabPay É</div>
+        <div class="card-desc">Camada tecnológica · Orquestrador de fluxo · Gerador de instrução PIX · Registrador de evento · Conciliador</div>
+        <span class="card-tag ct-safe">Modelo seguro</span>
+      </div>
+      <div class="card card-gold" style="text-align:center;">
+        <div class="card-icon">💰</div>
+        <div class="card-title" style="color:var(--gold);">Labriolag ganha com</div>
+        <div class="card-desc">Mensalidade SaaS · Taxa de software (não financeira) · Pacote de funcionalidades · Assinatura premium</div>
+        <span class="card-tag ct-warn">Modelo de receita</span>
+      </div>
+    </div>
+
+    <div class="flow" style="margin-top:28px;">
+      <div class="flow-title">Fluxo LabPay · Zero Custódia</div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-node fn-cyber">
+            <div class="flow-node-icon">🛒</div>
+            <div class="flow-node-label">Cliente Escolhe</div>
+          </div>
+          <div class="flow-step-label">Produto no LabMenu</div>
+        </div>
+        <div class="flow-arrow"></div>
+        <div class="flow-step">
+          <div class="flow-node fn-gold">
+            <div class="flow-node-icon">⚡</div>
+            <div class="flow-node-label">LabPay Gera</div>
+          </div>
+          <div class="flow-step-label">QR PIX dinâmico via API parceiro</div>
+        </div>
+        <div class="flow-arrow"></div>
+        <div class="flow-step">
+          <div class="flow-node">
+            <div class="flow-node-icon">🏦</div>
+            <div class="flow-node-label">Banco Cliente</div>
+          </div>
+          <div class="flow-step-label">Processa pagamento</div>
+        </div>
+        <div class="flow-arrow"></div>
+        <div class="flow-step">
+          <div class="flow-node">
+            <div class="flow-node-icon">🤝</div>
+            <div class="flow-node-label">PSP Parceiro</div>
+          </div>
+          <div class="flow-step-label">Regulado pelo BACEN</div>
+        </div>
+        <div class="flow-arrow"></div>
+        <div class="flow-step">
+          <div class="flow-node fn-green">
+            <div class="flow-node-icon">🏪</div>
+            <div class="flow-node-label">Comerciante</div>
+          </div>
+          <div class="flow-step-label">Recebe direto na conta</div>
+        </div>
+        <div class="flow-arrow"></div>
+        <div class="flow-step">
+          <div class="flow-node">
+            <div class="flow-node-icon">📥</div>
+            <div class="flow-node-label">Webhook</div>
+          </div>
+          <div class="flow-step-label">Labriolag só recebe confirmação</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <span class="cb-label">O que LabPay armazena</span>
+<span class="code-comment">// Registro de evento de pagamento · SEM toque no dinheiro</span>
+{
+  <span class="code-key">"transaction_id"</span>: <span class="code-str">"txn_9kL2mP"</span>,     <span class="code-comment">// ID externo do PSP parceiro</span>
+  <span class="code-key">"status"</span>:          <span class="code-str">"confirmed"</span>,      <span class="code-comment">// evento, não saldo</span>
+  <span class="code-key">"amount"</span>:          <span class="code-val">47.90</span>,             <span class="code-comment">// valor para estatística</span>
+  <span class="code-key">"timestamp"</span>:       <span class="code-str">"2025-06-15T19:43Z"</span>, <span class="code-comment">// quando</span>
+  <span class="code-key">"store_id"</span>:        <span class="code-str">"lab_pirapora_04"</span>  <span class="code-comment">// qual comerciante</span>
+}
+
+<span class="code-comment">// Nunca armazenado pelo LabPay</span>
+<span class="code-no">// saldo retido       ← PROIBIDO (seria custódia)</span>
+<span class="code-no">// chave PIX sensível ← PROIBIDO (em texto plano)</span>
+<span class="code-no">// token bancário     ← PROIBIDO</span>
+<span class="code-no">// conta transitória  ← PROIBIDO</span>
+    </div>
+
+    <div class="notice n-gold">
+      <span class="notice-icon">⚖️</span>
+      <span><strong>Posicionamento correto:</strong> "LabPay é camada de infraestrutura tecnológica para conciliação e automação de pagamentos instantâneos." — Esse modelo é usado por marketplaces, plataformas SaaS e ERPs de todo o mundo. Eles não são bancos. Eles integram bancos.</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 05 LABADS -->
+  <div class="section">
+    <span class="section-anchor" id="labads"></span>
+    <div class="section-header">
+      <div class="section-num">05</div>
+      <div class="section-info">
+        <h2 class="section-title">LabAds · <em>Publicidade Contextual Safe</em></h2>
+        <p class="section-desc">Motor de anúncios sem perfilamento pessoal. Segmentação por contexto, não por identidade.</p>
+      </div>
+    </div>
+
+    <div class="card-grid cg-2">
+      <div class="card card-green">
+        <div class="card-icon">✅</div>
+        <div class="card-title">Segmentação Permitida</div>
+        <div class="card-desc">
+          <div style="margin-bottom:4px;">🕐 Por horário do dia</div>
+          <div style="margin-bottom:4px;">📂 Por categoria de consumo</div>
+          <div style="margin-bottom:4px;">🏙️ Por bairro/cidade (agregado)</div>
+          <div style="margin-bottom:4px;">📱 Por tipo genérico de dispositivo</div>
+          <div>🎯 Por comportamento anônimo de sessão</div>
+        </div>
+        <span class="card-tag ct-safe">Risco Baixo · LGPD-Safe</span>
+      </div>
+      <div class="card card-red">
+        <div class="card-icon">🚫</div>
+        <div class="card-title">Nunca Permitido</div>
+        <div class="card-desc">
+          <div style="margin-bottom:4px;">👤 Perfilamento nominal individual</div>
+          <div style="margin-bottom:4px;">📤 Venda de base de dados a terceiros</div>
+          <div style="margin-bottom:4px;">🔗 Cruzamento de dados entre comerciantes</div>
+          <div style="margin-bottom:4px;">📊 Comportamento individual identificável</div>
+          <div>💊 Segmentação por dados sensíveis</div>
+        </div>
+        <span class="card-tag ct-risk">Proibido · Multa ANPD</span>
+      </div>
+    </div>
+
+    <div class="notice n-cyber">
+      <span class="notice-icon">📢</span>
+      <span>LabAds pode ser: Motor de promoções locais entre comerciantes do ecossistema, painel de destaque no dashboard, rede interna de publicidade geolocalizada. Risco regulatório: baixo, quando estruturado com dados contextuais e agregados.</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 06 LABCOINS -->
+  <div class="section">
+    <span class="section-anchor" id="labcoins"></span>
+    <div class="section-header">
+      <div class="section-num">06</div>
+      <div class="section-info">
+        <h2 class="section-title">LabCoins · <em>Crédito Operacional Fechado</em></h2>
+        <p class="section-desc">Unidade de incentivo interno que não é ativo financeiro, não é investimento, não é moeda paralela.</p>
+      </div>
+    </div>
+
+    <div class="compare">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Característica</th>
+            <th>LabCoin Seguro ✓</th>
+            <th>O que Evitar ✕</th>
+            <th>Risco</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="td-name">Conversibilidade</td>
+            <td class="td-safe">Restrito à plataforma</td>
+            <td class="td-risk">Conversível em dinheiro</td>
+            <td>CVM / Ativo Financeiro</td>
+          </tr>
+          <tr>
+            <td class="td-name">Transferência</td>
+            <td class="td-safe">Não transferível</td>
+            <td class="td-risk">Mercado secundário</td>
+            <td>Ativo mobiliário</td>
+          </tr>
+          <tr>
+            <td class="td-name">Promessa</td>
+            <td class="td-safe">Sem expectativa de ganho</td>
+            <td class="td-risk">Promessa de valorização</td>
+            <td>Captação pública</td>
+          </tr>
+          <tr>
+            <td class="td-name">Função</td>
+            <td class="td-safe">Crédito promocional de uso</td>
+            <td class="td-risk">Reserva de valor</td>
+            <td>Moeda paralela</td>
+          </tr>
+          <tr>
+            <td class="td-name">Nomenclatura</td>
+            <td class="td-safe">Crédito Operacional / Saldo</td>
+            <td class="td-risk">Token de investimento</td>
+            <td>Regulação CVM</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="principle">
+      <div class="principle-label">Modelo Correto</div>
+      <div class="principle-text">"1 pagamento = 2 LabCoins · 10 LabCoins = 1 raspadinha Fortune-Scratch. Nunca vira dinheiro."</div>
+    </div>
+
+    <div class="notice n-gold">
+      <span class="notice-icon">🪙</span>
+      <span>Se LabCoin for lastreada em Sats internamente (para controle contábil da Holding), essa operação deve permanecer no nível do back-office e nunca ser comunicada ao usuário final como "valorização" ou "investimento". Distinção que protege da CVM.</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 07 TERRITORIAL -->
+  <div class="section">
+    <span class="section-anchor" id="territorial"></span>
+    <div class="section-header">
+      <div class="section-num">07</div>
+      <div class="section-info">
+        <h2 class="section-title">Modelo <em>Territorial</em> · ISTD + IPS</h2>
+        <p class="section-desc">Expansão baseada em índices mensuráveis, não em achismo. Da Pirapora ao Barueri.</p>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <span class="cb-label">Fórmula ISTD</span>
+<span class="code-comment">// Índice de Saturação Tecnológica Digital · Score Territorial</span>
+<span class="code-key">ISTD</span> = (<span class="code-val">0.30</span> × P_norm)    <span class="code-comment">// População normalizada</span>
+       + (<span class="code-val">0.25</span> × C_norm)    <span class="code-comment">// CNPJs ativos</span>
+       + (<span class="code-val">0.20</span> × R_norm)    <span class="code-comment">// Renda per capita</span>
+       + (<span class="code-val">0.10</span> × H_norm)    <span class="code-comment">// IDH</span>
+       + (<span class="code-val">0.10</span> × D_norm)    <span class="code-comment">// Densidade comercial</span>
+       - (<span class="code-val">0.15</span> × K_norm)    <span class="code-comment">// Concorrência digital (penalidade)</span>
+
+<span class="code-comment">// Interpretação</span>
+<span class="code-ok">// 0.75–1.00 → Prioridade Máxima</span>
+<span class="code-ok">// 0.60–0.74 → Prioridade Estratégica</span>
+<span class="code-comment">// 0.45–0.59 → Teste Controlado</span>
+<span class="code-no">// &lt; 0.45    → Não priorizar</span>
+    </div>
+
+    <div class="flow-title" style="font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin:20px 0 12px;display:flex;align-items:center;gap:8px;">
+      Ranking de Expansão 2025–2028
+      <div style="flex:1;height:1px;background:var(--line);"></div>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot" style="border-color:var(--green);background:rgba(0,224,150,.08);">🏙️</div>
+        <div class="tl-body">
+          <div class="tl-phase">2025 · Marco Zero</div>
+          <div class="tl-title">Pirapora do Bom Jesus · ISTD 4.9</div>
+          <div class="tl-desc">Dominância rápida. 15 Cotas Fundadores. Validação do MVP. Relatório de Impacto. Custo de erro: mínimo. Aprendizado: máximo. A faca é afiada aqui.</div>
+          <div class="tl-tags">
+            <span class="tl-tag tt-green">15 Fundadores</span>
+            <span class="tl-tag tt-gold">MVP Validation</span>
+            <span class="tl-tag tt-muted">TPC Meta: 30%</span>
+          </div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="border-color:var(--cyber);background:var(--cyber-d);">🏗️</div>
+        <div class="tl-body">
+          <div class="tl-phase">2026 · Expansão Logística</div>
+          <div class="tl-title">Araçariguama (5.6) + Cajamar (7.9)</div>
+          <div class="tl-desc">Araçariguama: baixa concorrência, score próximo de Pirapora — primeiro teste de replicação com esforço similar. Cajamar: alta densidade logística, demanda braço comercial. Volume de SaaS cresce aqui.</div>
+          <div class="tl-tags">
+            <span class="tl-tag tt-cyber">2 Territórios</span>
+            <span class="tl-tag tt-gold">Modelo Replicado</span>
+            <span class="tl-tag tt-muted">Operador Territorial</span>
+          </div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="border-color:var(--gold);background:var(--gold-p);">⭐</div>
+        <div class="tl-body">
+          <div class="tl-phase">2027 · Salto de Autoridade</div>
+          <div class="tl-title">Santana de Parnaíba · ISTD 9.1</div>
+          <div class="tl-desc">Maior poder aquisitivo. Foco em Cota Fundador Premium, não volume. O selo Labriolag ganha status. Casos de uso para investidor e prefeitura já estão documentados.</div>
+          <div class="tl-tags">
+            <span class="tl-tag tt-gold">Premium Tier</span>
+            <span class="tl-tag tt-cyber">Investidor Ready</span>
+            <span class="tl-tag tt-muted">ISTD Alto</span>
+          </div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="border-color:var(--gold);background:var(--gold-p);">👑</div>
+        <div class="tl-body">
+          <div class="tl-phase">2028 · O Império</div>
+          <div class="tl-title">Barueri + Alphaville</div>
+          <div class="tl-desc">Coração financeiro e tecnológico do eixo. Aqui a Labriolag não se apresenta mais como startup regional. Chega com metodologia validada em 6 cidades, dados reais e modelo de escala comprovado. Padrão Smart City.</div>
+          <div class="tl-tags">
+            <span class="tl-tag tt-gold">Smart City Tier</span>
+            <span class="tl-tag tt-cyber">Prefeitura Ready</span>
+            <span class="tl-tag tt-green">National Scale</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <span class="cb-label">Gate de Expansão</span>
+<span class="code-comment">// Só expande para nova cidade quando as 3 condições forem verdadeiras:</span>
+<span class="code-key">EXPANSÃO_AUTORIZADA</span> =
+  (Receita_Recorrente ≥ Custo_Operacional × <span class="code-val">3</span>)  <span class="code-comment">// Caixa sustentável</span>
+  <span class="code-ok">AND</span> (TPC ≥ <span class="code-val">20</span>%)                             <span class="code-comment">// Domínio territorial real</span>
+  <span class="code-ok">AND</span> (Churn &lt; <span class="code-val">10</span>%)                            <span class="code-comment">// Produto retém clientes</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- RESULTADO FINAL -->
+  <div id="resultado">
+  <div class="result-banner">
+    <div class="rb-eyebrow">Resultado Estratégico · Labriolag v1.0</div>
+    <div class="rb-title">Infraestrutura Digital com Governança.</div>
+    <div class="rb-text">
+      Com esta arquitetura, a Labriolag pode escalar, ser auditada pela ANPD, vender para prefeituras, fechar com redes grandes e captar investimento — sem risco criminal, sem risco de multa, sem risco reputacional.<br><br>
+      LabPay não é banco. LabAds não é perfilamento. LabCoins não é ativo financeiro. Os dados são eventos, não pessoas. Cada produto tem o enquadramento jurídico correto desde a primeira linha de código.
+    </div>
+  </div>
+
+  <div class="card-grid cg-4" style="margin-top:20px;">
+    <div class="card" style="text-align:center;">
+      <div style="font-size:1.5rem;margin-bottom:6px;">🛡️</div>
+      <div class="card-title">LGPD</div>
+      <div class="card-desc" style="font-size:.68rem;">Compliance estrutural desde a origem</div>
+      <span class="card-tag ct-safe">Safe</span>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:1.5rem;margin-bottom:6px;">🏛️</div>
+      <div class="card-title">BACEN</div>
+      <div class="card-desc" style="font-size:.68rem;">Sem custódia, sem enquadramento</div>
+      <span class="card-tag ct-safe">Safe</span>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:1.5rem;margin-bottom:6px;">📈</div>
+      <div class="card-title">CVM</div>
+      <div class="card-desc" style="font-size:.68rem;">LabCoin como crédito, não ativo</div>
+      <span class="card-tag ct-safe">Safe</span>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:1.5rem;margin-bottom:6px;">🗺️</div>
+      <div class="card-title">Expansão</div>
+      <div class="card-desc" style="font-size:.68rem;">Métrica > Achismo. ISTD/IPS/TPC</div>
+      <span class="card-tag ct-safe">Auditável</span>
+    </div>
+  </div>
+  </div>
+
+</div><!-- /content -->
+</main>
+
+<script>
+// Nav highlight on scroll
+const sections = ['intro','telemetria','lgpd','blindagem','labpay','labads','labcoins','territorial','resultado'];
+const links = document.querySelectorAll('.nav-link');
+
+function updateNav() {
+  let current = 'intro';
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && window.scrollY >= el.offsetTop - 100) current = id;
+  });
+  links.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+  });
+}
+
+window.addEventListener('scroll', updateNav, { passive:true });
+updateNav();
+
+// Smooth nav
+links.forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const id = link.getAttribute('href').slice(1);
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+  });
+});
+</script>
+
+</body>
+</html>

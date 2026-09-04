@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IDE Mobile Sem Limites</title>
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0d1117;
+  color: #e6edf3;
+  height: 100vh;
+  overflow: hidden;
+}
+iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: white;
+}
+#editorPanel {
+  position: fixed;
+  bottom: -100%;
+  left: 0;
+  right: 0;
+  height: 70%;
+  background: #161b22;
+  display: flex;
+  flex-direction: column;
+  transition: bottom 0.3s;
+  z-index: 9999;
+}
+#editorPanel.open { bottom: 0; }
+.tabs {
+  display: flex;
+  background: #21262d;
+}
+.tabs button {
+  flex: 1;
+  padding: 12px;
+  background: #21262d;
+  border: none;
+  color: #e6edf3;
+  cursor: pointer;
+  font-weight: bold;
+}
+.tabs button.active { background: #238636; }
+textarea {
+  flex: 1;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  outline: none;
+  resize: none;
+  font-size: 14px;
+  background: #0d1117;
+  color: #e6edf3;
+  display: none;
+}
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 5px;
+  justify-content: center;
+}
+button.action {
+  flex: 1;
+  background: #238636;
+  color: white;
+  border: none;
+  padding: 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+button.action:hover { background: #2ea043; }
+#fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  background: #238636;
+  border-radius: 50%;
+  color: white;
+  font-size: 24px;
+  border: none;
+  cursor: pointer;
+  z-index: 10000;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+#previewToolbar {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+  background: rgba(22,27,34,0.9);
+  padding: 5px;
+  border-radius: 6px;
+  z-index: 10001;
+}
+#previewToolbar button,
+#previewToolbar select,
+#previewToolbar input {
+  background: #238636;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#previewToolbar button:hover { background: #2ea043; }
+</style>
+</head>
+<body>
+
+<iframe id="preview"></iframe>
+
+<!-- Toolbar flutuante no Preview -->
+<div id="previewToolbar">
+  <button onclick="execCommand('bold')">B</button>
+  <button onclick="execCommand('italic')">I</button>
+  <button onclick="execCommand('underline')">U</button>
+  <button onclick="execCommand('justifyLeft')">⮜</button>
+  <button onclick="execCommand('justifyCenter')">≡</button>
+  <button onclick="execCommand('justifyRight')">⮞</button>
+  <button onclick="execCommand('insertUnorderedList')">UL</button>
+  <button onclick="addLink()">🔗</button>
+  <button onclick="addImage()">🖼</button>
+  <button onclick="addVideo()">🎬</button>
+</div>
+
+<!-- Botão flutuante -->
+<button id="fab" onclick="toggleEditor()">✍</button>
+
+<!-- Painel Editor -->
+<div id="editorPanel">
+  <div class="tabs">
+    <button id="tabHTML" class="active" onclick="showTab('html')">HTML</button>
+    <button id="tabCSS" onclick="showTab('css')">CSS</button>
+    <button id="tabJS" onclick="showTab('js')">JS</button>
+  </div>
+  <textarea id="editorHTML"></textarea>
+  <textarea id="editorCSS"></textarea>
+  <textarea id="editorJS"></textarea>
+  <div class="buttons">
+    <button class="action" onclick="runCode()">▶ Executar</button>
+    <button class="action" onclick="saveProject()">💾 Salvar</button>
+    <button class="action" onclick="loadProject()">📂 Carregar</button>
+    <button class="action" onclick="toggleEditor()">❌ Fechar</button>
+  </div>
+</div>
+
+<script>
+const editorHTML = document.getElementById("editorHTML");
+const editorCSS = document.getElementById("editorCSS");
+const editorJS = document.getElementById("editorJS");
+const preview = document.getElementById("preview");
+const panel = document.getElementById("editorPanel");
+
+let history = [];
+
+// Alterna painel editor
+function toggleEditor() {
+  panel.classList.toggle("open");
+}
+
+// Tabs
+function showTab(tab) {
+  document.querySelectorAll("textarea").forEach(t => t.style.display = "none");
+  document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
+  if (tab === "html") { editorHTML.style.display = "block"; document.getElementById("tabHTML").classList.add("active"); }
+  else if (tab === "css") { editorCSS.style.display = "block"; document.getElementById("tabCSS").classList.add("active"); }
+  else { editorJS.style.display = "block"; document.getElementById("tabJS").classList.add("active"); }
+}
+
+// Run
+function runCode() {
+  const code = `<!DOCTYPE html>
+  <html><head><style>${editorCSS.value}</style></head>
+  <body contenteditable="true">${editorHTML.value}
+  <script>${editorJS.value}<\\/script>
+  </body></html>`;
+  preview.srcdoc = code;
+  history.push({html: editorHTML.value, css: editorCSS.value, js: editorJS.value});
+}
+
+// Salvar projeto com nome
+function saveProject() {
+  const name = prompt("Nome do projeto:");
+  if (name) {
+    localStorage.setItem("proj_" + name, JSON.stringify({
+      html: editorHTML.value,
+      css: editorCSS.value,
+      js: editorJS.value
+    }));
+    alert("✅ Projeto salvo!");
+  }
+}
+
+// Carregar projeto da lista
+function loadProject() {
+  const keys = Object.keys(localStorage).filter(k => k.startsWith("proj_"));
+  if (keys.length === 0) { alert("⚠ Nenhum projeto salvo."); return; }
+  const name = prompt("Digite o nome do projeto:\n" + keys.map(k => k.replace("proj_","")).join(", "));
+  if (name && localStorage.getItem("proj_" + name)) {
+    const data = JSON.parse(localStorage.getItem("proj_" + name));
+    editorHTML.value = data.html;
+    editorCSS.value = data.css;
+    editorJS.value = data.js;
+    runCode();
+  } else { alert("⚠ Projeto não encontrado."); }
+}
+
+// Toolbar exec
+function execCommand(cmd, value = null) {
+  const iframeDoc = preview.contentDocument || preview.contentWindow.document;
+  if (value) iframeDoc.execCommand(cmd, false, value);
+  else iframeDoc.execCommand(cmd, false, null);
+}
+function addLink() {
+  const url = prompt("Digite a URL:", "https://");
+  if (url) { const doc = preview.contentDocument; doc.execCommand('createLink', false, url); }
+}
+function addImage() {
+  const url = prompt("URL da imagem:", "https://");
+  if (url) { const doc = preview.contentDocument; doc.execCommand('insertImage', false, url); }
+}
+function addVideo() {
+  const url = prompt("URL do vídeo:", "https://");
+  if (url) {
+    const doc = preview.contentDocument;
+    const vid = doc.createElement("iframe");
+    vid.src = url;
+    vid.width = "100%";
+    vid.height = "200";
+    vid.frameBorder = "0";
+    vid.allowFullscreen = true;
+    doc.body.appendChild(vid);
+  }
+}
+
+// Inicial
+editorHTML.value = `<h1>Olá mundo!</h1><p>Use ✍ para editar e toolbar para formatar!</p>`;
+editorCSS.value = `body { font-family: Arial; background: #f0f0f0; } h1 { color: red; }`;
+editorJS.value = `console.log("JS rodando!");`;
+showTab("html");
+runCode();
+</script>
+</body>
+</html>

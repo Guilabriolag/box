@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vitorelli — Painel Administrativo</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;600;700;900&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red: #ff3c3c;
+  --red-dim: #cc2a2a;
+  --gold: #c5a059;
+  --gold-dim: #9a7a3e;
+  --dark: #080808;
+  --dark2: #101010;
+  --dark3: #181818;
+  --dark4: #222222;
+  --dark5: #2e2e2e;
+  --text: #f0f0f0;
+  --text-dim: #888;
+  --text-muted: #444;
+  --green: #25d366;
+  --blue: #3b82f6;
+  --border: rgba(255,255,255,0.06);
+  --sidebar-w: 260px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--dark);color:var(--text);font-family:'Barlow',sans-serif;line-height:1.5;overflow-x:hidden}
+
+/* ============ LOGIN ============ */
+#loginScreen {
+  position:fixed;inset:0;background:var(--dark);display:flex;align-items:center;justify-content:center;z-index:9999;
+}
+.login-box {
+  width:420px;max-width:95vw;padding:48px 40px;
+  background:linear-gradient(145deg,#141414,#0e0e0e);
+  border:1px solid rgba(197,160,89,0.2);border-radius:24px;
+  box-shadow:0 40px 80px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.04);
+  text-align:center;
+}
+.login-logo {
+  font-family:'Bebas Neue',sans-serif;font-size:3.2rem;letter-spacing:8px;
+  background:linear-gradient(135deg,var(--gold),#fff 60%,var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:4px;
+}
+.login-sub{color:var(--text-dim);font-size:0.8rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:36px}
+.login-box input {
+  width:100%;padding:14px 18px;background:#1a1a1a;border:1px solid var(--dark5);
+  border-radius:10px;color:var(--text);font-family:'Barlow',sans-serif;font-size:1rem;
+  margin-bottom:12px;outline:none;transition:border-color 0.2s;
+}
+.login-box input:focus{border-color:var(--gold)}
+.btn-login {
+  width:100%;padding:16px;background:linear-gradient(135deg,var(--red),var(--red-dim));
+  border:none;border-radius:10px;color:#fff;font-family:'Barlow Condensed',sans-serif;
+  font-size:1.1rem;letter-spacing:2px;font-weight:900;cursor:pointer;
+  transition:all 0.3s;margin-top:8px;
+}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,60,60,0.3)}
+.login-err{color:var(--red);font-size:0.85rem;margin-top:12px;min-height:20px}
+
+/* ============ LAYOUT ============ */
+#app{display:none;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar {
+  position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;
+  background:var(--dark2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;z-index:100;overflow-y:auto;
+}
+.sidebar-brand {
+  padding:28px 24px 20px;border-bottom:1px solid var(--border);
+}
+.sidebar-logo {
+  font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:5px;
+  background:linear-gradient(135deg,var(--gold),#fff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.sidebar-tag {
+  display:inline-block;font-size:0.65rem;letter-spacing:2px;color:var(--text-dim);
+  text-transform:uppercase;margin-top:2px;
+}
+.nav-section{padding:20px 16px 8px;font-size:0.65rem;letter-spacing:2px;color:var(--text-muted);text-transform:uppercase}
+.nav-item {
+  display:flex;align-items:center;gap:12px;padding:12px 20px;margin:2px 8px;
+  border-radius:10px;cursor:pointer;color:var(--text-dim);
+  font-size:0.9rem;font-weight:600;letter-spacing:0.5px;transition:all 0.2s;
+}
+.nav-item:hover{background:var(--dark4);color:var(--text)}
+.nav-item.active{background:rgba(255,60,60,0.12);color:var(--red);border:1px solid rgba(255,60,60,0.2)}
+.nav-icon{font-size:1.1rem;width:22px;text-align:center}
+.sidebar-footer {
+  margin-top:auto;padding:20px;border-top:1px solid var(--border);
+}
+.btn-logout {
+  width:100%;padding:10px;background:transparent;border:1px solid var(--dark5);
+  border-radius:8px;color:var(--text-dim);cursor:pointer;font-family:'Barlow',sans-serif;
+  font-size:0.85rem;transition:all 0.2s;
+}
+.btn-logout:hover{border-color:var(--red);color:var(--red)}
+
+/* MAIN */
+.main {
+  margin-left:var(--sidebar-w);padding:32px;min-height:100vh;
+}
+.page{display:none}
+.page.active{display:block;animation:fadeIn 0.3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* PAGE HEADER */
+.page-header{margin-bottom:32px}
+.page-title {
+  font-family:'Barlow Condensed',sans-serif;font-size:2.4rem;font-weight:900;
+  letter-spacing:1px;text-transform:uppercase;
+}
+.page-title span{color:var(--red)}
+.page-subtitle{color:var(--text-dim);font-size:0.9rem;margin-top:4px}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:32px}
+.stat-card {
+  background:var(--dark3);border:1px solid var(--border);border-radius:16px;
+  padding:24px;position:relative;overflow:hidden;
+}
+.stat-card::before {
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+}
+.stat-card.red::before{background:var(--red)}
+.stat-card.gold::before{background:var(--gold)}
+.stat-card.green::before{background:var(--green)}
+.stat-card.blue::before{background:var(--blue)}
+.stat-icon{font-size:1.8rem;margin-bottom:12px}
+.stat-val{font-family:'Barlow Condensed',sans-serif;font-size:2.2rem;font-weight:900;line-height:1}
+.stat-label{color:var(--text-dim);font-size:0.8rem;margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+
+/* SECTION CARD */
+.card {
+  background:var(--dark3);border:1px solid var(--border);border-radius:16px;
+  padding:24px;margin-bottom:20px;
+}
+.card-title {
+  font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:900;
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:20px;color:var(--gold);
+  display:flex;align-items:center;gap:10px;
+}
+
+/* TABS */
+.tabs{display:flex;gap:4px;margin-bottom:24px;flex-wrap:wrap}
+.tab-btn {
+  padding:9px 20px;border-radius:8px;border:1px solid var(--dark5);
+  background:transparent;color:var(--text-dim);cursor:pointer;
+  font-family:'Barlow',sans-serif;font-size:0.85rem;font-weight:700;
+  letter-spacing:0.5px;transition:all 0.2s;
+}
+.tab-btn.active{background:var(--red);border-color:var(--red);color:#fff}
+.tab-btn:hover:not(.active){background:var(--dark4);color:var(--text)}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse}
+th{
+  padding:12px 16px;background:var(--dark4);
+  font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);
+  text-align:left;font-weight:700;white-space:nowrap;
+}
+td{
+  padding:12px 16px;border-top:1px solid var(--border);
+  font-size:0.88rem;vertical-align:middle;
+}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.badge {
+  display:inline-block;padding:3px 10px;border-radius:20px;
+  font-size:0.68rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;
+}
+.badge-novo{background:rgba(197,160,89,0.15);color:var(--gold);border:1px solid rgba(197,160,89,0.3)}
+.badge-ativo{background:rgba(37,211,102,0.12);color:var(--green);border:1px solid rgba(37,211,102,0.25)}
+.badge-inativo{background:rgba(255,60,60,0.1);color:var(--red);border:1px solid rgba(255,60,60,0.2)}
+.price-tag{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;color:var(--gold)}
+
+/* BUTTONS */
+.btn {
+  display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;
+  border:none;cursor:pointer;font-family:'Barlow',sans-serif;font-size:0.85rem;
+  font-weight:700;transition:all 0.2s;
+}
+.btn-sm{padding:5px 12px;font-size:0.78rem;border-radius:6px}
+.btn-primary{background:var(--red);color:#fff}
+.btn-primary:hover{background:var(--red-dim);transform:translateY(-1px)}
+.btn-gold{background:rgba(197,160,89,0.15);color:var(--gold);border:1px solid rgba(197,160,89,0.3)}
+.btn-gold:hover{background:rgba(197,160,89,0.25)}
+.btn-ghost{background:var(--dark4);color:var(--text-dim);border:1px solid var(--dark5)}
+.btn-ghost:hover{color:var(--text);background:var(--dark5)}
+.btn-danger{background:rgba(255,60,60,0.1);color:var(--red);border:1px solid rgba(255,60,60,0.2)}
+.btn-danger:hover{background:rgba(255,60,60,0.2)}
+.btn-green{background:rgba(37,211,102,0.1);color:var(--green);border:1px solid rgba(37,211,102,0.2)}
+.btn-green:hover{background:rgba(37,211,102,0.2)}
+
+/* FORM */
+.form-row{display:grid;gap:16px;margin-bottom:16px}
+.form-row.cols-2{grid-template-columns:1fr 1fr}
+.form-row.cols-3{grid-template-columns:1fr 1fr 1fr}
+.form-group label{display:block;font-size:0.75rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px;font-weight:700}
+.form-group input,.form-group select,.form-group textarea {
+  width:100%;padding:11px 14px;background:var(--dark4);border:1px solid var(--dark5);
+  border-radius:8px;color:var(--text);font-family:'Barlow',sans-serif;font-size:0.9rem;
+  outline:none;transition:border-color 0.2s;
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus {
+  border-color:var(--red);box-shadow:0 0 0 3px rgba(255,60,60,0.08);
+}
+.form-group select option{background:#1a1a1a}
+.form-group textarea{resize:vertical;min-height:80px}
+.toggle-wrap{display:flex;align-items:center;gap:10px}
+.toggle {
+  position:relative;width:48px;height:26px;cursor:pointer;
+}
+.toggle input{display:none}
+.toggle-track {
+  display:block;width:48px;height:26px;background:var(--dark5);
+  border-radius:13px;transition:background 0.2s;
+}
+.toggle input:checked + .toggle-track{background:var(--red)}
+.toggle-thumb {
+  position:absolute;top:3px;left:3px;width:20px;height:20px;
+  background:#fff;border-radius:50%;transition:transform 0.2s;box-shadow:0 2px 4px rgba(0,0,0,0.3);
+}
+.toggle input:checked ~ .toggle-thumb{transform:translateX(22px)}
+.separator{height:1px;background:var(--border);margin:20px 0}
+
+/* MODAL */
+.modal-overlay {
+  position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;z-index:5000;
+  opacity:0;pointer-events:none;transition:opacity 0.2s;
+}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal {
+  background:var(--dark2);border:1px solid var(--border);border-radius:20px;
+  padding:32px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;
+  transform:scale(0.95);transition:transform 0.2s;
+}
+.modal-overlay.open .modal{transform:scale(1)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:900;text-transform:uppercase;letter-spacing:1px}
+.btn-close{background:none;border:none;color:var(--text-dim);font-size:1.5rem;cursor:pointer;padding:4px;line-height:1}
+.btn-close:hover{color:var(--text)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
+
+/* MIMOGAME */
+.game-preview {
+  background:var(--dark4);border-radius:16px;padding:24px;text-align:center;
+  border:1px solid var(--border);
+}
+.game-grid-preview {
+  display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:20px 0;max-width:280px;margin-left:auto;margin-right:auto;
+}
+.card-preview {
+  aspect-ratio:1;background:var(--dark5);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+  border:1px solid var(--border);cursor:pointer;transition:all 0.3s;user-select:none;
+}
+.card-preview:hover{background:var(--red);transform:scale(1.05)}
+.card-preview.revealed{background:linear-gradient(135deg,#1a1a1a,#252525)}
+.game-status {
+  display:inline-flex;align-items:center;gap:8px;padding:6px 16px;
+  border-radius:20px;font-size:0.8rem;font-weight:700;
+}
+.status-on{background:rgba(37,211,102,0.1);color:var(--green);border:1px solid rgba(37,211,102,0.2)}
+.status-off{background:rgba(255,60,60,0.1);color:var(--red);border:1px solid rgba(255,60,60,0.2)}
+
+/* HORARIOS */
+.horario-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.dia-card {
+  background:var(--dark4);border-radius:10px;padding:12px 8px;text-align:center;
+  border:1px solid var(--border);
+}
+.dia-nome{font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:8px}
+.dia-status{font-size:0.75rem;font-weight:700;margin-top:6px}
+.dia-fechado{color:var(--red)}
+.dia-aberto{color:var(--green)}
+
+/* BAIRROS */
+.bairro-row {
+  display:flex;align-items:center;gap:10px;padding:10px 0;
+  border-bottom:1px solid var(--border);
+}
+.bairro-row:last-child{border-bottom:none}
+.bairro-nome{flex:1;font-weight:600}
+.bairro-taxa{color:var(--gold);font-weight:700}
+
+/* COLOR PICKER */
+.color-options{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.color-dot {
+  width:32px;height:32px;border-radius:50%;cursor:pointer;
+  border:2px solid transparent;transition:all 0.2s;
+}
+.color-dot.selected{border-color:#fff;transform:scale(1.15)}
+
+/* TOAST */
+.toast {
+  position:fixed;bottom:24px;right:24px;padding:14px 20px;
+  background:var(--dark3);border:1px solid var(--border);border-radius:10px;
+  color:var(--text);font-size:0.88rem;font-weight:600;z-index:9999;
+  transform:translateY(80px);opacity:0;transition:all 0.35s cubic-bezier(0.2,0.8,0.2,1);
+  box-shadow:0 12px 30px rgba(0,0,0,0.5);display:flex;align-items:center;gap:10px;
+}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-left:3px solid var(--green)}
+.toast.error{border-left:3px solid var(--red)}
+.toast.info{border-left:3px solid var(--blue)}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--dark5);border-radius:3px}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);transition:transform 0.3s}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0;padding:20px}
+  .form-row.cols-2,.form-row.cols-3{grid-template-columns:1fr}
+  .horario-grid{grid-template-columns:repeat(4,1fr)}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .mobile-menu-btn{display:flex!important}
+}
+.mobile-menu-btn {
+  display:none;position:fixed;top:16px;left:16px;z-index:200;
+  background:var(--dark3);border:1px solid var(--border);border-radius:8px;
+  padding:10px;cursor:pointer;color:var(--text);font-size:1.2rem;
+}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99}
+.sidebar-overlay.open{display:block}
+
+/* ACTIVITY */
+.activity-item {
+  display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);
+  align-items:flex-start;
+}
+.activity-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.activity-time{color:var(--text-muted);font-size:0.75rem;white-space:nowrap;margin-top:2px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">VITORELLI</div>
+    <div class="login-sub">Painel Administrativo</div>
+    <input type="text" id="loginUser" placeholder="Usuário" autocomplete="username">
+    <input type="password" id="loginPass" placeholder="Senha" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn-login" onclick="doLogin()">ENTRAR NO PAINEL</button>
+    <div class="login-err" id="loginErr"></div>
+    <div style="margin-top:20px;font-size:0.75rem;color:var(--text-muted)">Demo: admin / vitorelli2026</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- MOBILE MENU BTN -->
+  <button class="mobile-menu-btn" onclick="toggleMobileMenu()" id="mobileBtn">☰</button>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileMenu()"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">VITORELLI</div>
+      <span class="sidebar-tag">Painel Admin</span>
+    </div>
+
+    <div class="nav-section">Principal</div>
+    <div class="nav-item active" onclick="navTo('dashboard')">
+      <span class="nav-icon">📊</span>Dashboard
+    </div>
+
+    <div class="nav-section">Cardápio</div>
+    <div class="nav-item" onclick="navTo('cardapio')">
+      <span class="nav-icon">🍕</span>Itens do Cardápio
+    </div>
+    <div class="nav-item" onclick="navTo('categorias')">
+      <span class="nav-icon">📂</span>Categorias
+    </div>
+
+    <div class="nav-section">MimoGame</div>
+    <div class="nav-item" onclick="navTo('mimogame')">
+      <span class="nav-icon">🎮</span>Configurar Jogo
+    </div>
+    <div class="nav-item" onclick="navTo('resgates')">
+      <span class="nav-icon">🎁</span>Resgates & Códigos
+    </div>
+
+    <div class="nav-section">Loja</div>
+    <div class="nav-item" onclick="navTo('loja')">
+      <span class="nav-icon">🏪</span>Dados da Loja
+    </div>
+    <div class="nav-item" onclick="navTo('horarios')">
+      <span class="nav-icon">🕐</span>Horários
+    </div>
+    <div class="nav-item" onclick="navTo('entregas')">
+      <span class="nav-icon">🛵</span>Taxas de Entrega
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="doLogout()">↩ Sair da Conta</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div class="page-title">Dashboard <span>Vitorelli</span></div>
+        <div class="page-subtitle">Visão geral do seu negócio</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card red">
+          <div class="stat-icon">🍕</div>
+          <div class="stat-val" id="stat-itens">39</div>
+          <div class="stat-label">Itens no Cardápio</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="stat-icon">🎮</div>
+          <div class="stat-val" id="stat-partidas">0</div>
+          <div class="stat-label">Partidas MimoGame</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon">🎁</div>
+          <div class="stat-val" id="stat-resgates">0</div>
+          <div class="stat-label">Prêmios Resgatados</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-icon">🛵</div>
+          <div class="stat-val" id="stat-bairros">8</div>
+          <div class="stat-label">Bairros Atendidos</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="card">
+          <div class="card-title">🟢 Status da Loja</div>
+          <div id="lojaStatusCard" style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="color:var(--text-dim)">Funcionamento</span>
+              <span id="statusFuncionamento" class="badge badge-ativo">ABERTO</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="color:var(--text-dim)">MimoGame</span>
+              <span id="statusMimo" class="badge badge-ativo">ATIVO</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="color:var(--text-dim)">WhatsApp</span>
+              <span class="badge badge-ativo">CONECTADO</span>
+            </div>
+            <div class="separator"></div>
+            <div style="font-size:0.82rem;color:var(--text-dim)">Horário: <strong style="color:var(--text)">Ter–Dom 18:00–23:30</strong></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">⚡ Atividade Recente</div>
+          <div id="activityFeed">
+            <div class="activity-item">
+              <div class="activity-dot" style="background:var(--gold)"></div>
+              <div style="flex:1"><div style="font-size:0.85rem">Painel iniciado</div><div class="activity-time">Agora</div></div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot" style="background:var(--green)"></div>
+              <div style="flex:1"><div style="font-size:0.85rem">Cardápio carregado — 39 itens</div><div class="activity-time">Há pouco</div></div>
+            </div>
+            <div style="color:var(--text-muted);font-size:0.82rem;padding:12px 0 0">Novas atividades aparecerão aqui...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CARDÁPIO ===== -->
+    <div class="page" id="page-cardapio">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div>
+          <div class="page-title">Itens do <span>Cardápio</span></div>
+          <div class="page-subtitle">Gerencie pizzas, brotos, calzones e bebidas</div>
+        </div>
+        <button class="btn btn-primary" onclick="abrirModalItem(null)">+ Novo Item</button>
+      </div>
+
+      <div class="tabs" id="cardapioTabs">
+        <button class="tab-btn active" onclick="filtrarCardapio('pizza')">🍕 Pizzas</button>
+        <button class="tab-btn" onclick="filtrarCardapio('broto')">🍕 Brotos</button>
+        <button class="tab-btn" onclick="filtrarCardapio('calzone')">🥙 Calzones</button>
+        <button class="tab-btn" onclick="filtrarCardapio('bebidas')">🥤 Bebidas</button>
+      </div>
+
+      <div class="card" style="padding:0">
+        <div class="table-wrap">
+          <table id="cardapioTable">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Ingredientes</th>
+                <th>Grande/Pizza</th>
+                <th>Broto</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="cardapioBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CATEGORIAS ===== -->
+    <div class="page" id="page-categorias">
+      <div class="page-header">
+        <div class="page-title">Categorias <span>&</span> Organização</div>
+        <div class="page-subtitle">Gerencie as seções visíveis no cardápio digital</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px" id="catCards"></div>
+    </div>
+
+    <!-- ===== MIMOGAME ===== -->
+    <div class="page" id="page-mimogame">
+      <div class="page-header">
+        <div class="page-title">MimoGame <span>Config</span></div>
+        <div class="page-subtitle">Personalize o jogo da memória da Vitorelli</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 320px;gap:24px">
+        <div>
+          <div class="card">
+            <div class="card-title">🎮 Configurações do Jogo</div>
+            <div class="form-row cols-2">
+              <div class="form-group">
+                <label>Status do Jogo</label>
+                <label class="toggle-wrap">
+                  <label class="toggle">
+                    <input type="checkbox" id="mimoAtivo" checked>
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                  </label>
+                  <span id="mimoAtivoLabel">Jogo Ativo</span>
+                </label>
+              </div>
+              <div class="form-group">
+                <label>Dificuldade</label>
+                <select id="mimoDificuldade">
+                  <option value="facil">Fácil — Sem limite</option>
+                  <option value="medio" selected>Médio — 90 segundos</option>
+                  <option value="dificil">Difícil — 60 segundos</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Texto do Prêmio (exibido ao vencer)</label>
+                <input type="text" id="mimoPremio" value="🍕 Parabéns! Você ganhou 1 bebida grátis no seu próximo pedido!">
+              </div>
+            </div>
+            <div class="form-row cols-2">
+              <div class="form-group">
+                <label>Validade do Código (horas)</label>
+                <input type="number" id="mimoValidade" value="24" min="1" max="72">
+              </div>
+              <div class="form-group">
+                <label>Máximo de resgates por CPF/dia</label>
+                <input type="number" id="mimoMaxResgates" value="1" min="1">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Tema visual das cartas</label>
+                <select id="mimoTema">
+                  <option value="comida">🍕 Comida Italiana</option>
+                  <option value="genericos">🎯 Emojis Genéricos</option>
+                  <option value="drinks">🍺 Bebidas</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Mensagem de derrota / tempo esgotado</label>
+                <input type="text" id="mimoDerrota" value="Ops! O tempo acabou. Tente novamente na próxima visita! 🍕">
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="salvarMimoGame()" style="margin-top:8px">💾 Salvar Configurações</button>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🔗 Link do Jogo</div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <input type="text" id="mimoLink" value="https://guilabriolag.github.io/MimoGames/MimoGames_beta.html" 
+                     style="flex:1;padding:11px 14px;background:var(--dark4);border:1px solid var(--dark5);border-radius:8px;color:var(--text-dim);font-size:0.85rem;">
+              <button class="btn btn-gold" onclick="copiarLink()">📋 Copiar</button>
+              <button class="btn btn-ghost" onclick="window.open(document.getElementById('mimoLink').value,'_blank')">🔗 Abrir</button>
+            </div>
+            <div style="margin-top:14px;font-size:0.8rem;color:var(--text-muted)">
+              💡 Compartilhe este link no WhatsApp, Instagram e na mesa dos clientes via QR code.
+            </div>
+          </div>
+        </div>
+
+        <!-- PREVIEW -->
+        <div>
+          <div class="card">
+            <div class="card-title">👁️ Preview</div>
+            <div class="game-preview">
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:4px;color:var(--gold)">VITORELLI</div>
+              <div style="font-size:0.75rem;color:var(--text-dim);margin:4px 0 16px;text-transform:uppercase;letter-spacing:2px">Jogo da Memória</div>
+              <div id="gameStatusBadge" class="game-status status-on">● ATIVO</div>
+              <div class="game-grid-preview" id="previewGrid"></div>
+              <div style="font-size:0.8rem;color:var(--text-dim)">Encontre todos os pares!</div>
+              <div style="margin-top:12px;padding:10px;background:var(--dark3);border-radius:8px;font-size:0.78rem;color:var(--text-dim)">
+                <strong style="color:var(--gold)">Prêmio:</strong><br>
+                <span id="mimoPreviewPremio">🍕 1 bebida grátis no próximo pedido!</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== RESGATES ===== -->
+    <div class="page" id="page-resgates">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div>
+          <div class="page-title">Resgates <span>& Códigos</span></div>
+          <div class="page-subtitle">Valide prêmios ganhos pelos clientes</div>
+        </div>
+        <button class="btn btn-ghost" onclick="gerarCodigoManual()">+ Gerar Código Manual</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔍 Validar Código de Resgate</div>
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <div class="form-group" style="flex:1;margin-bottom:0">
+            <label>Código do Cliente</label>
+            <input type="text" id="validarCodigo" placeholder="Ex: VITO-4X7K" style="text-transform:uppercase">
+          </div>
+          <button class="btn btn-primary" onclick="validarCodigo()" style="height:40px">VALIDAR</button>
+        </div>
+        <div id="validarResult" style="margin-top:14px"></div>
+      </div>
+
+      <div class="card" style="padding:0">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border)">
+          <div class="card-title" style="margin:0">📋 Histórico de Códigos Gerados</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Gerado em</th>
+                <th>Válido até</th>
+                <th>Status</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody id="resgatesBody">
+              <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px">Nenhum código gerado ainda.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== LOJA ===== -->
+    <div class="page" id="page-loja">
+      <div class="page-header">
+        <div class="page-title">Dados da <span>Loja</span></div>
+        <div class="page-subtitle">Informações exibidas no cardápio e no rodapé do jogo</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🏪 Informações Gerais</div>
+        <div class="form-row cols-2">
+          <div class="form-group">
+            <label>Nome da Pizzaria</label>
+            <input type="text" id="lojaName" value="Pizzaria Vitorelli">
+          </div>
+          <div class="form-group">
+            <label>Slogan</label>
+            <input type="text" id="lojaSlogan" value="A pizza que você merece!">
+          </div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="form-group">
+            <label>WhatsApp (DDD + Número)</label>
+            <input type="tel" id="lojaWhats" value="11993407322">
+          </div>
+          <div class="form-group">
+            <label>Telefone Fixo (opcional)</label>
+            <input type="tel" id="lojaTel" value="">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>URL da Logo</label>
+            <input type="url" id="lojaLogo" value="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgIVywerTEx7Qorio908b4OTVv3x2yo2lPl38CVdhCxtJOK23tK_pRTy8-hcSIWtNLZ6ifuzf8WhXOmFqBkr2aOqR78JmGc_Wc5uRLHtLUAYenxGd26uMjEg5E0bMKp03cqXDwXuJ7yA_0LXYoUxIn6ye7Vn6Q5CnTv-oPnLAMz58zVaijoADv3cRQM5T3L/s1600/20250614_012036.png">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Endereço</label>
+            <input type="text" id="lojaEndereco" value="">
+          </div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="form-group">
+            <label>Instagram</label>
+            <input type="text" id="lojaIG" placeholder="@pizzariavitorelli">
+          </div>
+          <div class="form-group">
+            <label>Cor Principal (hex)</label>
+            <input type="text" id="lojaCor" value="#ff3c3c">
+          </div>
+        </div>
+        <div class="color-options">
+          <div class="color-dot selected" style="background:#ff3c3c" onclick="selecionarCor('#ff3c3c',this)"></div>
+          <div class="color-dot" style="background:#e67e22" onclick="selecionarCor('#e67e22',this)"></div>
+          <div class="color-dot" style="background:#c5a059" onclick="selecionarCor('#c5a059',this)"></div>
+          <div class="color-dot" style="background:#27ae60" onclick="selecionarCor('#27ae60',this)"></div>
+          <div class="color-dot" style="background:#2980b9" onclick="selecionarCor('#2980b9',this)"></div>
+          <div class="color-dot" style="background:#8e44ad" onclick="selecionarCor('#8e44ad',this)"></div>
+          <div class="color-dot" style="background:#1abc9c" onclick="selecionarCor('#1abc9c',this)"></div>
+        </div>
+        <div style="margin-top:20px">
+          <button class="btn btn-primary" onclick="salvarLoja()">💾 Salvar Dados da Loja</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== HORÁRIOS ===== -->
+    <div class="page" id="page-horarios">
+      <div class="page-header">
+        <div class="page-title">Horários de <span>Funcionamento</span></div>
+        <div class="page-subtitle">Configure os dias e horários de atendimento</div>
+      </div>
+      <div class="card">
+        <div class="card-title">📅 Grade Semanal</div>
+        <div style="overflow-x:auto">
+          <table style="min-width:600px">
+            <thead>
+              <tr>
+                <th>Dia</th>
+                <th>Aberto?</th>
+                <th>Abertura</th>
+                <th>Fechamento</th>
+              </tr>
+            </thead>
+            <tbody id="horariosBody"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:20px">
+          <button class="btn btn-primary" onclick="salvarHorarios()">💾 Salvar Horários</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ENTREGAS ===== -->
+    <div class="page" id="page-entregas">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div>
+          <div class="page-title">Taxas de <span>Entrega</span></div>
+          <div class="page-subtitle">Gerencie bairros e valores de delivery</div>
+        </div>
+        <button class="btn btn-primary" onclick="abrirModalBairro(null)">+ Novo Bairro</button>
+      </div>
+      <div class="card">
+        <div class="card-title">🛵 Bairros Atendidos</div>
+        <div id="bairrosList"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">⚙️ Configurações de Entrega</div>
+        <div class="form-row cols-2">
+          <div class="form-group">
+            <label>Tempo médio de entrega (min)</label>
+            <input type="number" id="tempoEntrega" value="45">
+          </div>
+          <div class="form-group">
+            <label>Pedido mínimo para delivery (R$)</label>
+            <input type="number" id="pedidoMinimo" value="25">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="salvarEntregas()">💾 Salvar</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ===== MODAL ITEM ===== -->
+<div class="modal-overlay" id="modalItemOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalItemTitle">Novo Item</div>
+      <button class="btn-close" onclick="fecharModal('modalItemOverlay')">×</button>
+    </div>
+    <div class="form-row cols-2">
+      <div class="form-group">
+        <label>Nome do Item</label>
+        <input type="text" id="iNome">
+      </div>
+      <div class="form-group">
+        <label>Categoria</label>
+        <select id="iCat">
+          <option value="pizza">Pizza (Inteira)</option>
+          <option value="broto">Broto (Meia)</option>
+          <option value="calzone">Calzone</option>
+          <option value="bebidas">Bebida</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Ingredientes / Descrição</label>
+        <textarea id="iDesc" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="form-row cols-2">
+      <div class="form-group">
+        <label>Preço Grande / Pizza (R$)</label>
+        <input type="number" id="iPrecG" step="0.5" min="0">
+      </div>
+      <div class="form-group">
+        <label>Preço Broto (R$)</label>
+        <input type="number" id="iPrecB" step="0.5" min="0">
+      </div>
+    </div>
+    <div class="form-row cols-2">
+      <div class="form-group">
+        <label>Marcar como Novidade</label>
+        <label class="toggle-wrap">
+          <label class="toggle">
+            <input type="checkbox" id="iNovo">
+            <span class="toggle-track"></span>
+            <span class="toggle-thumb"></span>
+          </label>
+          <span>Exibir tag "NOVIDADE"</span>
+        </label>
+      </div>
+      <div class="form-group">
+        <label>Disponível</label>
+        <label class="toggle-wrap">
+          <label class="toggle">
+            <input type="checkbox" id="iAtivo" checked>
+            <span class="toggle-track"></span>
+            <span class="toggle-thumb"></span>
+          </label>
+          <span>Item visível no cardápio</span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="fecharModal('modalItemOverlay')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarItem()">💾 Salvar Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BAIRRO -->
+<div class="modal-overlay" id="modalBairroOverlay">
+  <div class="modal" style="width:400px">
+    <div class="modal-header">
+      <div class="modal-title" id="modalBairroTitle">Novo Bairro</div>
+      <button class="btn-close" onclick="fecharModal('modalBairroOverlay')">×</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nome do Bairro</label>
+        <input type="text" id="bNome">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Taxa de Entrega (R$)</label>
+        <input type="number" id="bTaxa" step="0.5" min="0">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="fecharModal('modalBairroOverlay')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarBairro()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+const SENHA_ADMIN = 'vitorelli2026';
+const USER_ADMIN = 'admin';
+
+let editIndex = null;
+let editBairroIndex = null;
+let catAtualFiltro = 'pizza';
+
+// DADOS INICIAIS
+const defaultSabores = [
+  { n:"Mussarela Especial",d:"Molho, Mussarela, Tomate Seco, Parmesão e Pimenta Calabresa",g:43,b:33,cat:"pizza",ativo:true },
+  { n:"Mussarela",d:"Molho, Mussarela, Tomate, Azeitona e Orégano",g:39,b:29,cat:"pizza",ativo:true },
+  { n:"Mussapy",d:"Molho, Mussarela, Tomate, Catupiry, orégano e azeitona",g:45,b:35,cat:"pizza",ativo:true },
+  { n:"Calabresa 1",d:"Molho, Calabresa, Cebola, Azeitona e Orégano",g:39,b:29,cat:"pizza",ativo:true },
+  { n:"Calabresa 2",d:"Molho, Mussarela, calabresa, Cebola, Azeitona e Orégano",g:44,b:34,cat:"pizza",ativo:true },
+  { n:"Calabresa 3",d:"Molho, Calabresa, Pimentão, parmesão, Azeitona e Orégano",g:43,b:33,cat:"pizza",ativo:true },
+  { n:"Calapy",d:"Molho, Catupiry, Calabresa, Cebola, Azeitona e Orégano",g:44,b:34,cat:"pizza",ativo:true },
+  { n:"Cabrovo pepe",d:"Molho, Calabresa, Ovo, Cebola, Parmesão, Pimenta Calabresa, Azeitona e Orégano",g:45,b:35,cat:"pizza",ativo:true },
+  { n:"Baiana",d:"Molho, Mussarela, calabresa desfiada, cebola, ovo, pimenta calabresa, azeitona e Orégano",g:47,b:37,cat:"pizza",ativo:true },
+  { n:"Quatro Queijos",d:"Molho, Mussarela, Parmesão, Provolone e Gorgonzola",g:48,b:38,cat:"pizza",ativo:true },
+  { n:"Cinco Queijos",d:"Molho, Mussarela, Parmesão, Provolone, Gorgonzola e Catupiry",g:50,b:40,cat:"pizza",ativo:true },
+  { n:"Abobrinha 1",d:"Molho, Mussarela, Abobrinha, Alho Frito e Orégano",g:41,b:31,cat:"pizza",ativo:true },
+  { n:"Alho",d:"Molho, Mussarela e Alho frito",g:45,b:35,cat:"pizza",ativo:true },
+  { n:"Aliche",d:"Molho, Mussarela, Aliche e Tomate",g:49,b:39,cat:"pizza",ativo:true },
+  { n:"Americana",d:"Molho, Mussarela, Lombinho, Pimentão, Champignon e Tomate cereja",g:50,b:40,cat:"pizza",ativo:true },
+  { n:"Atum 1",d:"Molho, Atum e Cebola",g:46,b:36,cat:"pizza",ativo:true },
+  { n:"Atum 2",d:"Molho, Mussarela, Atum e Cebola",g:48,b:38,cat:"pizza",ativo:true },
+  { n:"Bacon",d:"Molho, Mussarela e Bacon",g:45,b:35,cat:"pizza",ativo:true },
+  { n:"Frango Catupiry",d:"Molho, Frango e Catupiry",g:47,b:37,cat:"pizza",ativo:true },
+  { n:"Gênova",d:"Molho, Mussarela, Provolone, Presunto e Molho Pesto",g:48,b:38,cat:"pizza",ativo:true },
+  { n:"Lombinho",d:"Molho, Mussarela, Lombinho e Provolone",g:47,b:37,cat:"pizza",ativo:true },
+  { n:"Peperonni 1",d:"Molho, Mussarela, Peperonni e azeitona",g:50,b:40,cat:"pizza",ativo:true },
+  { n:"Peperonni 2",d:"Molho, Mussarela, Peperonni, Catupiry, azeitona",g:55,b:45,cat:"pizza",ativo:true,novo:true },
+  { n:"Romana",d:"Molho, Mussarela, Aliche e Tomate",g:50,b:40,cat:"pizza",ativo:true },
+  { n:"Rústica",d:"Molho, Mussarela, Parmesão, sobre molho, orégano e azeitona",g:43,b:33,cat:"pizza",ativo:true },
+  { n:"Brócolis 1",d:"Molho, Brócolis, Mussarela, Bacon, azeitona e orégano",g:48,b:38,cat:"pizza",ativo:true },
+  { n:"Brócolis 2",d:"Molho, Brócolis, Mussarela, alho, Bacon, azeitona e orégano",g:49,b:39,cat:"pizza",ativo:true },
+  { n:"Libanese",d:"Molho, Mussarela, Zatar (tempero árabe), Tomate e azeitona",g:41,b:31,cat:"pizza",ativo:true,novo:true },
+  { n:"Banana",d:"Banana, Açúcar, Doce de leite e Canela",g:41,b:31,cat:"pizza",ativo:true },
+  { n:"Anita e Garibaldi",d:"Parmesão, Mussarela e Goiabada",g:45,b:35,cat:"pizza",ativo:true },
+  { n:"Ovomaltine",d:"Ovomaltine, ovomaltine Rocks",g:55,b:45,cat:"pizza",ativo:true,novo:true },
+  { n:"Marguerita",d:"Molho, Mussarela, Parmesão Tomate, Manjericão Azeitona e Orégano",g:41,b:31,cat:"pizza",ativo:true },
+  { n:"Marguerita Pesto",d:"Molho, Mussarela, Parmesão Tomate, Molho Pesto Azeitona e Orégano",g:42,b:31,cat:"pizza",ativo:true,novo:true },
+  { n:"Marguedôro",d:"Molho, Mussarela, Parmesão, Tomate, manjericão, Azeitona, alho e Orégano",g:42,b:32,cat:"pizza",ativo:true,novo:true },
+  { n:"Palmitôsa",d:"Molho, Mussarela, Palmito, Catupiry, Azeitona e Orégano",g:50,b:40,cat:"pizza",ativo:true },
+  { n:"Portuguesa",d:"Molho, Mussarela, presunto, ovo, ervilha, tomate, cebola e azeitona",g:50,b:40,cat:"pizza",ativo:true },
+  { n:"Rúcula",d:"Molho, Mussarela, Rúcula e Tomate Seco",g:47,b:37,cat:"pizza",ativo:true },
+  { n:"Toscana",d:"Molho, Mussarela, Linguiça calabresa moída e Tomate",g:45,b:35,cat:"pizza",ativo:true },
+  { n:"Coca-Cola 2L",d:"Refrigerante",g:18,b:0,cat:"bebidas",ativo:true },
+  { n:"Coca-Cola Zero 2L",d:"Refrigerante",g:18,b:0,cat:"bebidas",ativo:true },
+  { n:"Guaraná Kuat 2L",d:"Refrigerante",g:12,b:0,cat:"bebidas",ativo:true },
+  { n:"HEINEKEN (Lata)",d:"Cerveja",g:10,b:0,cat:"bebidas",ativo:true }
+];
+
+const defaultBairros = [
+  {nome:"CENTRO",taxa:3},
+  {nome:"CHÁCARA BOAVISTA",taxa:3},
+  {nome:"GREEN HILLS",taxa:10},
+  {nome:"JD. BOM JESUS",taxa:3},
+  {nome:"MORRO BRANCO",taxa:4},
+  {nome:"PARQUE DAS AVENCAS",taxa:3},
+  {nome:"PAIOL / KM 50",taxa:7},
+  {nome:"VILA NOVA",taxa:3}
+];
+
+const defaultHorarios = [
+  {dia:"Domingo",aberto:true,abertura:"18:00",fechamento:"23:30"},
+  {dia:"Segunda",aberto:false,abertura:"18:00",fechamento:"23:30"},
+  {dia:"Terça",aberto:true,abertura:"18:00",fechamento:"23:30"},
+  {dia:"Quarta",aberto:true,abertura:"18:00",fechamento:"23:30"},
+  {dia:"Quinta",aberto:true,abertura:"18:00",fechamento:"23:30"},
+  {dia:"Sexta",aberto:true,abertura:"18:00",fechamento:"23:30"},
+  {dia:"Sábado",aberto:true,abertura:"18:00",fechamento:"23:30"},
+];
+
+function getData(key, def) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; }
+  catch { return def; }
+}
+function setData(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+}
+
+let sabores = getData('vit_sabores', defaultSabores);
+let bairros  = getData('vit_bairros', defaultBairros);
+let horarios = getData('vit_horarios', defaultHorarios);
+let codigos  = getData('vit_codigos', []);
+let mimoConfig = getData('vit_mimo', {ativo:true,premio:"🍕 Parabéns! Você ganhou 1 bebida grátis no seu próximo pedido!",validade:24,max:1,dificuldade:"medio",derrota:"Ops! O tempo acabou. Tente novamente na próxima visita! 🍕",tema:"comida"});
+let lojaConfig = getData('vit_loja', {nome:"Pizzaria Vitorelli",slogan:"A pizza que você merece!",whats:"11993407322",tel:"",endereco:"",ig:"",cor:"#ff3c3c"});
+
+// ============================================================
+// LOGIN
+// ============================================================
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value.trim();
+  if (u === USER_ADMIN && p === SENHA_ADMIN) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    initApp();
+  } else {
+    document.getElementById('loginErr').textContent = 'Usuário ou senha incorretos.';
+    document.getElementById('loginPass').value = '';
+  }
+}
+
+function doLogout() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginErr').textContent = '';
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function navTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if(n.textContent.trim().toLowerCase().includes(page.slice(0,5)) || 
+       n.getAttribute('onclick')?.includes(page)) n.classList.add('active');
+  });
+  // Close mobile menu
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+  // Render specific pages
+  if(page === 'cardapio') renderCardapio();
+  if(page === 'categorias') renderCategorias();
+  if(page === 'horarios') renderHorarios();
+  if(page === 'entregas') renderBairros();
+  if(page === 'mimogame') renderMimoGame();
+  if(page === 'resgates') renderResgates();
+}
+
+function toggleMobileMenu() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+
+// ============================================================
+// CARDÁPIO
+// ============================================================
+function filtrarCardapio(cat) {
+  catAtualFiltro = cat;
+  document.querySelectorAll('#cardapioTabs .tab-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderCardapio();
+}
+
+function renderCardapio() {
+  const tbody = document.getElementById('cardapioBody');
+  const filtrados = sabores.filter(s => s.cat === catAtualFiltro);
+  if (!filtrados.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px">Nenhum item nesta categoria.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtrados.map((s, i) => {
+    const realIdx = sabores.indexOf(s);
+    const novo = s.novo ? `<span class="badge badge-novo">NOVO</span>` : '';
+    const status = s.ativo ? `<span class="badge badge-ativo">Ativo</span>` : `<span class="badge badge-inativo">Oculto</span>`;
+    const precoB = s.cat === 'bebidas' ? '-' : `<span class="price-tag">R$ ${Number(s.b).toFixed(2)}</span>`;
+    return `<tr>
+      <td><strong>${s.n}</strong> ${novo}</td>
+      <td style="color:var(--text-dim);max-width:280px;font-size:0.82rem">${s.d}</td>
+      <td><span class="price-tag">R$ ${Number(s.g).toFixed(2)}</span></td>
+      <td>${precoB}</td>
+      <td>${status}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm btn-gold" onclick="abrirModalItem(${realIdx})">✏️ Editar</button>
+          <button class="btn btn-sm btn-danger" onclick="excluirItem(${realIdx})">🗑</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('stat-itens').textContent = sabores.filter(s=>s.ativo).length;
+}
+
+function abrirModalItem(idx) {
+  editIndex = idx;
+  const m = document.getElementById('modalItemOverlay');
+  document.getElementById('modalItemTitle').textContent = idx === null ? 'Novo Item' : 'Editar Item';
+  if (idx !== null) {
+    const s = sabores[idx];
+    document.getElementById('iNome').value = s.n;
+    document.getElementById('iCat').value = s.cat;
+    document.getElementById('iDesc').value = s.d;
+    document.getElementById('iPrecG').value = s.g;
+    document.getElementById('iPrecB').value = s.b;
+    document.getElementById('iNovo').checked = !!s.novo;
+    document.getElementById('iAtivo').checked = s.ativo !== false;
+  } else {
+    document.getElementById('iNome').value = '';
+    document.getElementById('iCat').value = catAtualFiltro;
+    document.getElementById('iDesc').value = '';
+    document.getElementById('iPrecG').value = '';
+    document.getElementById('iPrecB').value = '';
+    document.getElementById('iNovo').checked = false;
+    document.getElementById('iAtivo').checked = true;
+  }
+  m.classList.add('open');
+}
+
+function salvarItem() {
+  const nome = document.getElementById('iNome').value.trim();
+  if (!nome) return showToast('Informe o nome do item.', 'error');
+  const item = {
+    n: nome,
+    cat: document.getElementById('iCat').value,
+    d: document.getElementById('iDesc').value.trim(),
+    g: parseFloat(document.getElementById('iPrecG').value) || 0,
+    b: parseFloat(document.getElementById('iPrecB').value) || 0,
+    novo: document.getElementById('iNovo').checked,
+    ativo: document.getElementById('iAtivo').checked
+  };
+  if (editIndex !== null) sabores[editIndex] = item;
+  else sabores.push(item);
+  setData('vit_sabores', sabores);
+  fecharModal('modalItemOverlay');
+  renderCardapio();
+  showToast(editIndex !== null ? 'Item atualizado!' : 'Item adicionado!', 'success');
+  editIndex = null;
+}
+
+function excluirItem(idx) {
+  if (!confirm(`Excluir "${sabores[idx].n}"?`)) return;
+  sabores.splice(idx, 1);
+  setData('vit_sabores', sabores);
+  renderCardapio();
+  showToast('Item removido.', 'info');
+}
+
+// ============================================================
+// CATEGORIAS
+// ============================================================
+const catInfo = {
+  pizza: {icon:'🍕', label:'Pizzas (Inteira)', desc:'Pizzas no tamanho grande'},
+  broto: {icon:'🍕', label:'Brotos (Meia)', desc:'Pizzas no tamanho broto / meia-meia'},
+  calzone: {icon:'🥙', label:'Calzones', desc:'Calzones da casa'},
+  bebidas: {icon:'🥤', label:'Bebidas', desc:'Refrigerantes e cervejas'}
+};
+
+function renderCategorias() {
+  const wrap = document.getElementById('catCards');
+  wrap.innerHTML = Object.entries(catInfo).map(([k,v]) => {
+    const total = sabores.filter(s=>s.cat===k).length;
+    return `<div class="card" style="text-align:center">
+      <div style="font-size:2.4rem;margin-bottom:10px">${v.icon}</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:900;text-transform:uppercase">${v.label}</div>
+      <div style="color:var(--text-muted);font-size:0.8rem;margin:4px 0 14px">${v.desc}</div>
+      <div style="font-size:1.8rem;font-weight:900;color:var(--red)">${total}</div>
+      <div style="color:var(--text-dim);font-size:0.75rem;text-transform:uppercase;letter-spacing:1px">itens</div>
+      <div style="margin-top:16px;display:flex;gap:8px;justify-content:center">
+        <button class="btn btn-sm btn-ghost" onclick="filtrarEIr('${k}')">Ver Itens</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filtrarEIr(cat) {
+  catAtualFiltro = cat;
+  navTo('cardapio');
+  setTimeout(()=>{
+    document.querySelectorAll('#cardapioTabs .tab-btn').forEach(b => {
+      if(b.getAttribute('onclick')?.includes(cat)) b.classList.add('active');
+      else b.classList.remove('active');
+    });
+    renderCardapio();
+  }, 100);
+}
+
+// ============================================================
+// MIMOGAME
+// ============================================================
+const temas = {
+  comida: ['🍕','🍝','🫕','🧄','🫙','🧀','🍷','🥗'],
+  genericos: ['🌟','💎','🎯','🔥','⚡','🌊','🎭','🏆'],
+  drinks: ['🍺','🍷','🥤','🍸','🍹','🥂','🧃','🫖']
+};
+
+function renderMimoGame() {
+  document.getElementById('mimoAtivo').checked = mimoConfig.ativo;
+  document.getElementById('mimoDificuldade').value = mimoConfig.dificuldade || 'medio';
+  document.getElementById('mimoPremio').value = mimoConfig.premio;
+  document.getElementById('mimoValidade').value = mimoConfig.validade;
+  document.getElementById('mimoMaxResgates').value = mimoConfig.max || 1;
+  document.getElementById('mimoDerrota').value = mimoConfig.derrota;
+  document.getElementById('mimoTema').value = mimoConfig.tema || 'comida';
+  document.getElementById('mimoPreviewPremio').textContent = mimoConfig.premio;
+  renderPreviewGrid();
+  updateGameStatus();
+  document.getElementById('mimoAtivo').addEventListener('change', updateGameStatus);
+  document.getElementById('mimoPremio').addEventListener('input', e => {
+    document.getElementById('mimoPreviewPremio').textContent = e.target.value;
+  });
+  document.getElementById('mimoTema').addEventListener('change', renderPreviewGrid);
+}
+
+function renderPreviewGrid() {
+  const grid = document.getElementById('previewGrid');
+  const tema = document.getElementById('mimoTema')?.value || 'comida';
+  const emojis = temas[tema] || temas.comida;
+  grid.innerHTML = emojis.slice(0,4).map(e =>
+    `<div class="card-preview">❓</div>`
+  ).join('') + emojis.slice(0,4).map(e =>
+    `<div class="card-preview">❓</div>`
+  ).join('');
+}
+
+function updateGameStatus() {
+  const ativo = document.getElementById('mimoAtivo').checked;
+  document.getElementById('mimoAtivoLabel').textContent = ativo ? 'Jogo Ativo' : 'Jogo Desativado';
+  const badge = document.getElementById('gameStatusBadge');
+  if(badge){ badge.className = 'game-status ' + (ativo?'status-on':'status-off'); badge.textContent = ativo?'● ATIVO':'● INATIVO'; }
+  const statusMimo = document.getElementById('statusMimo');
+  if(statusMimo){ statusMimo.className = 'badge ' + (ativo?'badge-ativo':'badge-inativo'); statusMimo.textContent = ativo?'ATIVO':'INATIVO'; }
+}
+
+function salvarMimoGame() {
+  mimoConfig = {
+    ativo: document.getElementById('mimoAtivo').checked,
+    dificuldade: document.getElementById('mimoDificuldade').value,
+    premio: document.getElementById('mimoPremio').value,
+    validade: parseInt(document.getElementById('mimoValidade').value) || 24,
+    max: parseInt(document.getElementById('mimoMaxResgates').value) || 1,
+    derrota: document.getElementById('mimoDerrota').value,
+    tema: document.getElementById('mimoTema').value
+  };
+  setData('vit_mimo', mimoConfig);
+  showToast('MimoGame salvo com sucesso!', 'success');
+  addActivity('MimoGame configurado', 'gold');
+}
+
+function copiarLink() {
+  const val = document.getElementById('mimoLink').value;
+  navigator.clipboard.writeText(val).then(()=>showToast('Link copiado!','success')).catch(()=>{
+    document.getElementById('mimoLink').select();
+    document.execCommand('copy');
+    showToast('Link copiado!','success');
+  });
+}
+
+// ============================================================
+// RESGATES
+// ============================================================
+function gerarCodigoManual() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const cod = 'VITO-' + Array.from({length:4},()=>chars[Math.floor(Math.random()*chars.length)]).join('');
+  const agora = new Date();
+  const expira = new Date(agora.getTime() + (mimoConfig.validade || 24) * 3600000);
+  codigos.push({cod, criado: agora.toISOString(), expira: expira.toISOString(), status:'pendente'});
+  setData('vit_codigos', codigos);
+  renderResgates();
+  showToast(`Código ${cod} gerado!`, 'success');
+  addActivity(`Código ${cod} gerado manualmente`, 'blue');
+  document.getElementById('stat-resgates').textContent = codigos.length;
+}
+
+function validarCodigo() {
+  const input = document.getElementById('validarCodigo').value.trim().toUpperCase();
+  const res = document.getElementById('validarResult');
+  if (!input) { res.innerHTML=''; return; }
+  const idx = codigos.findIndex(c => c.cod === input);
+  if (idx === -1) {
+    res.innerHTML = `<div style="padding:14px;background:rgba(255,60,60,0.1);border:1px solid rgba(255,60,60,0.2);border-radius:8px;color:var(--red)">❌ Código não encontrado.</div>`;
+    return;
+  }
+  const c = codigos[idx];
+  if (c.status === 'usado') {
+    res.innerHTML = `<div style="padding:14px;background:rgba(255,60,60,0.08);border:1px solid rgba(255,60,60,0.2);border-radius:8px;color:var(--red)">⛔ Este código já foi utilizado.</div>`;
+    return;
+  }
+  if (new Date(c.expira) < new Date()) {
+    res.innerHTML = `<div style="padding:14px;background:rgba(255,60,60,0.08);border:1px solid rgba(255,60,60,0.2);border-radius:8px;color:var(--red)">⏱️ Código expirado.</div>`;
+    return;
+  }
+  res.innerHTML = `<div style="padding:14px;background:rgba(37,211,102,0.08);border:1px solid rgba(37,211,102,0.2);border-radius:8px;color:var(--green)">
+    ✅ Código válido! Prêmio: <strong>${mimoConfig.premio}</strong>
+    <div style="margin-top:10px"><button class="btn btn-sm btn-green" onclick="marcarUsado(${idx})">MARCAR COMO RESGATADO</button></div>
+  </div>`;
+}
+
+function marcarUsado(idx) {
+  codigos[idx].status = 'usado';
+  setData('vit_codigos', codigos);
+  renderResgates();
+  document.getElementById('validarResult').innerHTML = `<div style="padding:14px;background:rgba(197,160,89,0.08);border:1px solid rgba(197,160,89,0.2);border-radius:8px;color:var(--gold)">🎉 Prêmio resgatado com sucesso!</div>`;
+  showToast('Resgate confirmado!', 'success');
+  addActivity(`Código ${codigos[idx].cod} resgatado`, 'green');
+}
+
+function renderResgates() {
+  const tbody = document.getElementById('resgatesBody');
+  if (!codigos.length) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px">Nenhum código gerado ainda.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = codigos.slice().reverse().map((c,i) => {
+    const realIdx = codigos.length - 1 - i;
+    const criado = new Date(c.criado).toLocaleString('pt-BR');
+    const expira = new Date(c.expira).toLocaleString('pt-BR');
+    const expirou = new Date(c.expira) < new Date();
+    let badge = '';
+    if (c.status === 'usado') badge = `<span class="badge badge-inativo">Resgatado</span>`;
+    else if (expirou) badge = `<span class="badge" style="background:rgba(100,100,100,0.1);color:#666;border:1px solid #333">Expirado</span>`;
+    else badge = `<span class="badge badge-ativo">Válido</span>`;
+    return `<tr>
+      <td><strong>${c.cod}</strong></td>
+      <td style="color:var(--text-dim);font-size:0.82rem">${criado}</td>
+      <td style="color:var(--text-dim);font-size:0.82rem">${expira}</td>
+      <td>${badge}</td>
+      <td>${c.status==='pendente'&&!expirou?`<button class="btn btn-sm btn-danger" onclick="if(confirm('Cancelar código?')){codigos[${realIdx}].status='usado';setData('vit_codigos',codigos);renderResgates()}">Cancelar</button>`:'-'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ============================================================
+// LOJA
+// ============================================================
+function salvarLoja() {
+  lojaConfig = {
+    nome: document.getElementById('lojaName').value,
+    slogan: document.getElementById('lojaSlogan').value,
+    whats: document.getElementById('lojaWhats').value,
+    tel: document.getElementById('lojaTel').value,
+    logo: document.getElementById('lojaLogo').value,
+    endereco: document.getElementById('lojaEndereco').value,
+    ig: document.getElementById('lojaIG').value,
+    cor: document.getElementById('lojaCor').value
+  };
+  setData('vit_loja', lojaConfig);
+  showToast('Dados da loja salvos!', 'success');
+  addActivity('Dados da loja atualizados', 'gold');
+}
+
+function selecionarCor(cor, el) {
+  document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('lojaCor').value = cor;
+}
+
+// ============================================================
+// HORÁRIOS
+// ============================================================
+function renderHorarios() {
+  const tbody = document.getElementById('horariosBody');
+  tbody.innerHTML = horarios.map((h,i) => `
+    <tr>
+      <td><strong>${h.dia}</strong></td>
+      <td>
+        <label class="toggle-wrap">
+          <label class="toggle">
+            <input type="checkbox" id="hab_${i}" ${h.aberto?'checked':''} onchange="atualizarHorario()">
+            <span class="toggle-track"></span>
+            <span class="toggle-thumb"></span>
+          </label>
+        </label>
+      </td>
+      <td><input type="time" id="abre_${i}" value="${h.abertura}" class="form-group input" style="padding:8px;background:var(--dark4);border:1px solid var(--dark5);border-radius:6px;color:var(--text);font-family:'Barlow',sans-serif;width:120px"></td>
+      <td><input type="time" id="fecha_${i}" value="${h.fechamento}" class="form-group input" style="padding:8px;background:var(--dark4);border:1px solid var(--dark5);border-radius:6px;color:var(--text);font-family:'Barlow',sans-serif;width:120px"></td>
+    </tr>
+  `).join('');
+}
+
+function salvarHorarios() {
+  horarios = horarios.map((h,i) => ({
+    ...h,
+    aberto: document.getElementById(`hab_${i}`)?.checked ?? h.aberto,
+    abertura: document.getElementById(`abre_${i}`)?.value || h.abertura,
+    fechamento: document.getElementById(`fecha_${i}`)?.value || h.fechamento
+  }));
+  setData('vit_horarios', horarios);
+  showToast('Horários salvos!', 'success');
+}
+
+// ============================================================
+// BAIRROS
+// ============================================================
+function renderBairros() {
+  const list = document.getElementById('bairrosList');
+  if (!bairros.length) {
+    list.innerHTML = '<div style="color:var(--text-muted)">Nenhum bairro cadastrado.</div>';
+    return;
+  }
+  list.innerHTML = bairros.map((b,i) => `
+    <div class="bairro-row">
+      <div class="bairro-nome">${b.nome}</div>
+      <div class="bairro-taxa">R$ ${Number(b.taxa).toFixed(2)}</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm btn-gold" onclick="abrirModalBairro(${i})">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="excluirBairro(${i})">🗑</button>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('stat-bairros').textContent = bairros.length;
+}
+
+function abrirModalBairro(idx) {
+  editBairroIndex = idx;
+  document.getElementById('modalBairroTitle').textContent = idx===null?'Novo Bairro':'Editar Bairro';
+  if (idx !== null) {
+    document.getElementById('bNome').value = bairros[idx].nome;
+    document.getElementById('bTaxa').value = bairros[idx].taxa;
+  } else {
+    document.getElementById('bNome').value = '';
+    document.getElementById('bTaxa').value = '';
+  }
+  document.getElementById('modalBairroOverlay').classList.add('open');
+}
+
+function salvarBairro() {
+  const nome = document.getElementById('bNome').value.trim().toUpperCase();
+  if (!nome) return showToast('Informe o nome do bairro.', 'error');
+  const taxa = parseFloat(document.getElementById('bTaxa').value) || 0;
+  if (editBairroIndex !== null) bairros[editBairroIndex] = {nome, taxa};
+  else bairros.push({nome, taxa});
+  setData('vit_bairros', bairros);
+  fecharModal('modalBairroOverlay');
+  renderBairros();
+  showToast('Bairro salvo!', 'success');
+}
+
+function excluirBairro(idx) {
+  if (!confirm(`Excluir bairro "${bairros[idx].nome}"?`)) return;
+  bairros.splice(idx, 1);
+  setData('vit_bairros', bairros);
+  renderBairros();
+  showToast('Bairro removido.', 'info');
+}
+
+function salvarEntregas() {
+  showToast('Configurações de entrega salvas!', 'success');
+}
+
+// ============================================================
+// MODAL UTIL
+// ============================================================
+function fecharModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open');
+});
+
+// ============================================================
+// TOAST
+// ============================================================
+let toastTimer;
+function showToast(msg, type='info') {
+  const t = document.getElementById('toast');
+  const icons = {success:'✅', error:'❌', info:'ℹ️'};
+  t.innerHTML = `${icons[type]||'ℹ️'} ${msg}`;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ============================================================
+// ACTIVITY
+// ============================================================
+function addActivity(msg, color='red') {
+  const colors = {red:'var(--red)',gold:'var(--gold)',green:'var(--green)',blue:'var(--blue)'};
+  const feed = document.getElementById('activityFeed');
+  if (!feed) return;
+  const el = document.createElement('div');
+  el.className = 'activity-item';
+  el.innerHTML = `<div class="activity-dot" style="background:${colors[color]||colors.red}"></div>
+    <div style="flex:1"><div style="font-size:0.85rem">${msg}</div><div class="activity-time">Agora</div></div>`;
+  feed.insertBefore(el, feed.firstChild);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function initApp() {
+  navTo('dashboard');
+  checkStatus();
+  renderCardapio();
+}
+
+function checkStatus() {
+  const agora = new Date();
+  const hora = agora.getHours();
+  const dia = agora.getDay();
+  const minutos = agora.getMinutes();
+  const total = hora*60 + minutos;
+  const aberto = dia !== 1 && total >= 18*60 && total <= 23*60+30;
+  const el = document.getElementById('statusFuncionamento');
+  if(el){ el.className='badge '+(aberto?'badge-ativo':'badge-inativo'); el.textContent=aberto?'ABERTO':'FECHADO'; }
+}
+
+// Enter to login
+document.getElementById('loginPass').addEventListener('keydown', e => {
+  if(e.key==='Enter') doLogin();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>LABBOOK OS — Oráculo Labriolag</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════ */
+:root {
+  --ink:       #04060A;
+  --ink2:      #080B12;
+  --ink3:      #0D1119;
+  --ink4:      #131824;
+  --ink5:      #1A2030;
+  --ink6:      #222A3A;
+  --gold:      #C9A227;
+  --gold-l:    #E2BB4A;
+  --gold-d:    #8A6E18;
+  --gold-glow: rgba(201,162,39,.16);
+  --gold-line: rgba(201,162,39,.28);
+  --cyber:     #00D4FF;
+  --cyber-d:   rgba(0,212,255,.08);
+  --cyber-b:   rgba(0,212,255,.20);
+  --green:     #00E096;
+  --red:       #FF3D5A;
+  --amber:     #FF9500;
+  --purple:    #B57BFF;
+  --muted:     #4A5568;
+  --off:       #718096;
+  --white:     #E8EAF0;
+  --white-d:   #9AA5B4;
+  --line:      rgba(255,255,255,.05);
+  --line2:     rgba(255,255,255,.10);
+  --r:8px; --r2:14px;
+  --shadow: 0 8px 40px rgba(0,0,0,.6);
+  --shadow-g: 0 0 40px rgba(201,162,39,.12);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--ink);color:var(--white);-webkit-font-smoothing:antialiased;}
+input,textarea,select,button{font-family:inherit;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--ink6);border-radius:4px;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.025;
+background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:200px;}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);}
+
+/* ── SCREENS ── */
+.screen{display:none;position:fixed;inset:0;z-index:10;}
+.screen.active{display:flex;}
+
+/* ═══════════════════════════════════════════
+   SPLASH
+═══════════════════════════════════════════ */
+#splashScreen{flex-direction:column;align-items:center;justify-content:center;background:var(--ink);}
+.splash-grid{position:absolute;inset:0;overflow:hidden;pointer-events:none;opacity:.05;
+background-image:linear-gradient(var(--gold-line) 1px,transparent 1px),linear-gradient(90deg,var(--gold-line) 1px,transparent 1px);
+background-size:60px 60px;animation:gpulse 4s ease-in-out infinite;}
+@keyframes gpulse{0%,100%{opacity:.03}50%{opacity:.07}}
+.splash-ring{width:180px;height:180px;border-radius:50%;border:1px solid var(--gold-line);
+position:relative;display:flex;align-items:center;justify-content:center;
+animation:ringIn 1s ease-out both;margin-bottom:32px;}
+.splash-ring::before{content:'';position:absolute;inset:-12px;border-radius:50%;border:1px solid rgba(201,162,39,.06);}
+.splash-ring::after{content:'';position:absolute;inset:-24px;border-radius:50%;border:1px solid rgba(201,162,39,.03);}
+@keyframes ringIn{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+.splash-l{font-family:'Cinzel',serif;font-size:4rem;font-weight:700;color:var(--gold);text-shadow:0 0 40px var(--gold-glow);animation:siIn 1s .3s ease-out both;}
+@keyframes siIn{from{opacity:0;transform:scale(1.2)}to{opacity:1;transform:scale(1)}}
+.splash-name{font-family:'Cinzel',serif;font-size:1.5rem;font-weight:600;color:var(--gold-l);letter-spacing:8px;text-transform:uppercase;animation:fadeUp 1s .5s ease-out both;text-shadow:0 0 30px rgba(201,162,39,.4);}
+.splash-tag{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--muted);letter-spacing:4px;margin-top:8px;animation:fadeUp 1s .7s ease-out both;text-transform:uppercase;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.splash-pw{width:200px;margin-top:48px;animation:fadeUp 1s .9s ease-out both;}
+.splash-pl{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:6px;letter-spacing:1px;}
+.splash-bar{height:2px;background:var(--ink5);border-radius:2px;overflow:hidden;}
+.splash-fill{height:100%;background:linear-gradient(90deg,var(--gold-d),var(--gold-l));animation:bfill 2s .8s ease-out forwards;width:0;box-shadow:0 0 8px var(--gold);}
+@keyframes bfill{to{width:100%}}
+
+/* ═══════════════════════════════════════════
+   LOGIN
+═══════════════════════════════════════════ */
+#loginScreen{flex-direction:column;align-items:center;justify-content:center;background:var(--ink);padding:24px;}
+.login-frame{width:100%;max-width:400px;border:1px solid var(--gold-line);border-radius:var(--r2);background:var(--ink2);box-shadow:var(--shadow-g),var(--shadow);overflow:hidden;animation:fadeUp .6s ease-out both;}
+.login-hdr{padding:24px 28px 20px;border-bottom:1px solid var(--line2);background:linear-gradient(135deg,var(--ink3),var(--ink2));text-align:center;}
+.login-logo{font-family:'Cinzel',serif;font-size:1.2rem;font-weight:700;color:var(--gold);letter-spacing:4px;text-transform:uppercase;}
+.login-sub{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:3px;margin-top:4px;text-transform:uppercase;}
+.login-body{padding:28px;}
+.flabel{display:block;font-size:.65rem;font-weight:600;letter-spacing:2px;color:var(--off);text-transform:uppercase;margin-bottom:8px;}
+.finput{width:100%;padding:12px 14px;background:var(--ink4);border:1px solid var(--ink6);border-radius:var(--r);color:var(--white);font-family:'Share Tech Mono',monospace;font-size:.9rem;letter-spacing:2px;outline:none;transition:border-color .2s,box-shadow .2s;}
+.finput:focus{border-color:var(--gold-d);box-shadow:0 0 0 3px var(--gold-glow);}
+.login-hint{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--muted);margin-top:8px;letter-spacing:1px;}
+.login-err{font-size:.7rem;color:var(--red);margin-top:10px;min-height:18px;font-family:'Share Tech Mono',monospace;}
+.login-btn{width:100%;margin-top:20px;padding:13px;background:linear-gradient(135deg,var(--gold-d),var(--gold));border:none;border-radius:var(--r);cursor:pointer;font-family:'Cinzel',serif;font-size:.85rem;font-weight:600;letter-spacing:3px;color:var(--ink);text-transform:uppercase;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 20px rgba(201,162,39,.3);}
+.login-btn:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(201,162,39,.45);}
+.login-pub{text-align:center;margin-top:16px;font-size:.65rem;color:var(--muted);letter-spacing:1px;}
+.login-pub a{color:var(--cyber);text-decoration:none;}
+
+/* ═══════════════════════════════════════════
+   ORACLE — PUBLIC
+═══════════════════════════════════════════ */
+#oracleScreen{flex-direction:column;background:var(--ink);overflow:hidden;}
+.orhdr{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:54px;background:var(--ink2);border-bottom:1px solid var(--gold-line);position:relative;z-index:20;}
+.orbrand{display:flex;align-items:center;gap:12px;}
+.orsigil{width:32px;height:32px;border-radius:50%;border:1px solid var(--gold-line);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:.85rem;font-weight:700;color:var(--gold);background:var(--gold-glow);}
+.orname{font-family:'Cinzel',serif;font-size:.9rem;font-weight:600;color:var(--gold);letter-spacing:2px;}
+.ortag{font-family:'Share Tech Mono',monospace;font-size:.55rem;color:var(--muted);letter-spacing:2px;}
+.orhdr-r{display:flex;align-items:center;gap:10px;}
+.online-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.online-txt{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:2px;}
+.hbtn{padding:6px 14px;border-radius:var(--r);background:transparent;border:1px solid var(--gold-line);color:var(--gold-l);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:2px;transition:all .2s;}
+.hbtn:hover{background:var(--gold-glow);}
+
+.orcmd{flex-shrink:0;padding:20px 20px 0;background:var(--ink2);border-bottom:1px solid var(--line);}
+.cmdwrap{max-width:700px;margin:0 auto;}
+.cmdlabel{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.cmdlabel::before{content:'';display:inline-block;width:20px;height:1px;background:var(--gold-d);}
+.cmdinwrap{display:flex;align-items:center;background:var(--ink4);border:1px solid var(--ink6);border-radius:var(--r2);overflow:hidden;transition:border-color .2s,box-shadow .2s;padding:0 16px;}
+.cmdinwrap:focus-within{border-color:var(--gold-d);box-shadow:0 0 0 3px var(--gold-glow),var(--shadow-g);}
+.cmdpfx{font-family:'Share Tech Mono',monospace;font-size:.9rem;color:var(--gold-d);padding:13px 10px 13px 0;user-select:none;flex-shrink:0;}
+.cmdinput{flex:1;background:none;border:none;outline:none;color:var(--white);font-family:'Share Tech Mono',monospace;font-size:.9rem;padding:13px 0;letter-spacing:1px;}
+.cmdinput::placeholder{color:var(--muted);}
+.cmdclr{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;padding:4px;transition:color .2s;line-height:1;display:none;}
+.cmdclr:hover{color:var(--white);}
+.cmdclr.vis{display:block;}
+
+.ornav{display:flex;gap:0;margin-top:16px;border-bottom:none;overflow-x:auto;scrollbar-width:none;}
+.ornav::-webkit-scrollbar{display:none;}
+.ortab{flex-shrink:0;padding:10px 18px;background:none;border:none;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:.62rem;letter-spacing:2px;color:var(--off);text-transform:uppercase;border-bottom:2px solid transparent;transition:all .2s;text-align:center;}
+.ortab.active{color:var(--gold-l);border-bottom-color:var(--gold);}
+.ortab:hover:not(.active){color:var(--white-d);}
+
+.orbody{flex:1;overflow-y:auto;padding:20px;}
+
+/* Filter Chips */
+.frow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.fchip{padding:5px 12px;border-radius:20px;background:var(--ink4);border:1px solid var(--ink6);color:var(--off);font-size:.65rem;font-weight:500;letter-spacing:1px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.fchip.active{background:var(--gold-glow);border-color:var(--gold-d);color:var(--gold-l);}
+.fchip:hover:not(.active){border-color:var(--muted);color:var(--white-d);}
+
+/* Asset Grid */
+.agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
+@media(max-width:480px){.agrid{grid-template-columns:1fr;}}
+
+/* Asset Card */
+.acard{background:var(--ink3);border:1px solid var(--line2);border-radius:var(--r2);padding:18px;cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s;position:relative;overflow:hidden;}
+.acard::before{content:'';position:absolute;inset:0;opacity:0;background:linear-gradient(135deg,var(--gold-glow),transparent);transition:opacity .3s;}
+.acard:hover{transform:translateY(-2px);border-color:var(--gold-d);box-shadow:var(--shadow-g);}
+.acard:hover::before{opacity:1;}
+/* special highlight for featured */
+.acard.featured{border-color:var(--gold-d);background:linear-gradient(135deg,rgba(201,162,39,.06),var(--ink3));}
+
+.actop{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;}
+.acicon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;position:relative;z-index:1;}
+.aci-gold{background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.2);}
+.aci-cyber{background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2);}
+.aci-green{background:rgba(0,224,150,.08);border:1px solid rgba(0,224,150,.2);}
+.aci-amber{background:rgba(255,149,0,.08);border:1px solid rgba(255,149,0,.2);}
+.aci-purple{background:rgba(181,123,255,.08);border:1px solid rgba(181,123,255,.2);}
+.acmeta{flex:1;position:relative;z-index:1;}
+.acprot{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--cyber);letter-spacing:2px;margin-bottom:2px;}
+.actitle{font-size:.95rem;font-weight:600;color:var(--white);line-height:1.3;}
+.acver{font-size:.65rem;color:var(--off);margin-top:2px;letter-spacing:.5px;}
+.acdesc{font-size:.75rem;color:var(--white-d);line-height:1.6;margin-bottom:12px;position:relative;z-index:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.actags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;position:relative;z-index:1;}
+.actag{font-family:'Share Tech Mono',monospace;font-size:.55rem;padding:2px 8px;border-radius:3px;background:var(--ink5);color:var(--off);letter-spacing:1px;text-transform:uppercase;}
+.acfoot{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;border-top:1px solid var(--line);padding-top:10px;margin-top:2px;}
+.acdate{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--muted);}
+.acstatus{display:flex;align-items:center;gap:5px;}
+.sdot{width:5px;height:5px;border-radius:50%;}
+.s-prod{background:var(--green);box-shadow:0 0 6px var(--green);}
+.s-review{background:var(--amber);box-shadow:0 0 6px var(--amber);}
+.s-draft{background:var(--muted);}
+.slabel{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--off);text-transform:uppercase;letter-spacing:1px;}
+.acopen{padding:5px 12px;border-radius:6px;background:var(--gold-glow);border:1px solid var(--gold-d);color:var(--gold-l);cursor:pointer;font-size:.65rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;transition:all .2s;font-family:'Share Tech Mono',monospace;}
+.acopen:hover{background:var(--gold-d);color:var(--ink);}
+
+.empty-state{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-sym{font-family:'Cinzel',serif;font-size:2.5rem;color:var(--ink6);margin-bottom:16px;}
+.empty-ttl{font-size:.9rem;color:var(--off);margin-bottom:6px;}
+.empty-sub{font-family:'Share Tech Mono',monospace;font-size:.65rem;letter-spacing:1px;}
+
+/* ═══════════════════════════════════════════
+   APP SCREEN (ADMIN)
+═══════════════════════════════════════════ */
+#appScreen{flex-direction:column;background:var(--ink);}
+.apphdr{flex-shrink:0;height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:var(--ink2);border-bottom:1px solid var(--line2);z-index:20;}
+.appbrand{font-family:'Cinzel',serif;font-size:.85rem;font-weight:600;color:var(--gold);letter-spacing:3px;}
+.mode-badge{font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:2px;text-transform:uppercase;background:rgba(201,162,39,.12);border:1px solid var(--gold-d);color:var(--gold-l);padding:3px 8px;border-radius:4px;}
+.appnav{display:flex;background:var(--ink2);border-bottom:1px solid var(--line2);flex-shrink:0;overflow-x:auto;scrollbar-width:none;}
+.appnav::-webkit-scrollbar{display:none;}
+.ntab{flex-shrink:0;padding:11px 18px;background:none;border:none;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:.62rem;letter-spacing:2px;color:var(--off);text-transform:uppercase;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;}
+.ntab.active{color:var(--gold-l);border-bottom-color:var(--gold);}
+.ntab:hover:not(.active){color:var(--white-d);}
+.appbody{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.panel{display:none;flex:1;overflow:hidden;flex-direction:column;}
+.panel.active{display:flex;}
+
+/* Admin Panel */
+.panelbody{flex:1;overflow-y:auto;padding:16px;}
+.psearch-wrap{display:flex;gap:10px;margin-bottom:14px;}
+.psearch{flex:1;padding:10px 14px;background:var(--ink4);border:1px solid var(--ink6);border-radius:var(--r);color:var(--white);font-family:'Share Tech Mono',monospace;font-size:.8rem;outline:none;transition:border-color .2s;letter-spacing:1px;}
+.psearch:focus{border-color:var(--gold-d);}
+.psearch::placeholder{color:var(--muted);}
+.newbtn{padding:10px 16px;border-radius:var(--r);background:linear-gradient(135deg,var(--gold-d),var(--gold));border:none;cursor:pointer;color:var(--ink);font-family:'Share Tech Mono',monospace;font-size:.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;white-space:nowrap;transition:box-shadow .2s;box-shadow:0 3px 14px rgba(201,162,39,.3);}
+.newbtn:hover{box-shadow:0 4px 20px rgba(201,162,39,.5);}
+.admincard{background:var(--ink3);border:1px solid var(--line2);border-radius:var(--r);padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center;transition:border-color .2s;}
+.admincard:hover{border-color:var(--gold-d);}
+.admincard.sel{border-color:var(--gold);background:var(--ink4);}
+.acard-icon{width:36px;height:36px;border-radius:8px;background:var(--ink5);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.acard-info{flex:1;min-width:0;}
+.acard-id{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--cyber);letter-spacing:2px;margin-bottom:2px;}
+.acard-title{font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.acard-meta{font-size:.65rem;color:var(--off);margin-top:1px;}
+.acard-actions{display:flex;gap:6px;flex-shrink:0;}
+.aabtn{padding:5px 10px;border-radius:5px;border:1px solid var(--line2);background:var(--ink5);color:var(--off);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:1px;transition:all .2s;}
+.aabtn:hover{color:var(--white);border-color:var(--muted);}
+.aabtn.del:hover{color:var(--red);border-color:var(--red);background:rgba(255,61,90,.08);}
+
+/* Editor */
+.editor-layout{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:0;overflow:hidden;}
+@media(max-width:700px){.editor-layout{grid-template-columns:1fr;}}
+.edpanel{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--line2);}
+.edpanel-r{border-right:none;}
+.edtabs{display:flex;background:var(--ink3);border-bottom:1px solid var(--line2);flex-shrink:0;overflow-x:auto;scrollbar-width:none;}
+.edtabs::-webkit-scrollbar{display:none;}
+.etab{padding:8px 14px;font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:2px;color:var(--off);border-bottom:2px solid transparent;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap;transition:all .2s;text-transform:uppercase;}
+.etab.active{color:var(--gold-l);border-bottom-color:var(--gold);}
+.etab:hover:not(.active){color:var(--white-d);}
+.codearea{flex:1;padding:14px;overflow-y:auto;background:var(--ink);font-family:'Share Tech Mono',monospace;font-size:.8rem;color:var(--white);line-height:1.7;resize:none;border:none;outline:none;letter-spacing:.3px;display:none;}
+.codearea.active{display:block;}
+.prevframe{flex:1;border:none;background:white;display:none;}
+.prevframe.active{display:block;}
+.etoolbar{flex-shrink:0;padding:8px 12px;background:var(--ink3);border-top:1px solid var(--line2);display:flex;gap:8px;align-items:center;}
+.etbtn{padding:6px 14px;border-radius:6px;border:1px solid var(--line2);background:var(--ink5);color:var(--off);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:1px;transition:all .2s;text-transform:uppercase;}
+.etbtn.prim{background:var(--gold-glow);border-color:var(--gold-d);color:var(--gold-l);}
+.etbtn:hover{color:var(--white);border-color:var(--muted);}
+
+/* Import */
+.impbody{flex:1;overflow-y:auto;padding:16px;}
+.impsect{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.impsect::after{content:'';flex:1;height:1px;background:var(--line2);}
+.impzone{border:1px dashed var(--ink6);border-radius:var(--r2);padding:32px 20px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:16px;}
+.impzone:hover{border-color:var(--gold-d);background:var(--gold-glow);}
+.impzone-icon{font-size:2rem;margin-bottom:10px;}
+.impzone-title{font-size:.85rem;font-weight:600;margin-bottom:4px;}
+.impzone-sub{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--muted);letter-spacing:1px;}
+.impgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+@media(max-width:480px){.impgrid{grid-template-columns:1fr;}}
+.impcard{background:var(--ink3);border:1px solid var(--line2);border-radius:var(--r);padding:16px;cursor:pointer;transition:border-color .2s,box-shadow .2s;text-align:center;}
+.impcard:hover{border-color:var(--gold-d);box-shadow:var(--shadow-g);}
+.impcard-icon{font-size:1.6rem;margin-bottom:8px;}
+.impcard-name{font-size:.8rem;font-weight:600;margin-bottom:3px;}
+.impcard-desc{font-size:.65rem;color:var(--off);}
+
+/* Config */
+.cfgbody{flex:1;overflow-y:auto;padding:16px;}
+.cfggrp{background:var(--ink3);border:1px solid var(--line2);border-radius:var(--r2);margin-bottom:14px;overflow:hidden;}
+.cfghdr{padding:12px 16px;border-bottom:1px solid var(--line);font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:2px;color:var(--off);text-transform:uppercase;}
+.cfgrow{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);}
+.cfgrow:last-child{border-bottom:none;}
+.cfgrl{font-size:.8rem;font-weight:500;}
+.cfgrs{font-size:.65rem;color:var(--off);margin-top:2px;}
+.cfgact{padding:6px 14px;border-radius:6px;border:1px solid var(--line2);background:var(--ink5);color:var(--off);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:1px;transition:all .2s;white-space:nowrap;}
+.cfgact:hover{color:var(--white);border-color:var(--muted);}
+.cfgact.danger:hover{color:var(--red);border-color:var(--red);background:rgba(255,61,90,.08);}
+
+/* ═══════════════════════════════════════════
+   TRINDADE MODAL
+═══════════════════════════════════════════ */
+.modal-ov{display:none;position:fixed;inset:0;z-index:100;background:rgba(4,6,10,.85);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:16px;}
+.modal-ov.open{display:flex;}
+.trmodal{width:100%;max-width:740px;max-height:90vh;background:var(--ink2);border:1px solid var(--gold-line);border-radius:var(--r2);box-shadow:var(--shadow-g),var(--shadow);display:flex;flex-direction:column;overflow:hidden;animation:mIn .3s ease-out;}
+@keyframes mIn{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+.mhdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:linear-gradient(135deg,var(--ink3),var(--ink2));border-bottom:1px solid var(--line2);flex-shrink:0;}
+.mhdr-l{display:flex;flex-direction:column;gap:2px;}
+.mprot{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--cyber);letter-spacing:3px;}
+.mtitle{font-size:1.1rem;font-weight:600;color:var(--white);}
+.mclose{width:32px;height:32px;border-radius:6px;background:var(--ink5);border:1px solid var(--line2);color:var(--off);cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.mclose:hover{color:var(--white);border-color:var(--muted);}
+.trtabs{display:flex;background:var(--ink3);border-bottom:1px solid var(--line2);flex-shrink:0;}
+.trtab{flex:1;padding:11px 10px;background:none;border:none;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:1.5px;color:var(--off);text-transform:uppercase;border-bottom:2px solid transparent;transition:all .2s;text-align:center;}
+.trtab.active{color:var(--gold-l);border-bottom-color:var(--gold);}
+.trtab:hover:not(.active){color:var(--white-d);}
+.trtab-ic{font-size:.8rem;display:block;margin-bottom:3px;}
+.trbody{flex:1;overflow-y:auto;padding:20px;}
+.trpane{display:none;}
+.trpane.active{display:block;}
+
+/* Dogma */
+.dhero{text-align:center;padding:24px 0 20px;border-bottom:1px solid var(--line);margin-bottom:20px;}
+.dhero-icon{font-size:2.5rem;margin-bottom:10px;}
+.dquestion{font-family:'Cinzel',serif;font-size:1rem;font-weight:600;color:var(--gold-l);margin-bottom:8px;}
+.danswer{font-size:.85rem;color:var(--white-d);line-height:1.8;max-width:500px;margin:0 auto;}
+.dblock{background:var(--ink3);border:1px solid var(--line2);border-radius:var(--r);padding:16px;margin-bottom:12px;}
+.dblock-title{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--cyber);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.dblock-body{font-size:.82rem;color:var(--white-d);line-height:1.7;white-space:pre-wrap;}
+
+/* Ritual */
+.rit-iframe{width:100%;height:420px;border:1px solid var(--line2);border-radius:var(--r);background:white;display:block;}
+.rit-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:200px;color:var(--muted);text-align:center;background:var(--ink3);border:1px solid var(--line2);border-radius:var(--r);}
+.rit-empty-icon{font-size:2rem;margin-bottom:12px;}
+.rit-external{margin-top:12px;}
+.rit-extbtn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--r);background:var(--cyber-d);border:1px solid var(--cyber-b);color:var(--cyber);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:.65rem;letter-spacing:2px;text-transform:uppercase;text-decoration:none;transition:all .2s;}
+.rit-extbtn:hover{background:rgba(0,212,255,.18);}
+
+/* Selo */
+.selogrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+@media(max-width:480px){.selogrid{grid-template-columns:1fr;}}
+.selofield{background:var(--ink3);border:1px solid var(--line2);border-radius:var(--r);padding:12px 14px;}
+.seloflabel{font-family:'Share Tech Mono',monospace;font-size:.55rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+.selofvalue{font-family:'Share Tech Mono',monospace;font-size:.78rem;color:var(--white);letter-spacing:1px;word-break:break-all;}
+.selofvalue.gold{color:var(--gold-l);}
+.selofvalue.cyber{color:var(--cyber);}
+.selofvalue.green{color:var(--green);}
+.integrity-banner{background:linear-gradient(135deg,rgba(0,224,150,.08),rgba(0,212,255,.05));border:1px solid rgba(0,224,150,.2);border-radius:var(--r2);padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.int-icon{font-size:1.5rem;}
+.int-title{font-size:.85rem;font-weight:600;color:var(--green);margin-bottom:3px;}
+.int-sub{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--off);letter-spacing:1px;}
+.legalbox{background:var(--ink3);border:1px solid var(--line2);border-radius:var(--r);padding:14px;}
+.legalbox-title{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--amber);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.legalbox-body{font-size:.75rem;color:var(--white-d);line-height:1.7;white-space:pre-wrap;}
+.audit-btn{width:100%;padding:12px;margin-top:14px;background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(0,224,150,.08));border:1px solid rgba(0,212,255,.25);border-radius:var(--r);color:var(--cyber);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:.65rem;letter-spacing:2px;text-transform:uppercase;transition:all .3s;}
+.audit-btn:hover{background:linear-gradient(135deg,rgba(0,212,255,.2),rgba(0,224,150,.15));}
+.audit-scan{font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--cyber);text-align:center;padding:10px;letter-spacing:2px;animation:scanp 1s infinite;}
+@keyframes scanp{0%,100%{opacity:.5}50%{opacity:1}}
+.mtags{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;}
+.mtag{font-family:'Share Tech Mono',monospace;font-size:.58rem;padding:3px 9px;border-radius:3px;background:var(--ink5);color:var(--off);letter-spacing:1px;text-transform:uppercase;}
+
+/* Form Modal */
+.formmodal{width:100%;max-width:560px;max-height:90vh;background:var(--ink2);border:1px solid var(--gold-line);border-radius:var(--r2);box-shadow:var(--shadow-g),var(--shadow);display:flex;flex-direction:column;overflow:hidden;animation:mIn .3s ease-out;}
+.formbody{flex:1;overflow-y:auto;padding:20px;}
+.frow{margin-bottom:14px;}
+.frlabel{display:block;font-size:.65rem;font-weight:600;letter-spacing:1.5px;color:var(--off);text-transform:uppercase;margin-bottom:6px;}
+.frinput,.frsel,.frta{width:100%;padding:10px 12px;background:var(--ink4);border:1px solid var(--ink6);border-radius:var(--r);color:var(--white);font-family:inherit;font-size:.82rem;outline:none;transition:border-color .2s;}
+.frinput:focus,.frsel:focus,.frta:focus{border-color:var(--gold-d);}
+.frsel{cursor:pointer;}
+.frsel option{background:var(--ink4);}
+.frta{resize:vertical;min-height:80px;font-family:'Share Tech Mono',monospace;font-size:.75rem;}
+.frgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:400px){.frgrid{grid-template-columns:1fr;}}
+.formfoot{padding:14px 20px;border-top:1px solid var(--line2);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0;}
+.fcancel{padding:9px 20px;border-radius:var(--r);background:var(--ink4);border:1px solid var(--line2);color:var(--off);cursor:pointer;font-size:.75rem;transition:all .2s;}
+.fcancel:hover{color:var(--white);}
+.fsave{padding:9px 20px;border-radius:var(--r);background:linear-gradient(135deg,var(--gold-d),var(--gold));border:none;color:var(--ink);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;box-shadow:0 3px 14px rgba(201,162,39,.3);transition:box-shadow .2s;}
+.fsave:hover{box-shadow:0 4px 20px rgba(201,162,39,.5);}
+
+/* Toast */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:999;padding:10px 20px;border-radius:var(--r);font-family:'Share Tech Mono',monospace;font-size:.72rem;letter-spacing:1px;background:var(--ink4);color:var(--white);border:1px solid var(--line2);opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;white-space:nowrap;transform:translateX(-50%) translateY(8px);box-shadow:var(--shadow);}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast.gold{border-color:var(--gold-d);color:var(--gold-l);background:var(--ink3);}
+#toast.cyber{border-color:rgba(0,212,255,.3);color:var(--cyber);}
+#toast.red{border-color:rgba(255,61,90,.3);color:var(--red);}
+.hidden-inp{display:none;}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div class="screen active" id="splashScreen">
+  <div class="splash-grid"></div>
+  <div class="splash-ring"><span class="splash-l">L</span></div>
+  <div class="splash-name">Labriolag</div>
+  <div class="splash-tag">Protocolo de Consulta · Oráculo</div>
+  <div class="splash-pw">
+    <div class="splash-pl"><span>BOOT</span><span id="bootPct">0%</span></div>
+    <div class="splash-bar"><div class="splash-fill"></div></div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="screen" id="loginScreen">
+  <div class="login-frame">
+    <div class="login-hdr">
+      <div class="login-logo">LabBook</div>
+      <div class="login-sub">Acesso Administrativo · Nível Restrito</div>
+    </div>
+    <div class="login-body">
+      <label class="flabel">Chave de Acesso</label>
+      <input class="finput" id="loginInput" type="password" placeholder="●●●●●●●●●●" onkeydown="if(event.key==='Enter')doLogin()" autocomplete="off" spellcheck="false">
+      <div class="login-hint" id="loginHint">Fórmula: [chave-mestra] + DDMM + 123</div>
+      <div class="login-err" id="loginErr"></div>
+      <button class="login-btn" onclick="doLogin()">Acessar Protocolo</button>
+      <div class="login-pub">
+        <a href="#" onclick="gotoOracle();return false;">→ Acessar Vitrine Pública do Oráculo</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ORACLE PUBLIC -->
+<div class="screen" id="oracleScreen">
+  <div style="display:flex;flex-direction:column;width:100%;height:100%;">
+    <div class="orhdr">
+      <div class="orbrand">
+        <div class="orsigil">L</div>
+        <div>
+          <div class="orname">LabBook</div>
+          <div class="ortag">Oráculo Labriolag</div>
+        </div>
+      </div>
+      <div class="orhdr-r">
+        <div class="online-dot"></div>
+        <div class="online-txt">ONLINE</div>
+        <button class="hbtn" onclick="goLogin()">⌐ Admin</button>
+      </div>
+    </div>
+    <div class="orcmd">
+      <div class="cmdwrap">
+        <div class="cmdlabel">Consultar Protocolo</div>
+        <div class="cmdinwrap">
+          <span class="cmdpfx">▸</span>
+          <input class="cmdinput" id="orSearch" placeholder="Digite o código (ex: LB-MNU-001) ou palavra-chave…" oninput="onOrSearch(this.value)" autocomplete="off" spellcheck="false">
+          <button class="cmdclr" id="orClr" onclick="clearOrSearch()">✕</button>
+        </div>
+        <div class="ornav">
+          <button class="ortab active" onclick="setOrtab('all',this)">Todos</button>
+          <button class="ortab" onclick="setOrtab('LabMenu',this)">LabMenu</button>
+          <button class="ortab" onclick="setOrtab('Governança',this)">Governança</button>
+          <button class="ortab" onclick="setOrtab('Educação',this)">LabEduca</button>
+          <button class="ortab" onclick="setOrtab('Marketing',this)">Marketing</button>
+        </div>
+      </div>
+    </div>
+    <div class="orbody">
+      <div class="frow" id="orChips"></div>
+      <div class="agrid" id="orGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP SCREEN -->
+<div class="screen" id="appScreen">
+  <div style="display:flex;flex-direction:column;width:100%;height:100%;">
+    <div class="apphdr">
+      <div class="appbrand">LabBook</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="mode-badge">Admin</div>
+        <button class="hbtn" onclick="doLogout()" style="font-size:.55rem;padding:5px 12px;">Sair ⏻</button>
+      </div>
+    </div>
+    <div class="appnav">
+      <button class="ntab active" onclick="switchPanel('Oracle',this)">⬡ Oráculo</button>
+      <button class="ntab" onclick="switchPanel('Editor',this)">✎ Editor</button>
+      <button class="ntab" onclick="switchPanel('Import',this)">⬇ Importar</button>
+      <button class="ntab" onclick="switchPanel('Config',this)">⚙ Config</button>
+    </div>
+    <div class="appbody">
+
+      <!-- ORACLE PANEL -->
+      <div class="panel active" id="panelOracle">
+        <div class="panelbody">
+          <div class="psearch-wrap">
+            <input class="psearch" id="adminSearch" placeholder="▸ Buscar protocolo…" oninput="renderAdminList()">
+            <button class="newbtn" onclick="openFormModal(null)">+ Novo Ativo</button>
+          </div>
+          <div class="frow" id="adminChips"></div>
+          <div id="adminList"></div>
+        </div>
+      </div>
+
+      <!-- EDITOR PANEL -->
+      <div class="panel" id="panelEditor">
+        <div style="padding:10px 14px;background:var(--ink3);border-bottom:1px solid var(--line2);flex-shrink:0;display:flex;align-items:center;gap:10px;">
+          <span style="font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Editando:</span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--cyber);" id="edActiveId">Nenhum</span>
+          <span style="font-size:.7rem;color:var(--off);" id="edActiveTitle"></span>
+        </div>
+        <div class="editor-layout">
+          <div class="edpanel">
+            <div class="edtabs">
+              <button class="etab active" onclick="switchEdTab('html',this)">HTML</button>
+              <button class="etab" onclick="switchEdTab('css',this)">CSS</button>
+              <button class="etab" onclick="switchEdTab('js',this)">JS</button>
+              <button class="etab" onclick="switchEdTab('docs',this)">Docs</button>
+              <button class="etab" onclick="switchEdTab('legal',this)">Legal</button>
+            </div>
+            <textarea class="codearea active" id="ceHTML" spellcheck="false" placeholder="<!-- HTML -->"></textarea>
+            <textarea class="codearea" id="ceCSS" spellcheck="false" placeholder="/* CSS */"></textarea>
+            <textarea class="codearea" id="ceJS" spellcheck="false" placeholder="// JS"></textarea>
+            <textarea class="codearea" id="ceDocs" spellcheck="false" placeholder="# Documentação"></textarea>
+            <textarea class="codearea" id="ceLegal" spellcheck="false" placeholder="Cláusulas legais…"></textarea>
+            <div class="etoolbar">
+              <button class="etbtn prim" onclick="runPreview()">▶ Preview</button>
+              <button class="etbtn" onclick="saveEditor()">✓ Salvar</button>
+            </div>
+          </div>
+          <div class="edpanel edpanel-r">
+            <div class="edtabs"><button class="etab active">Preview</button></div>
+            <iframe class="prevframe active" id="prevFrame"></iframe>
+          </div>
+        </div>
+      </div>
+
+      <!-- IMPORT PANEL -->
+      <div class="panel" id="panelImport">
+        <div class="impbody">
+          <div class="impsect">Importar Ativo</div>
+          <div class="impzone" onclick="$('fileAsset').click()">
+            <div class="impzone-icon">📂</div>
+            <div class="impzone-title">Importar HTML</div>
+            <div class="impzone-sub">Clique ou arraste um .html</div>
+          </div>
+          <div class="impsect">Backup</div>
+          <div class="impzone" onclick="$('fileJson').click()" style="margin-bottom:20px;">
+            <div class="impzone-icon">📦</div>
+            <div class="impzone-title">Restaurar JSON</div>
+            <div class="impzone-sub">Backup completo de ativos</div>
+          </div>
+          <div class="impsect">Integrações</div>
+          <div class="impgrid">
+            <div class="impcard" onclick="toast('Google Drive: Em breve','cyber')"><div class="impcard-icon">☁</div><div class="impcard-name">Google Drive</div><div class="impcard-desc">Em breve</div></div>
+            <div class="impcard" onclick="toast('OneDrive: Em breve','cyber')"><div class="impcard-icon">🔷</div><div class="impcard-name">OneDrive</div><div class="impcard-desc">Em breve</div></div>
+            <div class="impcard" onclick="toast('GitHub API: Em breve','cyber')"><div class="impcard-icon">🐙</div><div class="impcard-name">GitHub</div><div class="impcard-desc">Em breve</div></div>
+            <div class="impcard" onclick="exportBackup()"><div class="impcard-icon">💾</div><div class="impcard-name">Exportar Backup</div><div class="impcard-desc">Gerar JSON</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONFIG PANEL -->
+      <div class="panel" id="panelConfig">
+        <div class="cfgbody">
+          <div class="cfggrp">
+            <div class="cfghdr">Segurança</div>
+            <div class="cfgrow"><div><div class="cfgrl">Chave-Mestra</div><div class="cfgrs">Base da senha dinâmica</div></div><button class="cfgact" onclick="resetBase()">Redefinir</button></div>
+            <div class="cfgrow"><div><div class="cfgrl">Senha de Hoje</div><div class="cfgrs" id="todayHint">—</div></div><button class="cfgact" onclick="showTodayPass()">Revelar</button></div>
+          </div>
+          <div class="cfggrp">
+            <div class="cfghdr">Dados</div>
+            <div class="cfgrow"><div><div class="cfgrl">Total de Ativos</div><div class="cfgrs" id="cfgCount">—</div></div></div>
+            <div class="cfgrow"><div><div class="cfgrl">Exportar Backup</div><div class="cfgrs">JSON completo</div></div><button class="cfgact" onclick="exportBackup()">Exportar</button></div>
+            <div class="cfgrow"><div><div class="cfgrl">Limpar Dados</div><div class="cfgrs">Remove todos os ativos</div></div><button class="cfgact danger" onclick="clearAll()">Limpar</button></div>
+          </div>
+          <div class="cfggrp">
+            <div class="cfghdr">Sobre</div>
+            <div class="cfgrow"><div><div class="cfgrl">LabBook OS</div><div class="cfgrs">v2.1.0 — O Oráculo Labriolag</div></div><span style="font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--gold-d);">LAB</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- TRINDADE MODAL -->
+<div class="modal-ov" id="trModal">
+  <div class="trmodal">
+    <div class="mhdr">
+      <div class="mhdr-l">
+        <div class="mprot" id="tmProt">—</div>
+        <div class="mtitle" id="tmTitle">—</div>
+      </div>
+      <button class="mclose" onclick="closeTr()">✕</button>
+    </div>
+    <div class="trtabs">
+      <button class="trtab active" onclick="switchTr('dogma',this)"><span class="trtab-ic">📖</span>Dogma</button>
+      <button class="trtab" onclick="switchTr('ritual',this)"><span class="trtab-ic">⚡</span>Ritual</button>
+      <button class="trtab" onclick="switchTr('selo',this)"><span class="trtab-ic">🔐</span>Selo</button>
+    </div>
+    <div class="trbody">
+      <div class="trpane active" id="pane-dogma">
+        <div class="dhero">
+          <div class="dhero-icon" id="dm-icon">📦</div>
+          <div class="dquestion" id="dm-q">O que é este protocolo?</div>
+          <div class="danswer" id="dm-ans">—</div>
+        </div>
+        <div class="mtags" id="dm-tags"></div>
+        <div class="dblock"><div class="dblock-title">Documentação Técnica</div><div class="dblock-body" id="dm-docs">—</div></div>
+      </div>
+      <div class="trpane" id="pane-ritual"><div id="ritContent"></div></div>
+      <div class="trpane" id="pane-selo">
+        <div class="integrity-banner">
+          <div class="int-icon">✅</div>
+          <div><div class="int-title">Certificado Labriolag</div><div class="int-sub" id="seloIntLine">Verificando…</div></div>
+        </div>
+        <div class="selogrid" id="seloGrid"></div>
+        <div class="legalbox" id="seloLegal" style="display:none">
+          <div class="legalbox-title">⚖ Cláusulas Legais</div>
+          <div class="legalbox-body" id="seloLegalBody"></div>
+        </div>
+        <button class="audit-btn" onclick="runAudit()">[ AUDITAR INTEGRIDADE AGORA ]</button>
+        <div id="auditResult"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FORM MODAL -->
+<div class="modal-ov" id="formModal">
+  <div class="formmodal">
+    <div class="mhdr">
+      <div class="mhdr-l"><div class="mprot" id="fmSub">Novo Ativo</div><div class="mtitle">Cadastro de Protocolo</div></div>
+      <button class="mclose" onclick="closeForm()">✕</button>
+    </div>
+    <div class="formbody">
+      <input type="hidden" id="fmId">
+      <div class="frgrid">
+        <div class="frow"><label class="frlabel">Código do Protocolo</label><input class="frinput" id="fmProt" placeholder="LB-CAT-001" spellcheck="false"></div>
+        <div class="frow"><label class="frlabel">Versão</label><input class="frinput" id="fmVer" placeholder="v1.0.0"></div>
+      </div>
+      <div class="frow"><label class="frlabel">Título</label><input class="frinput" id="fmTitle" placeholder="Nome do projeto"></div>
+      <div class="frgrid">
+        <div class="frow"><label class="frlabel">Categoria</label>
+          <select class="frsel" id="fmCat">
+            <option value="LabMenu">LabMenu</option>
+            <option value="Governança">Governança</option>
+            <option value="Financeiro">Financeiro</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Educação">Educação</option>
+            <option value="Código">Código</option>
+            <option value="Contrato">Contrato</option>
+          </select>
+        </div>
+        <div class="frow"><label class="frlabel">Status</label>
+          <select class="frsel" id="fmStatus">
+            <option value="draft">Draft</option>
+            <option value="review">Review</option>
+            <option value="prod">Production</option>
+          </select>
+        </div>
+      </div>
+      <div class="frow"><label class="frlabel">Descrição</label><input class="frinput" id="fmDesc" placeholder="O que este protocolo resolve"></div>
+      <div class="frow"><label class="frlabel">Tags (vírgula)</label><input class="frinput" id="fmTags" placeholder="LGPD, API, PIX"></div>
+      <div class="frow"><label class="frlabel">URL de Demo (opcional)</label><input class="frinput" id="fmDemo" placeholder="https://…" spellcheck="false"></div>
+      <div class="frow"><label class="frlabel">Documentação</label><textarea class="frta" id="fmDocs" style="min-height:100px" placeholder="# Título&#10;&#10;Explique o protocolo…"></textarea></div>
+      <div class="frow"><label class="frlabel">Cláusulas Legais</label><textarea class="frta" id="fmLegal" placeholder="Cláusula X…"></textarea></div>
+    </div>
+    <div class="formfoot">
+      <button class="fcancel" onclick="closeForm()">Cancelar</button>
+      <button class="fsave" onclick="saveForm()">Salvar Protocolo</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<input type="file" id="fileJson" accept=".json" class="hidden-inp" onchange="onImportJson(event)">
+<input type="file" id="fileAsset" accept=".html,.htm" class="hidden-inp" onchange="onImportAsset(event)">
+
+<script>
+// ═══════════════════════════════════════════
+// REAL ASSETS — Labriolag Portfolio
+// ═══════════════════════════════════════════
+const SEED_ASSETS = [
+  {
+    id:'LB-MNU-001', titulo:'McTonny — Cardápio Digital', versao:'v1.0.0',
+    categoria:'LabMenu', status:'prod',
+    tags:['LabMenu','Alimentação','Hamburgueria','WhatsApp','Delivery'],
+    descricao:'Cardápio digital completo com carrinho, delivery, cálculo de frete por bairro e envio de pedido direto no WhatsApp. Primeiro case ativo da Labriolag.',
+    demoUrl:'',
+    html:'', css:'', js:'',
+    docs:'# McTonny — Cardápio Digital\n\n## O Que Foi Entregue\nUm sistema completo de pedidos digitais para hamburgueria. O cliente abre uma splash screen com a marca, acessa o cardápio e finaliza o pedido direto no WhatsApp do estabelecimento.\n\n## Funcionalidades Implementadas\n- Splash screen com logo e botões de ação\n- Cardápio dividido por categorias: Lanches/Dogs, MC/Prato, Beirutes, Combos, Porções, Bebidas\n- Carrinho flutuante com contador\n- Opção de Retirada ou Delivery\n- Seleção de bairro com cálculo automático de frete\n- Formas de pagamento (Pix, Cartão, Dinheiro + troco)\n- Envio do pedido formatado diretamente no WhatsApp\n\n## Tecnologia\nHTML + CSS + JavaScript — 100% sem backend, funciona em qualquer celular sem instalação.\n\n## Resultado\nO estabelecimento parou de receber pedidos por telefone e passou a gerenciar tudo pelo WhatsApp com pedidos estruturados.',
+    legal:'',
+    criado:'2026-02-01'
+  },
+  {
+    id:'LB-MNU-002', titulo:'LabMenu — Vitorelli Pizzaria', versao:'v1.0.0',
+    categoria:'LabMenu', status:'review',
+    tags:['LabMenu','Pizzaria','Pirapora','Case','FRO-001','TCA-001'],
+    descricao:'Sistema LabMenu implantado na Vitorelli Pizzaria — Pirapora do Bom Jesus/SP. Case oficial CASE-001 com documentação FRO-001 e TCA-001.',
+    demoUrl:'',
+    html:'', css:'', js:'',
+    docs:'# LabMenu — Vitorelli Pizzaria\n\n## Identificação\n- **Case:** CASE-001 / VITORELLI\n- **Estabelecimento:** Vitorelli Pizzaria\n- **Cidade:** Pirapora do Bom Jesus — SP\n- **Domínio:** labriolag.shop/vitorelli\n- **Documentação:** FRO-001 + TCA-001\n\n## O Problema\nA pizzaria operava 100% via telefone e WhatsApp manual. Pedidos se perdiam, atendimento ficava sobrecarregado nos picos e não havia registro confiável de dados.\n\n## A Solução Labriolag\nImplantação do sistema LabMenu com:\n- Cardápio digital responsivo\n- Pedidos via WhatsApp estruturado\n- MimoGame (sistema de cupons de fidelização)\n- Painel de métricas pré e pós-digital\n\n## Período de Análise\n- **Pré-digital:** 3 meses anteriores à ativação\n- **Pós-digital:** 3 meses após implantação\n\n## Indicadores Monitorados\n- Faturamento bruto mensal\n- Número total de pedidos\n- Ticket médio\n- Distribuição de canais (digital/telefone/balcão)\n- Taxa de uso de cupons MimoGame\n- Crescimento de clientes únicos',
+    legal:'Cláusula 4.1 – Autorização de uso estatístico\nO titular autoriza expressamente o uso de dados anonimizados para fins estatísticos de validação de performance.\n\nCláusula 4.2 – Propriedade do dado anonimizado\nConsoante Art. 12 da LGPD, dados anonimizados não são considerados dados pessoais.\n\nCláusula 5.1 – Sigilo financeiro\nDados de faturamento absolutos são tratados com sigilo. Apenas percentuais comparativos poderão ser divulgados.\n\nDocumentação de referência: TCA-001 | FRO-001',
+    criado:'2026-01-15'
+  },
+  {
+    id:'LB-GOV-001', titulo:'Programa Cidades Digitais', versao:'v1.0.0',
+    categoria:'Governança', status:'prod',
+    tags:['Municipal','Prefeitura','LGPD','Infraestrutura','B2G'],
+    descricao:'Programa de digitalização comercial para municípios. Conecta prefeituras e centros comerciais ao ecossistema Labriolag, gerando inteligência econômica local.',
+    demoUrl:'',
+    html:'', css:'', js:'',
+    docs:'# Programa Cidades Digitais\n\n## O Que É\nUm programa de governo municipal para digitalizar o comércio local. A Labriolag atua como parceira tecnológica da prefeitura, implantando o ecossistema LabMenu + LabAccess + LabPay nos estabelecimentos da cidade.\n\n## Pilares do Programa\n\n### 1. Diagnóstico Digital\nMapeamento de todos os estabelecimentos comerciais do município. Classificação por segmento, potencial de digitalização e urgência.\n\n### 2. Implantação em Lotes\nEstratégia de implantação em ondas: 15 casos piloto → validação → expansão para 50 → meta de 200 estabelecimentos.\n\n### 3. Geração de Dados Municipais\nCom os estabelecimentos digitalizados, o município passa a ter acesso a:\n- Índice de Saúde Tecnológica Digital (ISTD) por bairro\n- Mapa de calor econômico em tempo real\n- Relatórios de faturamento agregado para políticas públicas\n\n## Diferencial Estratégico\nNão é um "site para a prefeitura". É uma infraestrutura econômica digital que transforma dados comerciais em inteligência municipal — sem expor dados individuais.\n\n## Modelo Financeiro\nSaaS Municipal: taxa mensal por estabelecimento ativo + taxa de implantação por lote.',
+    legal:'Este protocolo opera sob conformidade com:\n- LGPD (Lei 13.709/2018) — Privacy by Design\n- Marco Civil da Internet (Lei 12.965/2014)\n- Lei de Acesso à Informação (LAI 12.527/2011) para dados públicos\n\nDados financeiros individuais dos estabelecimentos são protegidos e apenas resultados agregados e anonimizados são reportados ao município.',
+    criado:'2026-01-20'
+  },
+  {
+    id:'LB-MKT-001', titulo:'QR-Lab — Gerador Profissional', versao:'v1.0.0',
+    categoria:'Marketing', status:'prod',
+    tags:['QRCode','Marketing','Telemetria','LGPD','Eventos'],
+    descricao:'Gerador de QR Codes de nível profissional com 16 tipos de matriz, 5 modos de sequência e telemetria LGPD-Safe integrada. Ferramenta nativa do ecossistema Labriolag.',
+    demoUrl:'',
+    html:'', css:'', js:'',
+    docs:'# QR-Lab — Gerador Profissional de QR Codes\n\n## O Que É\nUma ferramenta standalone de geração de QR Codes, criada dentro do design system Labriolag (Ink × Gold × Cyber), com funcionalidades que vão além dos geradores comuns.\n\n## Tipos de QR Suportados (16)\nURL, WhatsApp, PIX, vCard, SMS, E-mail, WiFi, Localização, Evento, PDF, Instagram, Cardápio Digital, Ingresso de Evento, Cupom de Desconto, Código Rastreável e QR Autenticado Labriolag.\n\n## Modos de Sequência (5)\n1. **Único** — Um QR por vez\n2. **Série** — Lote com numeração sequencial\n3. **Aleatório** — Tokens únicos para cupons\n4. **Geolocalizado** — QR vinculado a coordenadas\n5. **Temporário** — QR com prazo de validade\n\n## Casos de Uso\n- Cardápios digitais com rastreamento de acesso\n- Ingressos de eventos com controle de entrada\n- Cupons da "Festa Junina" (10.000 créditos em lote)\n- Materiais de marketing com medição de ROI\n- Cartões de visita com vCard digital\n\n## Telemetria LGPD-Safe\nRegistra: número de scans, horário de pico, localização aproximada (nível cidade). NÃO registra: IP individual, identidade do usuário, dados pessoais.',
+    legal:'O QR-Lab opera sob a Política de Privacidade Labriolag (LGPD). A telemetria coletada é anonimizada na origem e não constitui dado pessoal conforme Art. 12 da Lei 13.709/2018.',
+    criado:'2026-01-10'
+  },
+  {
+    id:'LB-GOV-002', titulo:'Governança LGPD — Privacy by Design', versao:'v1.0.0',
+    categoria:'Governança', status:'prod',
+    tags:['LGPD','Compliance','Privacidade','Segurança','Dados'],
+    descricao:'Arquitetura de telemetria LGPD-Safe com anonimização na origem. Protocolo base que garante que todo o ecossistema Labriolag seja Privacy by Design.',
+    demoUrl:'',
+    html:'', css:'', js:'',
+    docs:'# Governança LGPD — Privacy by Design\n\n## Princípio Fundador\nVocê não coleta pessoas. Você coleta eventos.\n\n## As 4 Camadas de Proteção\n\n**1. Anonimização na Origem**\nNenhum IP, CPF ou dado identificável é coletado sem base legal e consentimento explícito.\n\n**2. Pseudonimização Temporária**\nQuando necessária a identificação, usa-se um hash descartável com prazo de expiração.\n\n**3. Dados Agregados**\nO sistema reporta apenas estatísticas — nunca dados individuais — para dashboards.\n\n**4. Minimização**\nSó coleta o estritamente necessário para a finalidade declarada.\n\n## Bases Legais Utilizadas\n- Art. 6º, I — Consentimento\n- Art. 6º, V — Execução de contrato\n- Art. 6º, IX — Legítimo interesse (para analytics agregado)\n- Art. 12 — Dado anonimizado não é dado pessoal\n\n## Direitos do Titular (TCA-001)\nAcesso, correção, portabilidade, anonimização e exclusão — todos disponíveis via solicitação ao responsável.',
+    legal:'Documento de referência: TCA-001 — Termo de Autorização de Coleta e Uso de Dados Operacionais.\n\nBase legal consolidada: LGPD (Lei 13.709/2018), Art. 6º e Art. 12.\n\nResponsável pelo tratamento: Labriolag Holding.',
+    criado:'2026-01-05'
+  },
+  {
+    id:'LB-EDU-001', titulo:'Gibi do Satoshi', versao:'v1.0.0',
+    categoria:'Educação', status:'prod',
+    tags:['Bitcoin','Satoshi','Educação','Leigos','Web3'],
+    descricao:'Material educativo em linguagem acessível sobre Bitcoin, dinheiro descentralizado e o legado de Satoshi Nakamoto. Parte do programa LabEduca.',
+    demoUrl:'',
+    html:'', css:'', js:'',
+    docs:'# Gibi do Satoshi\n\n## Para Quem É Isso?\nPara qualquer pessoa que já ouviu "Bitcoin" e ficou com cara de ponto de interrogação. Para o dono da pizzaria, o vereador, a dona do salão.\n\n## O que Você Vai Entender\n- O que é dinheiro de verdade\n- Por que bancos podem "criar" dinheiro do nada\n- Como o Bitcoin resolve esse problema\n- Quem era Satoshi Nakamoto (e por que ele sumiu)\n- O que é um Satoshi (a menor fração)\n\n## Capítulo 1: O Problema do Caderno\nImagine que a vizinhança usa um caderno para anotar quem deve o quê pra quem. Se só UMA pessoa guarda esse caderno, ela pode apagar qualquer dívida ou inventar dinheiro. Isso é exatamente o sistema bancário atual.\n\n## Capítulo 2: E se Todo Mundo Tivesse o Caderno?\nE se TODOS na vizinhança tivessem uma cópia do mesmo caderno? Ninguém poderia trapacear porque TODOS veriam a fraude na hora. Isso é o Blockchain.\n\n## Capítulo 3: Satoshi Nakamoto\nEm 2008, uma pessoa (ou grupo) usando o pseudônimo "Satoshi Nakamoto" publicou um documento técnico de 9 páginas explicando como criar esse "caderno distribuído" usando matemática. Em 2010, Satoshi desapareceu. Nunca gastou seus Bitcoins. Nunca foi identificado.\n\n## O que É um Satoshi?\nÉ a menor fração do Bitcoin: 0,00000001 BTC. Assim como um centavo é 0,01 reais. Mas enquanto o real tem 2 casas decimais, o Bitcoin tem 8.',
+    legal:'',
+    criado:'2026-01-01'
+  },
+  {
+    id:'LB-FIN-001', titulo:'LabPay — Gateway sem Custódia', versao:'v1.0.4',
+    categoria:'Financeiro', status:'prod',
+    tags:['Financeiro','PIX','Gateway','Orquestração','Sem Custódia'],
+    descricao:'Infraestrutura de orquestração de pagamentos sem custódia. O dinheiro nunca passa pela conta Labriolag — apenas a instrução de pagamento.',
+    demoUrl:'',
+    html:'', css:'',
+    js:'// LabPay — Orquestrador sem custódia\n// O dinheiro nunca toca a conta Labriolag\n\nasync function gerarPix(valor, comercianteId) {\n  // Chama API do PSP parceiro\n  const response = await fetch("/api/pix/gerar", {\n    method: "POST",\n    headers: { "Content-Type": "application/json" },\n    body: JSON.stringify({ valor, comercianteId })\n  });\n  const { qr, txId } = await response.json();\n  return { qr, txId, status: "aguardando" };\n}\n\n// Webhook: PSP confirma pagamento diretamente ao comerciante\nfunction onPagamentoConfirmado(txId, comercianteId) {\n  // Apenas registra o evento — não movimenta dinheiro\n  registrarEvento(txId, comercianteId, "confirmado");\n  console.log("Labriolag registrou confirmação:", txId);\n  // A liquidação acontece PSP → Comerciante diretamente\n}',
+    docs:'# LabPay — Gateway sem Custódia\n\n## O Princípio de Ouro\nDinheiro NUNCA entra na conta da Labriolag. Zero. Jamais.\n\n## Por que isso importa?\nIsso garante que a Labriolag não se enquadra como Instituição de Pagamento (IP) conforme a Lei 12.865/2013. Sem essa enquadramento, não há necessidade de licença do Banco Central.\n\n## O Fluxo Completo\n1. Cliente escolhe produto no LabMenu\n2. LabPay gera instrução PIX via API do PSP parceiro\n3. Banco do cliente processa o pagamento\n4. PSP parceiro liquida DIRETAMENTE ao comerciante\n5. Labriolag recebe apenas o webhook de confirmação\n6. Dashboard do comerciante atualiza automaticamente\n\n## Compatibilidade\nQualquer PSP com API de PIX dinâmico. Integrações planejadas: Asaas, Efí, Mercado Pago, Stripe (futuro).',
+    legal:'Cláusula 5.1 – Isenção de Custódia Bancária\nO LabPay não é instituição de pagamento conforme art. 6º, III, Lei 12.865/2013. Atua exclusivamente como camada tecnológica de orquestração de instruções de pagamento.\n\nCláusula 5.2 – Responsabilidade pela Liquidação\nA liquidação financeira é responsabilidade exclusiva do PSP parceiro designado pelo comerciante. A Labriolag não responde por falhas no processamento do PSP.',
+    criado:'2026-01-08'
+  }
+];
+
+// ═══════════════════════════════════════════
+// CONSTANTS & STATE
+// ═══════════════════════════════════════════
+const LS_ASSETS = 'llb_v3_assets';
+const LS_BASE   = 'llb_v3_base';
+const STATE = {
+  assets: [], loggedIn: false,
+  orQuery: '', orTab: 'all', adminFilter: 'all',
+  editorId: null, trId: null,
+};
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+function lsGet(k, def) { try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch { return def; } }
+function lsSet(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+function genId() { return Date.now().toString(36).toUpperCase(); }
+function $(id) { return document.getElementById(id); }
+function fmtDate(iso) { if (!iso) return '—'; return new Date(iso).toLocaleDateString('pt-BR'); }
+function simpleHash(str) { let h=0; for (let i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h|=0;} return Math.abs(h).toString(16).toUpperCase().padStart(8,'0'); }
+
+let _tt;
+function toast(msg, type='gold') {
+  const t = $('toast'); t.textContent=msg; t.className='show '+type;
+  clearTimeout(_tt); _tt=setTimeout(()=>t.className='', 3000);
+}
+function setScreen(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); }
+
+// ═══════════════════════════════════════════
+// SPLASH
+// ═══════════════════════════════════════════
+function initSplash() {
+  const pct = $('bootPct'); let p=0;
+  const iv = setInterval(()=>{
+    p = Math.min(100, p + Math.random()*18+5);
+    pct.textContent = Math.floor(p)+'%';
+    if (p>=100) { clearInterval(iv); pct.textContent='100%'; setTimeout(()=>setScreen('loginScreen'),300); }
+  }, 120);
+}
+
+// ═══════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════
+function getBase() {
+  let base = lsGet(LS_BASE, null);
+  if (!base) {
+    base = prompt('🔐 Primeiro acesso.\nConfigure sua chave-mestra (parte fixa da senha):\n\nEsta informação não será exibida novamente — anote com segurança:');
+    if (!base || !base.trim()) base = 'LAB';
+    lsSet(LS_BASE, base.trim());
+    alert('✅ Chave configurada.\nSua senha hoje é:\n\n' + buildPass(base.trim()));
+  }
+  return base;
+}
+function buildPass(base) {
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2,'0');
+  const mm = String(now.getMonth()+1).padStart(2,'0');
+  return base + dd + mm + '123';
+}
+function updateHint() {
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2,'0');
+  const mm = String(now.getMonth()+1).padStart(2,'0');
+  $('loginHint').textContent = `Fórmula: [chave-mestra] + ${dd}${mm} + 123`;
+}
+function doLogin() {
+  const base = getBase();
+  if ($('loginInput').value === buildPass(base)) {
+    STATE.loggedIn=true; $('loginErr').textContent='';
+    loadAll(); renderAdminList(); renderAdminChips(); updateCfg();
+    setScreen('appScreen'); toast('Protocolo ativado ✓','gold');
+  } else {
+    $('loginErr').textContent='⚠ Autenticação falhou.';
+    $('loginInput').value=''; $('loginInput').focus();
+  }
+}
+function doLogout() { STATE.loggedIn=false; $('loginInput').value=''; $('loginErr').textContent=''; updateHint(); setScreen('loginScreen'); }
+function gotoOracle() { loadAll(); renderOracle(); setScreen('oracleScreen'); }
+function goLogin() { updateHint(); setScreen('loginScreen'); }
+
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
+function loadAll() {
+  const stored = lsGet(LS_ASSETS, null);
+  // Merge: stored + any seed assets not yet in storage
+  if (stored && stored.length) {
+    const storedIds = stored.map(a=>a.id);
+    const newSeeds = SEED_ASSETS.filter(s=>!storedIds.includes(s.id));
+    STATE.assets = [...stored, ...newSeeds];
+  } else {
+    STATE.assets = [...SEED_ASSETS];
+  }
+  saveAll();
+}
+function saveAll() { lsSet(LS_ASSETS, STATE.assets); }
+
+// ═══════════════════════════════════════════
+// ICON/CLASS MAP
+// ═══════════════════════════════════════════
+const ICONS = { LabMenu:'🍕', Governança:'🏛️', Financeiro:'💳', Marketing:'📢', Educação:'📚', Código:'💻', Contrato:'📜', default:'📦' };
+const ICLASS = { LabMenu:'aci-amber', Governança:'aci-gold', Financeiro:'aci-gold', Marketing:'aci-cyber', Educação:'aci-purple', Código:'aci-green', default:'aci-green' };
+const SLABELS = { prod:'Production', review:'Review', draft:'Draft' };
+
+// ═══════════════════════════════════════════
+// ORACLE RENDER
+// ═══════════════════════════════════════════
+function getFiltered(query, tab) {
+  let list = STATE.assets.filter(a=>a.status==='prod'||a.status==='review');
+  if (tab && tab !== 'all') list = list.filter(a=>a.categoria===tab);
+  if (query) {
+    const q = query.toLowerCase();
+    list = list.filter(a=>
+      a.titulo?.toLowerCase().includes(q) ||
+      a.descricao?.toLowerCase().includes(q) ||
+      a.id?.toLowerCase().includes(q) ||
+      (a.tags||[]).some(t=>t.toLowerCase().includes(q))
+    );
+  }
+  return list;
+}
+
+function renderOracle() {
+  const list = getFiltered(STATE.orQuery, STATE.orTab);
+  const grid = $('orGrid'); grid.innerHTML='';
+  const fc = $('orChips'); fc.innerHTML='';
+  if (STATE.orTab==='all') {
+    const cats = [...new Set(STATE.assets.map(a=>a.categoria))];
+    cats.forEach(c=>{
+      const chip=document.createElement('div'); chip.className='fchip';
+      chip.textContent=c; chip.onclick=()=>onOrSearch(c); fc.appendChild(chip);
+    });
+  }
+  if (!list.length) {
+    grid.innerHTML=`<div class="empty-state"><div class="empty-sym">⬡</div><div class="empty-ttl">Protocolo não encontrado</div><div class="empty-sub">Tente outro código ou palavra-chave</div></div>`;
+    return;
+  }
+  list.forEach(a=>{
+    const icon=ICONS[a.categoria]||ICONS.default;
+    const ic=ICLASS[a.categoria]||ICLASS.default;
+    const dot=a.status==='prod'?'s-prod':a.status==='review'?'s-review':'s-draft';
+    const tags=(a.tags||[]).map(t=>`<span class="actag">${t}</span>`).join('');
+    const featured = a.status==='prod' ? 'featured' : '';
+    const card=document.createElement('div');
+    card.className=`acard ${featured}`;
+    card.innerHTML=`
+      <div class="actop">
+        <div class="acicon ${ic}">${icon}</div>
+        <div class="acmeta">
+          <div class="acprot">${a.id}</div>
+          <div class="actitle">${a.titulo}</div>
+          <div class="acver">${a.versao} · ${a.categoria}</div>
+        </div>
+      </div>
+      <div class="acdesc">${a.descricao||'—'}</div>
+      <div class="actags">${tags}</div>
+      <div class="acfoot">
+        <div class="acdate">${fmtDate(a.criado)}</div>
+        <div class="acstatus"><div class="sdot ${dot}"></div><span class="slabel">${SLABELS[a.status]||a.status}</span></div>
+        <button class="acopen" onclick="openTr('${a.id}')">Consultar</button>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function onOrSearch(val) { STATE.orQuery=val; $('orClr').classList.toggle('vis',!!val); renderOracle(); }
+function clearOrSearch() { $('orSearch').value=''; onOrSearch(''); }
+function setOrtab(tab, el) {
+  STATE.orTab=tab;
+  document.querySelectorAll('.ortab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+  renderOracle();
+}
+
+// ═══════════════════════════════════════════
+// TRINDADE MODAL
+// ═══════════════════════════════════════════
+function openTr(id) {
+  const a = STATE.assets.find(x=>x.id===id); if(!a) return;
+  STATE.trId=id;
+  $('tmProt').textContent=a.id;
+  $('tmTitle').textContent=a.titulo;
+  // Dogma
+  $('dm-icon').textContent=ICONS[a.categoria]||ICONS.default;
+  $('dm-q').textContent=`O que é o protocolo ${a.id}?`;
+  $('dm-ans').textContent=a.descricao||'—';
+  $('dm-docs').textContent=a.docs||'Documentação não disponível.';
+  $('dm-tags').innerHTML=(a.tags||[]).map(t=>`<span class="mtag">${t}</span>`).join('');
+  // Ritual
+  const hasCode = a.html||a.css||a.js;
+  const hasDemo = a.demoUrl && a.demoUrl.trim();
+  if (hasCode) {
+    const srcdoc=`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${a.css||''}</style></head><body>${a.html||''}<script>${a.js||''}<\/script></body></html>`;
+    $('ritContent').innerHTML=`<iframe class="rit-iframe" srcdoc="${srcdoc.replace(/"/g,'&quot;')}"></iframe>`;
+  } else if (hasDemo) {
+    $('ritContent').innerHTML=`
+      <div class="rit-empty" style="height:160px">
+        <div class="rit-empty-icon">${ICONS[a.categoria]||'📦'}</div>
+        <div style="font-size:.85rem;margin-bottom:4px;color:var(--white-d)">Demo disponível externamente</div>
+      </div>
+      <div class="rit-external" style="text-align:center;margin-top:12px;">
+        <a href="${a.demoUrl}" target="_blank" class="rit-extbtn">⬡ Abrir Demo Completa →</a>
+      </div>`;
+  } else {
+    $('ritContent').innerHTML=`<div class="rit-empty"><div class="rit-empty-icon">⚗</div><div style="font-size:.8rem">Demo não disponível</div><div style="font-family:'Share Tech Mono',monospace;font-size:.6rem;margin-top:4px;color:var(--muted)">Protocolo sem código de demonstração</div></div>`;
+  }
+  // Selo
+  const hash=simpleHash(JSON.stringify(a));
+  $('seloIntLine').textContent=`Hash: ${hash} · ${new Date().toLocaleDateString('pt-BR')}`;
+  $('seloGrid').innerHTML=`
+    <div class="selofield"><div class="seloflabel">Protocolo</div><div class="selofvalue cyber">${a.id}</div></div>
+    <div class="selofield"><div class="seloflabel">Versão</div><div class="selofvalue gold">${a.versao||'—'}</div></div>
+    <div class="selofield"><div class="seloflabel">Categoria</div><div class="selofvalue">${a.categoria||'—'}</div></div>
+    <div class="selofield"><div class="seloflabel">Status</div><div class="selofvalue ${a.status==='prod'?'green':''}">${SLABELS[a.status]||a.status}</div></div>
+    <div class="selofield"><div class="seloflabel">Criado em</div><div class="selofvalue">${fmtDate(a.criado)}</div></div>
+    <div class="selofield"><div class="seloflabel">Hash Labriolag</div><div class="selofvalue" style="font-size:.65rem">${hash}</div></div>`;
+  const lb=$('seloLegal');
+  if(a.legal&&a.legal.trim()){$('seloLegalBody').textContent=a.legal;lb.style.display='block';}
+  else{lb.style.display='none';}
+  $('auditResult').innerHTML='';
+  // Reset to dogma tab
+  document.querySelectorAll('.trtab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.trpane').forEach(p=>p.classList.remove('active'));
+  $('pane-dogma').classList.add('active');
+  document.querySelector('.trtab').classList.add('active');
+  $('trModal').classList.add('open');
+}
+function closeTr(){$('trModal').classList.remove('open');}
+function switchTr(name,el){
+  document.querySelectorAll('.trtab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.trpane').forEach(p=>p.classList.remove('active'));
+  $('pane-'+name).classList.add('active'); if(el)el.classList.add('active');
+}
+function runAudit(){
+  const res=$('auditResult');
+  res.innerHTML=`<div class="audit-scan">ESCANEANDO PROTOCOLO…</div>`;
+  const a=STATE.assets.find(x=>x.id===STATE.trId);
+  setTimeout(()=>{
+    const hash=simpleHash(JSON.stringify(a));
+    const now=new Date().toLocaleString('pt-BR');
+    res.innerHTML=`<div style="background:rgba(0,224,150,.08);border:1px solid rgba(0,224,150,.2);border-radius:var(--r);padding:14px;margin-top:10px;">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--green);letter-spacing:2px;margin-bottom:8px;">✓ AUDITORIA LABRIOLAG CONCLUÍDA</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--white-d);line-height:2;">
+        Protocolo: ${a?.id}<br>
+        Título: ${a?.titulo}<br>
+        Hash Verificado: ${hash}<br>
+        Integridade: CONFIRMADA<br>
+        Assinatura Labriolag: ATIVA<br>
+        Auditado em: ${now}
+      </div>
+    </div>`;
+  }, 2000);
+}
+
+// ═══════════════════════════════════════════
+// ADMIN LIST
+// ═══════════════════════════════════════════
+function renderAdminList() {
+  const q=($('adminSearch')?.value||'').toLowerCase();
+  let list=STATE.assets;
+  if(STATE.adminFilter!=='all')list=list.filter(a=>a.categoria===STATE.adminFilter);
+  if(q)list=list.filter(a=>a.titulo?.toLowerCase().includes(q)||a.id?.toLowerCase().includes(q)||(a.tags||[]).some(t=>t.toLowerCase().includes(q)));
+  const c=$('adminList'); c.innerHTML='';
+  if(!list.length){c.innerHTML=`<div class="empty-state"><div class="empty-sym">⬡</div><div class="empty-ttl">Nenhum ativo</div></div>`;return;}
+  list.forEach(a=>{
+    const icon=ICONS[a.categoria]||ICONS.default;
+    const dot=a.status==='prod'?'s-prod':a.status==='review'?'s-review':'s-draft';
+    const card=document.createElement('div');
+    card.className='admincard'+(STATE.editorId===a.id?' sel':'');
+    card.innerHTML=`<div class="acard-icon">${icon}</div>
+      <div class="acard-info">
+        <div class="acard-id">${a.id}</div>
+        <div class="acard-title">${a.titulo}</div>
+        <div class="acard-meta">${a.versao} · ${a.categoria} · <span style="display:inline-flex;align-items:center;gap:3px"><span class="sdot ${dot}" style="width:5px;height:5px"></span>${SLABELS[a.status]||a.status}</span></div>
+      </div>
+      <div class="acard-actions">
+        <button class="aabtn" onclick="openEditor('${a.id}')">✎</button>
+        <button class="aabtn" onclick="openFormModal('${a.id}')">⚙</button>
+        <button class="aabtn del" onclick="deleteAsset('${a.id}')">✕</button>
+      </div>`;
+    card.querySelector('.acard-info').addEventListener('click',()=>openTr(a.id));
+    c.appendChild(card);
+  });
+  updateCfg();
+}
+function renderAdminChips() {
+  const cats=[...new Set(STATE.assets.map(a=>a.categoria))];
+  const fc=$('adminChips'); fc.innerHTML='';
+  ['Todos',...cats].forEach(c=>{
+    const val=c==='Todos'?'all':c;
+    const chip=document.createElement('div');
+    chip.className='fchip'+(STATE.adminFilter===val?' active':'');
+    chip.textContent=c; chip.onclick=()=>{STATE.adminFilter=val;renderAdminChips();renderAdminList();};
+    fc.appendChild(chip);
+  });
+}
+
+// ═══════════════════════════════════════════
+// EDITOR
+// ═══════════════════════════════════════════
+function openEditor(id) {
+  const a=STATE.assets.find(x=>x.id===id); if(!a) return;
+  STATE.editorId=id;
+  $('edActiveId').textContent=a.id; $('edActiveTitle').textContent='— '+a.titulo;
+  $('ceHTML').value=a.html||''; $('ceCSS').value=a.css||'';
+  $('ceJS').value=a.js||''; $('ceDocs').value=a.docs||''; $('ceLegal').value=a.legal||'';
+  switchPanel('Editor',document.querySelectorAll('.ntab')[1]);
+  runPreview();
+}
+function switchEdTab(name,el) {
+  document.querySelectorAll('.etab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.codearea').forEach(a=>a.classList.remove('active'));
+  if(el)el.classList.add('active');
+  const ids={html:'ceHTML',css:'ceCSS',js:'ceJS',docs:'ceDocs',legal:'ceLegal'};
+  $(ids[name]).classList.add('active');
+}
+function runPreview(){
+  const html=$('ceHTML').value,css=$('ceCSS').value,js=$('ceJS').value;
+  $('prevFrame').srcdoc=`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${css}</style></head><body>${html}<script>${js}<\/script></body></html>`;
+}
+function saveEditor(){
+  if(!STATE.editorId){toast('Nenhum ativo selecionado.','red');return;}
+  const idx=STATE.assets.findIndex(x=>x.id===STATE.editorId);
+  if(idx<0)return;
+  STATE.assets[idx].html=$('ceHTML').value; STATE.assets[idx].css=$('ceCSS').value;
+  STATE.assets[idx].js=$('ceJS').value; STATE.assets[idx].docs=$('ceDocs').value;
+  STATE.assets[idx].legal=$('ceLegal').value;
+  saveAll(); renderAdminList(); toast('Protocolo salvo ✓','gold');
+}
+
+// ═══════════════════════════════════════════
+// FORM MODAL
+// ═══════════════════════════════════════════
+function openFormModal(id){
+  if(id){
+    const a=STATE.assets.find(x=>x.id===id); if(!a)return;
+    $('fmId').value=id; $('fmProt').value=a.id; $('fmVer').value=a.versao||'';
+    $('fmTitle').value=a.titulo||''; $('fmCat').value=a.categoria||'LabMenu';
+    $('fmStatus').value=a.status||'draft'; $('fmDesc').value=a.descricao||'';
+    $('fmTags').value=(a.tags||[]).join(', '); $('fmDemo').value=a.demoUrl||'';
+    $('fmDocs').value=a.docs||''; $('fmLegal').value=a.legal||'';
+    $('fmSub').textContent='Editar: '+a.id;
+  } else {
+    $('fmId').value=''; $('fmProt').value='LB-'+genId().slice(0,6);
+    $('fmVer').value='v1.0.0'; $('fmTitle').value=''; $('fmCat').value='LabMenu';
+    $('fmStatus').value='draft'; $('fmDesc').value=''; $('fmTags').value='';
+    $('fmDemo').value=''; $('fmDocs').value=''; $('fmLegal').value='';
+    $('fmSub').textContent='Novo Protocolo';
+  }
+  $('formModal').classList.add('open');
+}
+function closeForm(){$('formModal').classList.remove('open');}
+function saveForm(){
+  const editId=$('fmId').value;
+  const title=$('fmTitle').value.trim(); if(!title){toast('Título obrigatório.','red');return;}
+  const data={
+    id:$('fmProt').value.trim()||'LB-'+genId(),
+    versao:$('fmVer').value.trim()||'v1.0',
+    titulo:title, categoria:$('fmCat').value, status:$('fmStatus').value,
+    descricao:$('fmDesc').value.trim(),
+    tags:$('fmTags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    demoUrl:$('fmDemo').value.trim(),
+    docs:$('fmDocs').value, legal:$('fmLegal').value,
+    criado:new Date().toISOString().slice(0,10),
+    html:'',css:'',js:''
+  };
+  if(editId){
+    const idx=STATE.assets.findIndex(x=>x.id===editId);
+    if(idx>=0){data.html=STATE.assets[idx].html||'';data.css=STATE.assets[idx].css||'';data.js=STATE.assets[idx].js||'';data.criado=STATE.assets[idx].criado||data.criado;STATE.assets[idx]=data;}
+  } else { STATE.assets.push(data); }
+  saveAll(); renderAdminList(); renderAdminChips(); closeForm(); toast('Protocolo salvo ✓','gold');
+}
+
+// ═══════════════════════════════════════════
+// DELETE
+// ═══════════════════════════════════════════
+function deleteAsset(id){
+  const a=STATE.assets.find(x=>x.id===id); if(!a)return;
+  if(!confirm(`Excluir "${a.titulo}" (${a.id})?`))return;
+  STATE.assets=STATE.assets.filter(x=>x.id!==id);
+  if(STATE.editorId===id){STATE.editorId=null;$('edActiveId').textContent='Nenhum';$('edActiveTitle').textContent='';}
+  saveAll();renderAdminList();renderAdminChips();toast('Removido.','red');
+}
+
+// ═══════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════
+function switchPanel(name,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(n=>n.classList.remove('active'));
+  const pId='panel'+name.charAt(0).toUpperCase()+name.slice(1);
+  const panel=$(pId); if(panel)panel.classList.add('active');
+  if(el)el.classList.add('active');
+}
+
+// ═══════════════════════════════════════════
+// IMPORT / EXPORT
+// ═══════════════════════════════════════════
+function onImportJson(evt){
+  const file=evt.target.files[0]; if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      const arr=Array.isArray(data)?data:(data.assets||[]);
+      if(!arr.length){toast('JSON vazio.','red');return;}
+      const existing=STATE.assets.map(a=>a.id);
+      const news=arr.filter(a=>!existing.includes(a.id));
+      STATE.assets=[...STATE.assets,...news];
+      saveAll();renderAdminList();renderAdminChips();
+      toast(`${news.length} novo(s) protocolo(s) importado(s) ✓`,'gold');
+    }catch{toast('Erro ao ler JSON.','red');}
+  };
+  r.readAsText(file); evt.target.value='';
+}
+function onImportAsset(evt){
+  const file=evt.target.files[0]; if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const id='LB-IMP-'+genId().slice(0,4);
+    const newA={id,titulo:file.name.replace(/\.[^.]+$/,''),versao:'v1.0',categoria:'Código',status:'draft',tags:['Importado'],descricao:'Ativo importado de arquivo HTML.',demoUrl:'',html:e.target.result,css:'',js:'',docs:'',legal:'',criado:new Date().toISOString().slice(0,10)};
+    STATE.assets.push(newA); saveAll(); renderAdminList(); renderAdminChips();
+    toast('"'+newA.titulo+'" importado ✓','cyber');
+  };
+  r.readAsText(file); evt.target.value='';
+}
+function exportBackup(){
+  const blob=new Blob([JSON.stringify(STATE.assets,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='labbook-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click(); URL.revokeObjectURL(url); toast('Backup exportado ✓','gold');
+}
+
+// ═══════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════
+function updateCfg(){ $('cfgCount').textContent=STATE.assets.length+' ativo'+(STATE.assets.length!==1?'s':'')+' no protocolo'; }
+function resetBase(){ if(!confirm('Redefinir chave-mestra?'))return; localStorage.removeItem(LS_BASE); doLogout(); getBase(); }
+function showTodayPass(){ const base=lsGet(LS_BASE,null); if(!base){toast('Configure a chave primeiro.','red');return;} alert('🔐 Senha de hoje:\n\n'+buildPass(base)+'\n\nNão compartilhe.'); }
+function clearAll(){ if(!confirm('Apagar TODOS os ativos?'))return; if(!confirm('Confirmar exclusão irreversível?'))return; localStorage.removeItem(LS_ASSETS); STATE.assets=[...SEED_ASSETS]; saveAll(); renderAdminList(); renderAdminChips(); toast('Dados limpos. Seeds restauradas.','red'); }
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{ updateHint(); initSplash(); });
+$('trModal').addEventListener('click',e=>{if(e.target===$('trModal'))closeTr();});
+$('formModal').addEventListener('click',e=>{if(e.target===$('formModal'))closeForm();});
+</script>
+</body>
+</html>

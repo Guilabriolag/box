@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>LABRIOLAG — FORTUNE SCRATCH</title>
+<style>
+/* ═══════════════════════════════════════════════
+   LABRIOLAG · FORTUNE SCRATCH
+   Estética: Luxury Art-Deco · Noir · Gold · Ink
+   ═══════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=IM+Fell+English:ital@0;1&display=swap');
+
+:root {
+  --gold:       #D4AF37;
+  --gold-lt:    #F0D060;
+  --gold-dk:    #A0820A;
+  --gold-dim:   rgba(212,175,55,0.18);
+  --gold-glow:  rgba(212,175,55,0.35);
+  --cyber:      #00E5FF;
+  --cyber-d:    rgba(0,229,255,0.12);
+  --ink:        #05070A;
+  --ink2:       #0A0D12;
+  --ink3:       #111820;
+  --silver:     #C0C8D0;
+  --silver-dk:  #888EA0;
+  --err:        #FF3B5C;
+  --ok:         #22D07A;
+  --prize-a:    #FFD700;  /* Jackpot */
+  --prize-b:    #C0C8D0;  /* Prata */
+  --prize-c:    #CD7F32;  /* Bronze */
+  --font-d:     'Cormorant Garamond', 'Garamond', Georgia, serif;
+  --font-fell:  'IM Fell English', 'Georgia', serif;
+  --font-m:     'Courier New', monospace;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box; margin: 0; padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none; -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  background: var(--ink);
+  font-family: var(--font-d);
+  color: var(--gold);
+}
+
+/* ══ GRAIN ══ */
+body::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 998;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  opacity: 0.4; mix-blend-mode: overlay;
+}
+
+/* ══ FUNDO ANIMADO ══ */
+.bg-orbs {
+  position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0;
+}
+.orb {
+  position: absolute; border-radius: 50%;
+  filter: blur(80px); opacity: 0.06; animation: orb-drift 20s ease-in-out infinite alternate;
+}
+.orb1 { width: 400px; height: 400px; background: var(--gold); top: -100px; left: -100px; animation-duration: 18s; }
+.orb2 { width: 300px; height: 300px; background: var(--cyber); bottom: -80px; right: -80px; animation-duration: 22s; animation-delay: -8s; }
+.orb3 { width: 250px; height: 250px; background: var(--gold); top: 40%; left: 50%; animation-duration: 25s; animation-delay: -5s; }
+@keyframes orb-drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(40px, 30px) scale(1.15); }
+}
+
+/* ══ TELAS ══ */
+.screen {
+  position: fixed; inset: 0; z-index: 10;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.5s ease;
+  padding: env(safe-area-inset-top, 16px) 20px env(safe-area-inset-bottom, 16px);
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+}
+.screen.on { opacity: 1; pointer-events: all; }
+
+/* ══ HEADER LABRIOLAG ══ */
+.lab-mark {
+  position: fixed; top: env(safe-area-inset-top, 14px); left: 0; right: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  pointer-events: none; z-index: 500;
+}
+.lab-name {
+  font-family: var(--font-m); font-size: clamp(9px, 1.8vw, 11px);
+  letter-spacing: 0.4em; color: var(--gold); opacity: 0.45;
+  text-transform: uppercase;
+}
+.lab-line {
+  width: 120px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.3;
+}
+
+/* ═══════════════════════════════════
+   TELA INTRO
+═══════════════════════════════════ */
+#s-intro { gap: 0; }
+
+.intro-inner {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 28px; max-width: 380px; width: 100%;
+  padding-top: 60px;
+}
+
+/* Bilhete decorativo no intro */
+.ticket-preview {
+  position: relative; width: 100%; max-width: 340px;
+  transform: rotateX(12deg) rotateY(-6deg);
+  filter: drop-shadow(0 20px 50px rgba(0,0,0,0.7)) drop-shadow(0 0 30px rgba(212,175,55,0.2));
+  animation: ticket-float 4s ease-in-out infinite alternate;
+}
+@keyframes ticket-float {
+  from { transform: rotateX(12deg) rotateY(-6deg) translateY(0); }
+  to   { transform: rotateX(14deg) rotateY(-4deg) translateY(-10px); }
+}
+
+.ticket-svg {
+  width: 100%; height: auto; display: block;
+}
+
+.intro-title {
+  text-align: center;
+}
+.intro-title h1 {
+  font-family: var(--font-fell); font-size: clamp(40px, 11vw, 68px);
+  letter-spacing: 0.06em; line-height: 0.95;
+  background: linear-gradient(160deg, var(--gold-lt) 0%, var(--gold) 40%, var(--gold-dk) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 20px rgba(212,175,55,0.4));
+}
+.intro-title p {
+  font-size: clamp(10px, 2.2vw, 13px); letter-spacing: 0.35em;
+  color: var(--cyber); opacity: 0.75; margin-top: 8px; text-transform: uppercase;
+}
+
+/* Premiação prévia */
+.prize-ladder {
+  width: 100%; border: 1px solid var(--gold-dim);
+  background: rgba(212,175,55,0.02); padding: 18px 20px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.pl-title {
+  font-size: 9px; letter-spacing: 0.3em; color: rgba(212,175,55,0.4);
+  text-transform: uppercase; margin-bottom: 4px;
+}
+.pl-row {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: clamp(13px, 3.5vw, 16px);
+}
+.pl-sym { font-size: 20px; letter-spacing: -2px; }
+.pl-label { font-size: 11px; letter-spacing: 0.15em; color: rgba(212,175,55,0.55); }
+.pl-prize { font-family: var(--font-m); font-size: 13px; }
+.pl-row.jackpot .pl-prize { color: var(--prize-a); text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+.pl-row.silver  .pl-prize { color: var(--prize-b); }
+.pl-row.bronze  .pl-prize { color: var(--prize-c); }
+.pl-row.consolation .pl-prize { color: rgba(212,175,55,0.4); }
+
+.btn-scratch {
+  width: 100%; padding: 20px;
+  background: linear-gradient(135deg, #1A1400 0%, var(--gold-dk) 40%, var(--gold) 60%, var(--gold-lt) 100%);
+  border: none; color: var(--ink); cursor: pointer;
+  font-family: var(--font-fell); font-size: clamp(18px, 4.5vw, 24px);
+  letter-spacing: 0.15em; text-transform: uppercase;
+  position: relative; overflow: hidden;
+  transition: all 0.2s;
+  box-shadow: 0 4px 30px rgba(212,175,55,0.3), 0 1px 0 rgba(255,255,255,0.2) inset;
+}
+.btn-scratch::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+  pointer-events: none;
+}
+.btn-scratch::after {
+  content: ''; position: absolute;
+  top: -100%; left: -60%; width: 40%; height: 300%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: skewX(-20deg);
+  animation: shimmer-btn 3s infinite;
+}
+@keyframes shimmer-btn {
+  0%   { left: -60%; }
+  100% { left: 160%; }
+}
+.btn-scratch:active { transform: scale(0.98); box-shadow: 0 2px 15px rgba(212,175,55,0.2); }
+
+/* ═══════════════════════════════════
+   TELA JOGO — RASPADINHA
+═══════════════════════════════════ */
+#s-game { gap: 0; justify-content: flex-start; padding-top: max(70px, 11vh); }
+
+.game-inner {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 16px; width: 100%; max-width: 400px;
+}
+
+/* Bilhete número e info */
+.ticket-meta {
+  display: flex; justify-content: space-between; align-items: center;
+  width: 100%; padding: 0 2px;
+}
+.ticket-num {
+  font-family: var(--font-m); font-size: 11px;
+  color: rgba(212,175,55,0.4); letter-spacing: 0.15em;
+}
+.scratch-hint {
+  font-size: 11px; letter-spacing: 0.2em; color: var(--cyber);
+  opacity: 0.6; animation: hint-pulse 2s ease-in-out infinite;
+}
+@keyframes hint-pulse { 0%,100%{opacity:0.4;} 50%{opacity:0.9;} }
+.scratch-hint.hidden { display: none; }
+
+/* CONTAINER DO CANVAS */
+.scratch-wrapper {
+  position: relative; width: 100%;
+  /* proporção do bilhete */
+  aspect-ratio: 0.65;
+  max-height: 55vh;
+}
+
+/* Canvas de revelação (baixo) */
+#canvas-reveal {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  border-radius: 4px;
+}
+
+/* Canvas de raspagem (cima) */
+#canvas-scratch {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  border-radius: 4px;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+/* Barra de progresso da raspagem */
+.scratch-progress-wrap {
+  width: 100%; display: flex; align-items: center; gap: 10px;
+}
+.sp-label { font-size: 9px; letter-spacing: 0.2em; color: rgba(212,175,55,0.35); min-width: 48px; }
+.sp-track {
+  flex: 1; height: 2px; background: rgba(212,175,55,0.1);
+}
+.sp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-dk), var(--gold), var(--gold-lt));
+  width: 0%; transition: width 0.1s;
+}
+.sp-pct { font-family: var(--font-m); font-size: 10px; color: rgba(212,175,55,0.4); min-width: 32px; text-align: right; }
+
+/* Botão revelar tudo */
+.btn-reveal-all {
+  padding: 12px 28px; background: transparent;
+  border: 1px solid rgba(212,175,55,0.25); color: rgba(212,175,55,0.5);
+  font-family: var(--font-d); font-size: 12px; letter-spacing: 0.25em;
+  text-transform: uppercase; cursor: pointer;
+  transition: all 0.2s; opacity: 0; pointer-events: none;
+}
+.btn-reveal-all.ready { opacity: 1; pointer-events: all; }
+.btn-reveal-all:active { background: var(--gold-dim); color: var(--gold); }
+
+/* ═══════════════════════════════════
+   OVERLAY DE RESULTADO
+═══════════════════════════════════ */
+#result-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(5,7,10,0.92);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.6s;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+#result-overlay.on { opacity: 1; pointer-events: all; }
+
+.result-card {
+  position: relative; width: min(340px, 88vw);
+  border: 1px solid var(--gold-dim);
+  background: linear-gradient(160deg, var(--ink2) 0%, var(--ink3) 100%);
+  padding: 40px 32px 32px;
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
+  overflow: hidden;
+  animation: card-in 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes card-in {
+  from { transform: scale(0.5) rotateX(-20deg); opacity: 0; }
+  to   { transform: scale(1) rotateX(0deg); opacity: 1; }
+}
+
+/* Brilho de fundo no card */
+.result-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(212,175,55,0.08), transparent 60%);
+  pointer-events: none;
+}
+
+/* Cantos art-deco */
+.result-card::after {
+  content: ''; position: absolute; inset: 8px;
+  border: 1px solid rgba(212,175,55,0.08);
+  pointer-events: none;
+}
+
+.rc-eyebrow {
+  font-family: var(--font-m); font-size: 9px; letter-spacing: 0.35em;
+  color: rgba(212,175,55,0.4); text-transform: uppercase;
+}
+.rc-icon { font-size: 72px; line-height: 1; animation: icon-bounce 0.8s cubic-bezier(0.34,1.56,0.64,1) both; animation-delay: 0.2s; }
+@keyframes icon-bounce { from{transform:scale(0);} to{transform:scale(1);} }
+
+.rc-title {
+  font-family: var(--font-fell); font-size: clamp(28px, 8vw, 42px);
+  letter-spacing: 0.05em; text-align: center; line-height: 1.05;
+  text-shadow: 0 0 30px currentColor;
+}
+.rc-title.jackpot { color: var(--prize-a); }
+.rc-title.silver  { color: var(--prize-b); }
+.rc-title.bronze  { color: var(--prize-c); }
+.rc-title.lose    { color: rgba(212,175,55,0.45); }
+
+.rc-prize {
+  font-family: var(--font-m); font-size: clamp(32px, 9vw, 52px);
+  font-weight: 700; letter-spacing: 0.05em;
+  text-shadow: 0 0 20px currentColor;
+}
+.rc-prize.jackpot { color: var(--prize-a); }
+.rc-prize.silver  { color: var(--prize-b); }
+.rc-prize.bronze  { color: var(--prize-c); }
+.rc-prize.lose    { color: rgba(212,175,55,0.3); }
+
+.rc-message {
+  font-size: clamp(13px, 3.5vw, 16px); letter-spacing: 0.08em;
+  color: rgba(212,175,55,0.55); text-align: center; line-height: 1.7;
+}
+
+.rc-divider {
+  width: 100%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.2), transparent);
+}
+
+.rc-btns { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+
+.btn-play-again {
+  width: 100%; padding: 16px;
+  background: linear-gradient(135deg, var(--gold-dk), var(--gold));
+  border: none; color: var(--ink); cursor: pointer;
+  font-family: var(--font-fell); font-size: 18px; letter-spacing: 0.15em;
+  text-transform: uppercase; transition: all 0.15s;
+  box-shadow: 0 4px 20px rgba(212,175,55,0.25);
+}
+.btn-play-again:active { transform: scale(0.97); }
+
+.btn-share-r {
+  width: 100%; padding: 14px; background: transparent;
+  border: 1px solid rgba(0,229,255,0.25); color: rgba(0,229,255,0.65);
+  font-family: var(--font-d); font-size: 13px; letter-spacing: 0.2em;
+  text-transform: uppercase; cursor: pointer; transition: all 0.15s;
+}
+.btn-share-r:active { background: rgba(0,229,255,0.08); }
+
+/* ═══════════════════════════════════
+   PARTÍCULAS
+═══════════════════════════════════ */
+#particle-canvas {
+  position: fixed; inset: 0; pointer-events: none; z-index: 300;
+}
+
+/* ═══════════════════════════════════
+   CONFETTI DOURADO (resultado)
+═══════════════════════════════════ */
+.confetti-piece {
+  position: fixed; pointer-events: none; z-index: 400;
+  animation: confetti-fall linear forwards;
+  border-radius: 2px;
+}
+@keyframes confetti-fall {
+  0%   { transform: translateY(-20px) rotateZ(0deg) rotateX(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotateZ(720deg) rotateX(360deg); opacity: 0; }
+}
+
+/* ═══════════════════════════════════
+   SHIMMER DO CANVAS SCRATCH (camada)
+═══════════════════════════════════ */
+.scratch-shimmer {
+  position: absolute; inset: 0; pointer-events: none; border-radius: 4px;
+  background: linear-gradient(105deg,
+    transparent 30%, rgba(255,255,255,0.04) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: sh-move 3s linear infinite;
+}
+@keyframes sh-move {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-orbs">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+</div>
+
+<!-- HEADER FIXO -->
+<div class="lab-mark">
+  <div class="lab-name">Labriolag · Fortune Division</div>
+  <div class="lab-line"></div>
+</div>
+
+<!-- ══════════════ INTRO ══════════════ -->
+<div id="s-intro" class="screen on">
+  <div class="intro-inner">
+
+    <!-- Preview do bilhete isométrico SVG -->
+    <div class="ticket-preview">
+      <svg class="ticket-svg" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="tg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#1A1400"/>
+            <stop offset="50%" stop-color="#2A2000"/>
+            <stop offset="100%" stop-color="#0D0A00"/>
+          </linearGradient>
+          <linearGradient id="tg2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#1A1400" stop-opacity="0.95"/>
+            <stop offset="100%" stop-color="#050700" stop-opacity="0.98"/>
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="2" result="blur"/>
+            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+          </filter>
+          <!-- padrão hachura -->
+          <pattern id="hatch" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="8" stroke="rgba(212,175,55,0.06)" stroke-width="1"/>
+          </pattern>
+        </defs>
+
+        <!-- FACE PRINCIPAL -->
+        <rect x="10" y="20" width="280" height="165" rx="4" fill="url(#tg)"/>
+        <rect x="10" y="20" width="280" height="165" rx="4" fill="url(#hatch)"/>
+        <!-- borda dourada -->
+        <rect x="10" y="20" width="280" height="165" rx="4" fill="none"
+          stroke="#D4AF37" stroke-width="0.8" opacity="0.6"/>
+        <!-- borda interna -->
+        <rect x="18" y="28" width="264" height="149" rx="2" fill="none"
+          stroke="#D4AF37" stroke-width="0.3" opacity="0.25"/>
+
+        <!-- faixa superior -->
+        <rect x="10" y="20" width="280" height="30" rx="4" fill="rgba(212,175,55,0.08)"/>
+        <line x1="10" y1="50" x2="290" y2="50" stroke="#D4AF37" stroke-width="0.5" opacity="0.3"/>
+
+        <!-- título no bilhete -->
+        <text x="150" y="41" font-family="Georgia,serif" font-size="11"
+          fill="#D4AF37" text-anchor="middle" letter-spacing="4" opacity="0.8">FORTUNE SCRATCH</text>
+
+        <!-- áreas de raspagem (3 células) -->
+        <!-- célula 1 -->
+        <rect x="28" y="62" width="72" height="88" rx="2"
+          fill="rgba(192,200,208,0.12)" stroke="rgba(192,200,208,0.3)" stroke-width="0.5"/>
+        <!-- célula 2 -->
+        <rect x="114" y="62" width="72" height="88" rx="2"
+          fill="rgba(192,200,208,0.12)" stroke="rgba(192,200,208,0.3)" stroke-width="0.5"/>
+        <!-- célula 3 -->
+        <rect x="200" y="62" width="72" height="88" rx="2"
+          fill="rgba(192,200,208,0.12)" stroke="rgba(192,200,208,0.3)" stroke-width="0.5"/>
+
+        <!-- ícones simulados nas células -->
+        <text x="64"  y="112" font-size="28" text-anchor="middle" opacity="0.15">◈</text>
+        <text x="150" y="112" font-size="28" text-anchor="middle" opacity="0.15">◈</text>
+        <text x="236" y="112" font-size="28" text-anchor="middle" opacity="0.15">◈</text>
+
+        <!-- grade de raspagem simulada -->
+        <rect x="28"  y="62" width="72" height="88" rx="2"
+          fill="rgba(160,130,10,0.25)" stroke="rgba(212,175,55,0.4)" stroke-width="0.5"/>
+        <rect x="114" y="62" width="72" height="88" rx="2"
+          fill="rgba(160,130,10,0.25)" stroke="rgba(212,175,55,0.4)" stroke-width="0.5"/>
+        <rect x="200" y="62" width="72" height="88" rx="2"
+          fill="rgba(160,130,10,0.25)" stroke="rgba(212,175,55,0.4)" stroke-width="0.5"/>
+
+        <!-- textura raspagem simulada -->
+        <line x1="28" y1="80" x2="100" y2="68" stroke="rgba(212,175,55,0.08)" stroke-width="1"/>
+        <line x1="28" y1="95" x2="100" y2="83" stroke="rgba(212,175,55,0.06)" stroke-width="1"/>
+        <line x1="28" y1="110" x2="100" y2="98" stroke="rgba(212,175,55,0.08)" stroke-width="1"/>
+
+        <!-- série do bilhete -->
+        <text x="150" y="178" font-family="Courier New,monospace" font-size="7"
+          fill="rgba(212,175,55,0.3)" text-anchor="middle" letter-spacing="3">LBG-2025 · Nº 000001</text>
+
+        <!-- ornamentos cantos -->
+        <text x="22"  y="198" font-size="8" fill="rgba(212,175,55,0.3)">◆</text>
+        <text x="278" y="198" font-size="8" fill="rgba(212,175,55,0.3)">◆</text>
+      </svg>
+    </div>
+
+    <div class="intro-title">
+      <h1>Fortune<br>Scratch</h1>
+      <p>Labriolag · Série Limitada</p>
+    </div>
+
+    <!-- Tabela de prêmios -->
+    <div class="prize-ladder">
+      <div class="pl-title">Tabela de Prêmios</div>
+      <div class="pl-row jackpot">
+        <span class="pl-sym">🏆🏆🏆</span>
+        <span class="pl-label">Três iguais</span>
+        <span class="pl-prize">JACKPOT</span>
+      </div>
+      <div class="pl-row silver">
+        <span class="pl-sym">⭐⭐</span>
+        <span class="pl-label">Dois astros</span>
+        <span class="pl-prize">PRATA</span>
+      </div>
+      <div class="pl-row bronze">
+        <span class="pl-sym">💎</span>
+        <span class="pl-label">Um diamante</span>
+        <span class="pl-prize">BRONZE</span>
+      </div>
+      <div class="pl-row consolation">
+        <span class="pl-sym">—</span>
+        <span class="pl-label">Demais</span>
+        <span class="pl-prize">Tente novamente</span>
+      </div>
+    </div>
+
+    <button class="btn-scratch" id="btn-play">✦ RASPAR BILHETE ✦</button>
+  </div>
+</div>
+
+<!-- ══════════════ JOGO ══════════════ -->
+<div id="s-game" class="screen">
+  <div class="game-inner">
+
+    <div class="ticket-meta">
+      <span class="ticket-num" id="ticket-num">LBG-2025 · Nº 000001</span>
+      <span class="scratch-hint" id="scratch-hint">← RASPE AQUI →</span>
+    </div>
+
+    <!-- BILHETE CANVAS -->
+    <div class="scratch-wrapper" id="scratch-wrapper">
+      <canvas id="canvas-reveal"></canvas>
+      <canvas id="canvas-scratch"></canvas>
+      <div class="scratch-shimmer"></div>
+    </div>
+
+    <!-- Progress -->
+    <div class="scratch-progress-wrap">
+      <span class="sp-label">Raspado</span>
+      <div class="sp-track"><div class="sp-fill" id="sp-fill"></div></div>
+      <span class="sp-pct" id="sp-pct">0%</span>
+    </div>
+
+    <button class="btn-reveal-all" id="btn-reveal-all">Revelar Tudo</button>
+  </div>
+</div>
+
+<!-- ══════════════ RESULTADO ══════════════ -->
+<div id="result-overlay">
+  <div class="result-card" id="result-card">
+    <div class="rc-eyebrow">Resultado do Bilhete</div>
+    <div class="rc-icon" id="rc-icon">🏆</div>
+    <div class="rc-title jackpot" id="rc-title">JACKPOT!</div>
+    <div class="rc-prize jackpot" id="rc-prize">R$ 10.000</div>
+    <p class="rc-message" id="rc-message">Três símbolos idênticos revelados.<br>Apresente este bilhete no balcão.</p>
+    <div class="rc-divider"></div>
+    <div class="rc-btns">
+      <button class="btn-play-again" id="btn-again">✦ Novo Bilhete ✦</button>
+      <button class="btn-share-r" id="btn-share">Compartilhar Resultado</button>
+    </div>
+  </div>
+</div>
+
+<!-- Partículas -->
+<canvas id="particle-canvas"></canvas>
+
+<!-- Share canvas (oculto) -->
+<canvas id="share-canvas" width="1080" height="1920" style="display:none"></canvas>
+
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════
+   CONFIGURAÇÃO DO JOGO
+═══════════════════════════════════════════ */
+const CFG = {
+  // Símbolos do bilhete — cada um tem emoji, nome e raridade (peso)
+  symbols: [
+    { emoji:'💎', name:'DIAMANTE', weight:5  },
+    { emoji:'⭐', name:'ASTRO',    weight:15 },
+    { emoji:'🌙', name:'LUA',      weight:20 },
+    { emoji:'🔮', name:'ORÁCULO',  weight:22 },
+    { emoji:'🗝️', name:'CHAVE',    weight:22 },
+    { emoji:'🕊️', name:'PAZ',      weight:16 },
+  ],
+
+  // Tabela de resultados
+  prizes: {
+    jackpot:     { label:'JACKPOT!',          value:'R$ 10.000',   msg:'Três símbolos idênticos!\nApresente no balcão.', icon:'🏆', cls:'jackpot' },
+    double_star: { label:'PRATA',             value:'R$ 500',      msg:'Dois astros revelados.\nParabéns!',              icon:'⭐', cls:'silver'  },
+    diamond:     { label:'BRONZE',            value:'R$ 50',       msg:'Um diamante encontrado.\nBoa sorte!',            icon:'💎', cls:'bronze'  },
+    lose:        { label:'TENTE NOVAMENTE',   value:'—',           msg:'Desta vez não foi.\nOutro bilhete te espera.',  icon:'🎴', cls:'lose'    },
+  },
+
+  // Probabilidades (embaralha resultado ANTES de desenhar)
+  resultChances: [
+    { type:'jackpot',     chance: 2  },
+    { type:'double_star', chance: 12 },
+    { type:'diamond',     chance: 25 },
+    { type:'lose',        chance: 61 },
+  ],
+
+  // Raspagem
+  scratchRadius: 26,       // raio do "dedo" de raspagem em px lógicos
+  revealThreshold: 0.60,   // % raspado para revelar automaticamente
+  scratchColor: '#B8920E', // cor da camada de tinta
+  cols: 3, rows: 2,        // grade de células
+};
+
+/* ═══════════════════════════════════════════
+   WEB AUDIO — Sons atmosféricos
+═══════════════════════════════════════════ */
+const Audio = (() => {
+  let ctx = null;
+  function init() {
+    if (!ctx) try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+  }
+  function tone({ f=440, d=0.15, type='sine', v=0.2, attack=0.01, decay=0 } = {}) {
+    if (!ctx) return;
+    try {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = type; osc.frequency.value = f;
+      const t = ctx.currentTime;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(v, t + attack);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + d);
+      osc.start(t); osc.stop(t + d + decay);
+    } catch(e) {}
+  }
+
+  return {
+    init,
+    scratch() {
+      // Som de raspagem — ruído filtrado
+      if (!ctx) return;
+      try {
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * 0.3;
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass'; filter.frequency.value = 1200; filter.Q.value = 0.5;
+        const gain = ctx.createGain();
+        gain.gain.value = 0.15;
+        src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+        src.start(); src.stop(ctx.currentTime + 0.05);
+      } catch(e) {}
+    },
+    reveal() {
+      // Reveal de célula
+      [523, 659, 784].forEach((f, i) =>
+        setTimeout(() => tone({ f, d: 0.12, v: 0.18 }), i * 60));
+    },
+    jackpot() {
+      // Fanfarra
+      const seq = [523,659,784,1046,784,880,1046,1318];
+      seq.forEach((f,i) => setTimeout(() => tone({ f, d: 0.18, v: 0.22 }), i * 90));
+    },
+    win() {
+      [523,659,784,1046].forEach((f,i) => setTimeout(() => tone({ f, d: 0.14, v: 0.2 }), i*70));
+    },
+    lose() { tone({ f: 160, d: 0.4, type: 'sawtooth', v: 0.1 }); },
+  };
+})();
+
+/* ═══════════════════════════════════════════
+   UTILITÁRIOS
+═══════════════════════════════════════════ */
+function weightedRandom(items) {
+  const total = items.reduce((s, x) => s + x.chance, 0);
+  let r = Math.random() * total;
+  for (const item of items) {
+    r -= item.chance;
+    if (r <= 0) return item.type;
+  }
+  return items.at(-1).type;
+}
+
+function randomFrom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function formatTicketNum(n) {
+  return 'LBG-2025 · Nº ' + String(n).padStart(6, '0');
+}
+
+/* ═══════════════════════════════════════════
+   ESTADO
+═══════════════════════════════════════════ */
+let ticketCount = 0;
+let resultType = 'lose';
+let cellSymbols = [];      // [6] símbolos das células
+let scratchedPx = 0;
+let totalPx = 0;
+let revealed = false;
+let scratchIntervalId = null;
+let lastScratchTime = 0;
+
+/* ═══════════════════════════════════════════
+   DOM
+═══════════════════════════════════════════ */
+const $ = id => document.getElementById(id);
+const screens = { intro: $('s-intro'), game: $('s-game') };
+
+function showScreen(s) {
+  Object.values(screens).forEach(el => el.classList.remove('on'));
+  screens[s].classList.add('on');
+}
+
+/* ═══════════════════════════════════════════
+   CANVAS
+═══════════════════════════════════════════ */
+const revealCanvas = $('canvas-reveal');
+const scratchCanvas = $('canvas-scratch');
+let rctx, sctx;
+let DPR = window.devicePixelRatio || 1;
+
+function initCanvases() {
+  const wrapper = $('scratch-wrapper');
+  const rect = wrapper.getBoundingClientRect();
+  const W = rect.width, H = rect.height;
+
+  // Resolve DPR para nitidez em retina
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+  [revealCanvas, scratchCanvas].forEach(c => {
+    c.width  = W * DPR;
+    c.height = H * DPR;
+    c.style.width  = W + 'px';
+    c.style.height = H + 'px';
+  });
+
+  rctx = revealCanvas.getContext('2d');
+  sctx = scratchCanvas.getContext('2d');
+  rctx.scale(DPR, DPR);
+  sctx.scale(DPR, DPR);
+
+  totalPx = W * H;
+  scratchedPx = 0;
+
+  drawRevealLayer(W, H);
+  drawScratchLayer(W, H);
+}
+
+/* ── CAMADA DE REVELAÇÃO (baixo) ── */
+function drawRevealLayer(W, H) {
+  const ctx = rctx;
+
+  // Fundo do bilhete
+  ctx.fillStyle = '#0A0D12';
+  ctx.fillRect(0, 0, W, H);
+
+  // Bordas e ornamentos
+  // Borda externa
+  ctx.strokeStyle = 'rgba(212,175,55,0.5)';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(6, 6, W - 12, H - 12);
+  // Borda interna fina
+  ctx.strokeStyle = 'rgba(212,175,55,0.15)';
+  ctx.lineWidth = 0.5;
+  ctx.strokeRect(14, 14, W - 28, H - 28);
+
+  // Faixa superior
+  const topH = 38;
+  const topGrad = ctx.createLinearGradient(0, 0, W, 0);
+  topGrad.addColorStop(0, 'rgba(212,175,55,0.05)');
+  topGrad.addColorStop(0.5, 'rgba(212,175,55,0.12)');
+  topGrad.addColorStop(1, 'rgba(212,175,55,0.05)');
+  ctx.fillStyle = topGrad;
+  ctx.fillRect(6, 6, W - 12, topH);
+
+  // Título
+  ctx.font = `bold ${Math.floor(W * 0.038)}px 'Courier New', monospace`;
+  ctx.fillStyle = 'rgba(212,175,55,0.85)';
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '4px';
+  ctx.fillText('FORTUNE  SCRATCH', W / 2, 30);
+
+  ctx.strokeStyle = 'rgba(212,175,55,0.2)';
+  ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(10, topH + 6); ctx.lineTo(W - 10, topH + 6); ctx.stroke();
+
+  // Ornamentos cantos
+  const corners = [[18, 52], [W - 18, 52], [18, H - 16], [W - 18, H - 16]];
+  ctx.fillStyle = 'rgba(212,175,55,0.3)';
+  ctx.font = '10px serif';
+  ctx.textAlign = 'center';
+  corners.forEach(([x, y]) => ctx.fillText('◆', x, y));
+
+  // Grade de células 3×2
+  const padX = 18, padY = 50;
+  const cellGap = 10;
+  const cols = CFG.cols, rows = CFG.rows;
+  const cellW = (W - padX * 2 - cellGap * (cols - 1)) / cols;
+  const cellH = (H - padY - 36 - cellGap * (rows - 1)) / rows;
+
+  cellSymbols.forEach((sym, idx) => {
+    const col = idx % cols;
+    const row = Math.floor(idx / cols);
+    const x = padX + col * (cellW + cellGap);
+    const y = padY + row * (cellH + cellGap);
+
+    // Fundo célula
+    const cellGrad = ctx.createLinearGradient(x, y, x + cellW, y + cellH);
+    cellGrad.addColorStop(0, '#0F1420');
+    cellGrad.addColorStop(1, '#080C14');
+    ctx.fillStyle = cellGrad;
+    roundRect(ctx, x, y, cellW, cellH, 4);
+    ctx.fill();
+
+    // Borda célula — muda se é o símbolo premiado
+    const isWinSymbol = isHighlightCell(idx);
+    ctx.strokeStyle = isWinSymbol ? 'rgba(212,175,55,0.6)' : 'rgba(212,175,55,0.2)';
+    ctx.lineWidth = isWinSymbol ? 1.5 : 0.5;
+    roundRect(ctx, x, y, cellW, cellH, 4);
+    ctx.stroke();
+
+    // Glow se vencedora
+    if (isWinSymbol) {
+      ctx.shadowColor = 'rgba(212,175,55,0.3)';
+      ctx.shadowBlur = 10;
+    }
+
+    // Emoji grande
+    const emojiSize = Math.floor(Math.min(cellW, cellH) * 0.42);
+    ctx.font = `${emojiSize}px serif`;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#fff';
+    ctx.shadowBlur = 0;
+    ctx.fillText(sym.emoji, x + cellW / 2, y + cellH * 0.52);
+
+    // Nome do símbolo
+    const labelSize = Math.max(7, Math.floor(cellW * 0.11));
+    ctx.font = `${labelSize}px 'Courier New', monospace`;
+    ctx.fillStyle = isWinSymbol ? 'rgba(212,175,55,0.7)' : 'rgba(212,175,55,0.35)';
+    ctx.letterSpacing = '1px';
+    ctx.fillText(sym.name, x + cellW / 2, y + cellH * 0.88);
+  });
+
+  // Número do bilhete (rodapé)
+  ctx.font = `9px 'Courier New', monospace`;
+  ctx.fillStyle = 'rgba(212,175,55,0.25)';
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '2px';
+  ctx.fillText(formatTicketNum(ticketCount), W / 2, H - 10);
+}
+
+function isHighlightCell(idx) {
+  if (resultType === 'jackpot') return true;
+  if (resultType === 'double_star') {
+    const starIndexes = cellSymbols.map((s,i)=>s.name==='ASTRO'?i:-1).filter(i=>i>=0);
+    return starIndexes.includes(idx);
+  }
+  if (resultType === 'diamond') {
+    return cellSymbols[idx].name === 'DIAMANTE';
+  }
+  return false;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+/* ── CAMADA DE RASPAGEM (cima) ── */
+function drawScratchLayer(W, H) {
+  const ctx = sctx;
+
+  // Fundo principal — metálico dourado escuro
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0.00, '#2A2000');
+  grad.addColorStop(0.30, '#1E1800');
+  grad.addColorStop(0.60, '#251C00');
+  grad.addColorStop(1.00, '#1A1400');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Textura de hachura diagonal
+  ctx.save();
+  for (let i = -H; i < W + H; i += 6) {
+    ctx.beginPath();
+    ctx.moveTo(i, 0); ctx.lineTo(i + H, H);
+    ctx.strokeStyle = 'rgba(212,175,55,0.04)';
+    ctx.lineWidth = 1; ctx.stroke();
+  }
+  ctx.restore();
+
+  // Ornamentos na camada de tinta
+  ctx.font = `bold ${Math.floor(W * 0.06)}px Georgia, serif`;
+  ctx.fillStyle = 'rgba(212,175,55,0.12)';
+  ctx.textAlign = 'center';
+  ctx.fillText('◈  ◈  ◈', W / 2, H * 0.28);
+  ctx.fillText('◈  ◈  ◈', W / 2, H * 0.55);
+  ctx.fillText('◈  ◈  ◈', W / 2, H * 0.78);
+
+  // Instrução central
+  ctx.font = `bold ${Math.floor(W * 0.055)}px 'IM Fell English', Georgia, serif`;
+  ctx.fillStyle = 'rgba(212,175,55,0.5)';
+  ctx.fillText('RASPE AQUI', W / 2, H * 0.43);
+
+  ctx.font = `${Math.floor(W * 0.032)}px 'Courier New', monospace`;
+  ctx.fillStyle = 'rgba(212,175,55,0.25)';
+  ctx.letterSpacing = '3px';
+  ctx.fillText('FORTUNE SCRATCH', W / 2, H * 0.52);
+
+  // Dedão / ícone de raspagem
+  ctx.font = `${Math.floor(W * 0.1)}px serif`;
+  ctx.fillStyle = 'rgba(212,175,55,0.2)';
+  ctx.fillText('✦', W / 2, H * 0.7);
+
+  // Borda superior/inferior metálica
+  const borderGrad = ctx.createLinearGradient(0, 0, W, 0);
+  borderGrad.addColorStop(0, 'rgba(212,175,55,0)');
+  borderGrad.addColorStop(0.3, 'rgba(212,175,55,0.5)');
+  borderGrad.addColorStop(0.7, 'rgba(212,175,55,0.5)');
+  borderGrad.addColorStop(1, 'rgba(212,175,55,0)');
+  ctx.fillStyle = borderGrad;
+  ctx.fillRect(0, 0, W, 3);
+  ctx.fillRect(0, H - 3, W, 3);
+
+  // Reflexo superior (brilho metálico)
+  const refGrad = ctx.createLinearGradient(0, 0, 0, H * 0.3);
+  refGrad.addColorStop(0, 'rgba(255,255,255,0.05)');
+  refGrad.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = refGrad;
+  ctx.fillRect(0, 0, W, H * 0.3);
+}
+
+/* ═══════════════════════════════════════════
+   LÓGICA DE RASPAGEM
+═══════════════════════════════════════════ */
+function getCanvasPos(e) {
+  const rect = scratchCanvas.getBoundingClientRect();
+  const touch = e.touches ? e.touches[0] : (e.changedTouches ? e.changedTouches[0] : e);
+  return {
+    x: (touch.clientX - rect.left),
+    y: (touch.clientY - rect.top)
+  };
+}
+
+function scratch(x, y) {
+  if (revealed) return;
+
+  sctx.save();
+  // destination-out apaga pixels da camada de scratch revelando a camada de baixo
+  sctx.globalCompositeOperation = 'destination-out';
+
+  // Pincel suave com gradiente radial
+  const r = CFG.scratchRadius;
+  const grd = sctx.createRadialGradient(x, y, 0, x, y, r);
+  grd.addColorStop(0,   'rgba(0,0,0,1)');
+  grd.addColorStop(0.6, 'rgba(0,0,0,0.8)');
+  grd.addColorStop(1,   'rgba(0,0,0,0)');
+  sctx.fillStyle = grd;
+  sctx.beginPath();
+  sctx.arc(x, y, r * 1.2, 0, Math.PI * 2);
+  sctx.fill();
+
+  sctx.restore();
+
+  // Som de raspagem (throttled)
+  const now = Date.now();
+  if (now - lastScratchTime > 80) {
+    Audio.scratch();
+    lastScratchTime = now;
+    spawnScratchParticle(x, y);
+  }
+
+  updateProgress();
+}
+
+/* Calcula % raspado via amostragem de pixels */
+let progressFrame = 0;
+function updateProgress() {
+  progressFrame++;
+  if (progressFrame % 8 !== 0) return; // só a cada 8 eventos
+
+  const w = scratchCanvas.width, h = scratchCanvas.height;
+  const data = sctx.getImageData(0, 0, w, h).data;
+  let transparent = 0;
+  // Amostra 1 em cada 16 pixels para performance
+  const step = 16;
+  const sampleTotal = (w * h) / (step * step);
+  for (let i = 0; i < data.length; i += 4 * step * step) {
+    if (data[i + 3] < 128) transparent++;
+  }
+  const pct = Math.min(1, transparent / sampleTotal);
+
+  $('sp-fill').style.width = (pct * 100).toFixed(1) + '%';
+  $('sp-pct').textContent = Math.floor(pct * 100) + '%';
+
+  // Mostra botão "revelar tudo" acima de 15%
+  if (pct > 0.15) $('btn-reveal-all').classList.add('ready');
+
+  // Auto-reveal acima do threshold
+  if (pct >= CFG.revealThreshold && !revealed) {
+    revealAll();
+  }
+}
+
+/* Revela tudo com animação */
+function revealAll() {
+  if (revealed) return;
+  revealed = true;
+  $('scratch-hint').classList.add('hidden');
+
+  // Animação suave de fade-out da camada scratch
+  let alpha = 1;
+  const fade = () => {
+    alpha -= 0.06;
+    if (alpha <= 0) {
+      scratchCanvas.style.display = 'none';
+      showResult();
+      return;
+    }
+    scratchCanvas.style.opacity = alpha;
+    requestAnimationFrame(fade);
+  };
+  requestAnimationFrame(fade);
+}
+
+/* ═══════════════════════════════════════════
+   GERAÇÃO DO RESULTADO
+═══════════════════════════════════════════ */
+function generateResult() {
+  resultType = weightedRandom(CFG.resultChances);
+  cellSymbols = [];
+
+  const sym = CFG.symbols;
+  const byWeight = () => {
+    const total = sym.reduce((s, x) => s + x.weight, 0);
+    let r = Math.random() * total;
+    for (const s of sym) { r -= s.weight; if (r <= 0) return s; }
+    return sym.at(-1);
+  };
+
+  if (resultType === 'jackpot') {
+    // Todos iguais
+    const winner = randomFrom(sym);
+    cellSymbols = Array(CFG.cols * CFG.rows).fill(winner);
+  } else if (resultType === 'double_star') {
+    // Dois astros, resto aleatório (não astro)
+    const star = sym.find(s => s.name === 'ASTRO');
+    const others = sym.filter(s => s.name !== 'ASTRO');
+    const positions = shuffle([...Array(CFG.cols * CFG.rows).keys()]);
+    const starPos = [positions[0], positions[1]];
+    for (let i = 0; i < CFG.cols * CFG.rows; i++) {
+      cellSymbols.push(starPos.includes(i) ? star : randomFrom(others));
+    }
+  } else if (resultType === 'diamond') {
+    // Um diamante, resto sem diamante
+    const diamond = sym.find(s => s.name === 'DIAMANTE');
+    const others = sym.filter(s => s.name !== 'DIAMANTE');
+    const pos = Math.floor(Math.random() * CFG.cols * CFG.rows);
+    for (let i = 0; i < CFG.cols * CFG.rows; i++) {
+      cellSymbols.push(i === pos ? diamond : randomFrom(others));
+    }
+  } else {
+    // Derrota — nenhum par
+    const usedSymbols = new Set();
+    for (let i = 0; i < CFG.cols * CFG.rows; i++) {
+      let s;
+      // Garante que não haja três iguais nem dois astros nem diamante
+      let tries = 0;
+      do {
+        s = byWeight();
+        tries++;
+      } while (
+        tries < 20 && (
+          countInArray(cellSymbols, s) >= 2 ||
+          (s.name === 'ASTRO' && countInArray(cellSymbols, s) >= 1) ||
+          (s.name === 'DIAMANTE')
+        )
+      );
+      cellSymbols.push(s);
+    }
+  }
+}
+
+function countInArray(arr, item) {
+  return arr.filter(x => x === item).length;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* ═══════════════════════════════════════════
+   EXIBE RESULTADO
+═══════════════════════════════════════════ */
+function showResult() {
+  const prize = CFG.prizes[resultType];
+  const overlay = $('result-overlay');
+
+  $('rc-icon').textContent  = prize.icon;
+  $('rc-title').textContent = prize.label;
+  $('rc-title').className   = 'rc-title ' + prize.cls;
+  $('rc-prize').textContent = prize.value;
+  $('rc-prize').className   = 'rc-prize ' + prize.cls;
+  $('rc-message').innerHTML = prize.msg.replace('\n', '<br>');
+
+  // Recria card para reiniciar animação
+  const card = $('result-card');
+  card.style.animation = 'none';
+  void card.offsetWidth;
+  card.style.animation = '';
+
+  overlay.classList.add('on');
+
+  // Sons e efeitos por tipo
+  switch(resultType) {
+    case 'jackpot':
+      Audio.jackpot();
+      spawnConfetti(120, ['#D4AF37','#F0D060','#FFD700','#FFF9C4','#00E5FF']);
+      if (navigator.vibrate) navigator.vibrate([100,50,100,50,300]);
+      break;
+    case 'double_star':
+      Audio.win();
+      spawnConfetti(60, ['#C0C8D0','#E8EEF5','#D4AF37']);
+      if (navigator.vibrate) navigator.vibrate([100,50,200]);
+      break;
+    case 'diamond':
+      Audio.win();
+      spawnConfetti(30, ['#CD7F32','#D4AF37','#E8A050']);
+      if (navigator.vibrate) navigator.vibrate([80,40,80]);
+      break;
+    case 'lose':
+      Audio.lose();
+      if (navigator.vibrate) navigator.vibrate(100);
+      break;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   PARTÍCULAS DE RASPAGEM
+═══════════════════════════════════════════ */
+const pCanvas = $('particle-canvas');
+const pCtx = pCanvas.getContext('2d');
+let particles = [];
+
+function resizeParticleCanvas() {
+  pCanvas.width  = window.innerWidth;
+  pCanvas.height = window.innerHeight;
+}
+resizeParticleCanvas();
+
+function spawnScratchParticle(lx, ly) {
+  // Converte coords locais do canvas para coords da tela
+  const wrapper = $('scratch-wrapper');
+  const rect = wrapper.getBoundingClientRect();
+  const sx = rect.left + lx;
+  const sy = rect.top + ly;
+
+  for (let i = 0; i < 4; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 0.8 + Math.random() * 2;
+    particles.push({
+      x: sx, y: sy,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 1,
+      size: 1.5 + Math.random() * 2,
+      alpha: 0.8,
+      color: Math.random() > 0.5 ? '#D4AF37' : '#B8920E',
+      life: 0.8 + Math.random() * 0.4,
+    });
+  }
+}
+
+let animFrameId;
+function animateParticles() {
+  pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+  particles = particles.filter(p => p.alpha > 0.01);
+  for (const p of particles) {
+    p.x  += p.vx; p.y  += p.vy;
+    p.vy += 0.08; // gravidade
+    p.vx *= 0.98;
+    p.alpha -= 0.025;
+    pCtx.beginPath();
+    pCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    pCtx.fillStyle = p.color + Math.floor(p.alpha * 255).toString(16).padStart(2,'0');
+    pCtx.fill();
+  }
+  animFrameId = requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+/* ═══════════════════════════════════════════
+   CONFETTI DE RESULTADO
+═══════════════════════════════════════════ */
+function spawnConfetti(count, colors) {
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      const size = 6 + Math.random() * 8;
+      el.style.cssText = `
+        width: ${size}px; height: ${size * 0.5}px;
+        background: ${randomFrom(colors)};
+        left: ${Math.random() * 100}vw;
+        top: 0;
+        animation-duration: ${2.5 + Math.random() * 2}s;
+        animation-delay: ${Math.random() * 0.5}s;
+        opacity: ${0.7 + Math.random() * 0.3};
+      `;
+      document.body.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }, i * 25);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   COMPARTILHAMENTO
+═══════════════════════════════════════════ */
+function shareResult() {
+  const cv = $('share-canvas');
+  const cx = cv.getContext('2d');
+  const W = 1080, H = 1920;
+
+  // Fundo luxuoso
+  const bg = cx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0,   '#05070A');
+  bg.addColorStop(0.5, '#0A0D12');
+  bg.addColorStop(1,   '#05070A');
+  cx.fillStyle = bg;
+  cx.fillRect(0, 0, W, H);
+
+  // Padrão de hachura sutil
+  for (let i = -H; i < W + H; i += 20) {
+    cx.beginPath();
+    cx.moveTo(i, 0); cx.lineTo(i + H, H);
+    cx.strokeStyle = 'rgba(212,175,55,0.03)'; cx.lineWidth = 1; cx.stroke();
+  }
+
+  // Borda dupla
+  cx.strokeStyle = 'rgba(212,175,55,0.4)'; cx.lineWidth = 2;
+  cx.strokeRect(40, 40, W - 80, H - 80);
+  cx.strokeStyle = 'rgba(212,175,55,0.15)'; cx.lineWidth = 1;
+  cx.strokeRect(52, 52, W - 104, H - 104);
+
+  cx.textAlign = 'center';
+
+  // Header
+  cx.font = 'bold 42px Courier New';
+  cx.fillStyle = 'rgba(212,175,55,0.4)';
+  cx.fillText('LABRIOLAG · FORTUNE SCRATCH', W/2, 130);
+
+  cx.fillStyle = 'rgba(212,175,55,0.2)';
+  cx.fillRect(W/2 - 200, 155, 400, 1);
+
+  // Ícone grande
+  const prize = CFG.prizes[resultType];
+  cx.font = '260px serif';
+  cx.fillText(prize.icon, W/2, 600);
+
+  // Título do resultado
+  const titleColors = { jackpot:'#FFD700', double_star:'#C0C8D0', diamond:'#CD7F32', lose:'rgba(212,175,55,0.45)' };
+  cx.font = 'bold 140px Georgia';
+  cx.fillStyle = titleColors[resultType];
+  cx.shadowColor = titleColors[resultType];
+  cx.shadowBlur = 40;
+  cx.fillText(prize.label, W/2, 800);
+  cx.shadowBlur = 0;
+
+  // Prêmio
+  cx.font = 'bold 100px Courier New';
+  cx.fillStyle = 'rgba(0,229,255,0.85)';
+  cx.fillText(prize.value, W/2, 940);
+
+  // Símbolos
+  const symsRow = cellSymbols.slice(0, 3).map(s => s.emoji).join('  ');
+  cx.font = '100px serif'; cx.fillStyle = 'rgba(255,255,255,0.8)';
+  cx.fillText(symsRow, W/2, 1100);
+
+  // Número do bilhete
+  cx.font = '40px Courier New';
+  cx.fillStyle = 'rgba(212,175,55,0.35)';
+  cx.fillText(formatTicketNum(ticketCount), W/2, 1220);
+
+  // Linha separadora
+  cx.fillStyle = 'rgba(212,175,55,0.2)';
+  cx.fillRect(W/2 - 200, 1260, 400, 1);
+
+  // CTA
+  cx.font = 'bold 52px Georgia';
+  cx.fillStyle = 'rgba(212,175,55,0.6)';
+  cx.fillText('labriolag.tech/fortune', W/2, 1350);
+
+  cx.font = '40px Georgia';
+  cx.fillStyle = 'rgba(212,175,55,0.35)';
+  cx.fillText('Raspe o seu bilhete!', W/2, 1420);
+
+  cv.toBlob(async blob => {
+    const file = new File([blob], `fortune-${resultType}.png`, { type: 'image/png' });
+    if (navigator.share && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: `Fortune Scratch — ${prize.label}` });
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `fortune-${resultType}.png`; a.click();
+      URL.revokeObjectURL(url);
+    }
+  }, 'image/png');
+}
+
+/* ═══════════════════════════════════════════
+   EVENTO DE RASPAGEM — Touch + Mouse
+═══════════════════════════════════════════ */
+let isScratching = false;
+
+function onScratchStart(e) {
+  if (revealed) return;
+  isScratching = true;
+  Audio.init();
+  const pos = getCanvasPos(e);
+  scratch(pos.x, pos.y);
+}
+function onScratchMove(e) {
+  if (!isScratching || revealed) return;
+  const pos = getCanvasPos(e);
+  scratch(pos.x, pos.y);
+}
+function onScratchEnd() { isScratching = false; }
+
+scratchCanvas.addEventListener('touchstart', onScratchStart, { passive: true });
+scratchCanvas.addEventListener('touchmove',  onScratchMove,  { passive: true });
+scratchCanvas.addEventListener('touchend',   onScratchEnd,   { passive: true });
+scratchCanvas.addEventListener('mousedown',  onScratchStart);
+scratchCanvas.addEventListener('mousemove',  e => { if(e.buttons===1) onScratchMove(e); });
+scratchCanvas.addEventListener('mouseup',    onScratchEnd);
+
+/* ═══════════════════════════════════════════
+   INICIAR JOGO
+═══════════════════════════════════════════ */
+function startGame() {
+  ticketCount++;
+  revealed = false;
+  scratchedPx = 0;
+
+  scratchCanvas.style.display = 'block';
+  scratchCanvas.style.opacity = '1';
+
+  $('scratch-hint').classList.remove('hidden');
+  $('btn-reveal-all').classList.remove('ready');
+  $('sp-fill').style.width = '0%';
+  $('sp-pct').textContent = '0%';
+  $('ticket-num').textContent = formatTicketNum(ticketCount);
+
+  $('result-overlay').classList.remove('on');
+
+  generateResult();
+  showScreen('game');
+
+  // Espera a tela estar visível antes de inicializar canvas
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      initCanvases();
+    });
+  });
+}
+
+/* ═══════════════════════════════════════════
+   EVENT LISTENERS
+═══════════════════════════════════════════ */
+$('btn-play').addEventListener('click', () => {
+  Audio.init();
+  startGame();
+});
+
+$('btn-again').addEventListener('click', () => {
+  Audio.init();
+  startGame();
+});
+
+$('btn-reveal-all').addEventListener('click', () => {
+  if (!revealed) revealAll();
+});
+
+$('btn-share').addEventListener('click', shareResult);
+
+// Resize — reinicializa canvas se redimensionar
+window.addEventListener('resize', () => {
+  resizeParticleCanvas();
+  if (screens.game.classList.contains('on') && !revealed) {
+    initCanvases();
+  }
+});
+
+// Previne zoom duplo toque
+document.addEventListener('touchend', e => e.preventDefault(), { passive: false });
+</script>
+</body>
+</html>

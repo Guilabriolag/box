@@ -1,0 +1,1491 @@
+Gramatica zero
+
+Sim. Vou montar a Biblioteca Zero v0.1 como uma especificação de fundação, mas separando claramente o que já está sustentado pelos seus documentos daquilo que estamos propondo agora como extensão.
+
+A base existente diz que a biblioteca guarda arquétipos, atributos, estados, ações, regras e componentes, enquanto os motores executam; a Gramática fornece a sintaxe comum. 
+
+Biblioteca Zero v0.1
+
+01 — Unidade fundamental
+
+CampoDefinição
+
+ImpulsoAlgo que inicia ou solicita uma transformação
+SituaçãoContexto no qual o impulso ocorre
+Estado anteriorEstado conhecido antes da transição
+TransiçãoRegra que determina a transformação
+AçãoExecução da transformação
+Novo estadoEstado resultante
+EventoRegistro factual da transição realizada
+IdentidadeIdentificador único daquele acontecimento
+CadeiaRelação ordenada entre acontecimentos
+PulsoAgregação/publicação de uma cadeia ou conjunto de eventos
+ÂncoraCompromisso externo que permite verificação
+
+
+Observação: “Impulso” é a extensão conceitual que estamos propondo nesta v0.1. A documentação atual formaliza o fluxo Entidade + Verbo + Objeto → Condição → Estado → Ação → Escala + Tempo → Estado, e separadamente descreve situação → estado → evento → cadeia → pulso → âncora.  
+
+
+---
+
+02 — Vocabulário da biblioteca
+
+IDCategoriaConceitoFunção
+
+ENTEntidadeentidadeAlgo identificável no mundo
+OBJObjetoobjetoElemento sobre o qual uma ação pode atuar
+LOCMundolocalizaçãoLugar identificável
+AREAMundoáreaRegião dentro de uma localização
+FLOORMundoandarNível vertical
+ENVMundoambienteCondições físicas/contextuais
+ACTAçãoaçãoTransformação executável
+STATEEstadoestadoFotografia atual da situação
+CONDRegracondiçãoRequisito para uma transição
+COMPComponentecomponenteCapacidade ou característica atribuível
+ARCHArquétipoarquétipoModelo do qual entidades podem ser instanciadas
+EVENTProveniênciaeventoFato ocorrido
+CHAINProveniênciacadeiaEncadeamento de eventos
+PULSEProveniênciapulsoAgregação/publicação
+ANCHORProveniênciaâncoraCompromisso externo verificável
+
+
+A documentação já define explicitamente biblioteca como o lugar de arquétipos, atributos, estados, ações, regras e componentes. 
+
+
+---
+
+03 — Arquétipos iniciais
+
+Aqui eu não inventaria centenas de tipos ainda. Começaria com os que já aparecem no material e alguns tipos estruturais necessários.
+
+ArquétipoEstados iniciaisAções possíveis v0.1
+
+jogadorativomover, interagir
+npcpadrãofalar
+objetopadrãointeragir
+caixapadrão—
+portafechadaabrir, fechar
+localdisponívelentrar, sair
+veiculoparadoentrar, sair, mover
+bicicletaparadamontar, desmontar, mover
+carrodesligado/paradoentrar, sair, ligar, mover
+dronedesligado/paradoentrar/controlar, mover
+aviaoparadoembarcar, pilotar, mover
+barcoparadoembarcar, mover
+submarinoparadoembarcar, submergir, emergir, mover
+plantaestágio inicialcrescer
+produtodisponívelcomprar, vender
+lojaaberta/fechadaabrir, fechar, vender
+elevadorparadochamar, subir, descer
+
+
+Importante: os veículos acima são proposta de biblioteca, não algo que os arquivos atuais já implementam. O arquivo do chão de fábrica atualmente demonstra caixa, porta e npc, com arquétipos contendo label, verbos e estadoInicial. 
+
+
+---
+
+04 — Estados
+
+O conceito de estado deve permanecer muito amplo.
+
+A documentação é explícita: estado não é necessariamente “progresso”; pode representar posição, disponibilidade, condição física ou qualquer fotografia do “agora”. 
+
+FamíliaEstados possíveis
+
+Existênciainexistente, existente
+Disponibilidadedisponível, indisponível
+Portaaberta, fechada, trancada
+Movimentoparado, movendo
+Energialigado, desligado
+Ocupaçãoocupado, livre
+Conteúdocheio, vazio
+Integridadeíntegro, danificado, quebrado
+Posiçãolocalização + coordenadas
+Verticalidadeandar/subsolo
+Ambienteterra, água, ar
+Plantaestágio de crescimento
+Lojaaberta, fechada
+Veículodisponível, ocupado
+Comunicaçãosilencioso, falando
+Economiasaldo/quantidade
+Tempoinstante, duração, agenda
+
+
+
+---
+
+05 — Ações
+
+FamíliaAções
+
+Interaçãoobservar, tocar, usar, interagir
+Movimentomover, andar, correr
+Acessoentrar, sair, abrir, fechar
+Transportemontar, desmontar, conduzir, pilotar
+Verticalsubir, descer
+Aquáticonadar, submergir, emergir
+Aéreodecolar, voar, pousar
+Inventáriopegar, guardar, retirar, entregar
+Economiacomprar, vender, pagar, receber
+Comunicaçãofalar, responder, notificar
+Mundocriar, instanciar, remover
+Tempoesperar, iniciar, concluir
+Estadoativar, desativar, transformar
+
+
+O ponto importante é que “ação” não significa necessariamente uma função JavaScript. É um conceito semântico que o motor correspondente saberá executar.
+
+
+---
+
+06 — Condições
+
+CondiçãoExemplo
+
+ao_alcancejogador próximo da porta
+slot_livreposição disponível
+entidade_presenteentidade existe
+acesso_permitidojogador pode entrar
+objeto_disponivelproduto disponível
+estado_compativelestado permite ação
+energia_suficienteveículo pode funcionar
+capacidade_disponivelveículo pode transportar
+tempo_atingidohorário necessário chegou
+recurso_disponiveldinheiro/energia/água disponível
+autoridade_confirmadaação exige confirmação externa
+ambiente_compativelação exige água/ar/terra
+condicao_satisfeitaregra específica foi satisfeita
+
+
+O chão de fábrica já usa, por exemplo, slot_livre, entidade_presente, ao_alcance e sem_verbo_disponivel.  
+
+
+---
+
+07 — Componentes
+
+Aqui está uma parte importante para o futuro.
+
+ComponenteSignificado
+
+posicaoentidade possui localização
+fisicaparticipa das regras físicas
+colisaopode colidir
+interagivelaceita interação
+controlavelpode receber controle
+movelpode mudar de posição
+inventariopode possuir itens
+transportadorpode transportar entidades
+veiculopossui capacidades de transporte
+terrestreopera em ambiente terrestre
+aquaticoopera na água
+aereoopera no ar
+submersivelpode operar submerso
+dialogoparticipa de comunicação
+comercioparticipa de compra/venda
+temporalpossui comportamento dependente do tempo
+crescimentopossui evolução por tempo
+proveniênciagera/recebe eventos rastreáveis
+
+
+A ideia de componentes está explicitamente presente na biblioteca existente, embora essa lista concreta seja nossa proposta v0.1. 
+
+
+---
+
+08 — Transição
+
+Essa é a peça central.
+
+CampoExemplo
+
+impulsobeber
+entidadeNPC
+verbobeber
+objetosuco
+condiçãosuco disponível
+estado_anteriorcopo cheio
+açãoconsumir conteúdo
+escala1 unidade
+tempoinstantâneo
+estado_novocopo vazio
+eventosuco_consumido
+
+
+O exemplo do copo já existe na documentação: NPC → Beber → Suco, condição de disponibilidade, estado de copo cheio e resultado sobre hidratação/felicidade. 
+
+
+---
+
+09 — Evento
+
+O evento é o fato ocorrido, não simplesmente a possibilidade de uma ação.
+
+CampoFunção
+
+ididentificação do evento
+entidadequem participou
+verboação semântica
+objetoalvo
+condiçãocondição observada
+estado_anteriorestado antes
+açãotransformação
+estado_novoresultado
+timestampquando ocorreu
+evento_anteriorelo anterior
+hashidentificação/prova do conteúdo
+
+
+Isso já está demonstrado concretamente no chao-de-fabrica.html. 
+
+
+---
+
+10 — Cadeia
+
+EVENTO 001
+   ↓
+EVENTO 002
+   ↓
+EVENTO 003
+   ↓
+EVENTO 004
+
+ElementoFunção
+
+GENESISponto inicial
+evento_anteriorreferência ao elo anterior
+digestidentificação derivada
+evento_atualnovo elo
+cadeiaconjunto ordenado
+
+
+O documento estabelece que cada evento aponta para o anterior e que a alteração de um elo faz a cadeia deixar de conferir. 
+
+
+---
+
+11 — Pulso
+
+Aqui eu manteria a ideia separada do evento individual.
+
+eventos
+   ↓
+agrupamento
+   ↓
+Merkle tree
+   ↓
+raiz
+   ↓
+PULSO
+   ↓
+ÂNCORA
+
+O documento dá explicitamente o exemplo de milhares de eventos formando uma Merkle tree, uma raiz e depois um pulso/âncora. 
+
+E isso evita um erro importante:
+
+> Nem todo evento precisa ser ancorado individualmente.
+
+
+
+
+---
+
+12 — Identidade
+
+Também precisamos separar identidade da coisa de identidade do acontecimento.
+
+TipoExemplo conceitual
+
+Identidade da entidadeporta_001
+Identidade do objetocopo_034
+Identidade da localizaçãoshopping.terreo.loja_07
+Identidade do eventoZYR:event:<hash>
+Identidade do transportepayload/identificador correspondente
+Identidade da cadeiaidentificador da cadeia
+Identidade da âncorareferência externa
+
+
+O documento já propõe ZYR:event:<hash> como identificador universal de evento e distingue identificação de transporte. 
+
+
+---
+
+13 — O catálogo inicial do mundo
+
+Agora juntamos tudo:
+
+CoisaÉ entidade?Tem estado?É interagível?Pode gerar evento?Pode mudar de estado?
+
+Jogador✓✓✓✓✓
+NPC✓✓✓✓✓
+Porta✓✓✓✓✓
+Caixa✓✓possível✓possível
+Planta✓✓possível✓✓
+Loja✓✓✓✓✓
+Elevador✓✓✓✓✓
+Bicicleta✓✓✓✓✓
+Carro✓✓✓✓✓
+Drone✓✓✓✓✓
+Avião✓✓✓✓✓
+Barco✓✓✓✓✓
+Submarino✓✓✓✓✓
+Temposistema✓indireto✓✓
+Climasistema✓indireto✓✓
+Andarestrutura✓indireto✓✓
+Ambientesistema✓indireto✓✓
+
+
+
+---
+
+14 — A biblioteca completa começa a ficar assim
+
+BIBLIOTECA ZERO
+│
+├── VOCABULÁRIO
+│   ├── entidades
+│   ├── objetos
+│   ├── lugares
+│   ├── ambientes
+│   └── recursos
+│
+├── ARQUÉTIPOS
+│   ├── jogador
+│   ├── NPC
+│   ├── objeto
+│   ├── planta
+│   └── veículo
+│
+├── COMPONENTES
+│   ├── físico
+│   ├── móvel
+│   ├── interagível
+│   ├── controlável
+│   └── transportador
+│
+├── ESTADOS
+│   ├── físicos
+│   ├── espaciais
+│   ├── temporais
+│   ├── econômicos
+│   └── comportamentais
+│
+├── IMPULSOS
+│   ├── jogador
+│   ├── NPC
+│   ├── tempo
+│   ├── ambiente
+│   ├── física
+│   └── sistemas externos
+│
+├── CONDIÇÕES
+│
+├── TRANSIÇÕES
+│
+├── AÇÕES
+│
+└── PROVENIÊNCIA
+    ├── evento
+    ├── identidade
+    ├── cadeia
+    ├── pulso
+    ├── âncora
+    └── ZyroKey
+
+Essa estrutura respeita o princípio original de que a biblioteca sabe e o motor executa. 
+
+E eu colocaria uma regra de ouro na v0.1
+
+> Nada entra na Biblioteca Zero apenas porque “parece útil”.
+
+
+
+Cada novo conceito precisa responder:
+
+1. O que é?
+
+
+2. Que estados pode possuir?
+
+
+3. Que impulsos pode receber?
+
+
+4. Quais transições são permitidas?
+
+
+5. Qual novo estado pode produzih
+Qual novo estado pode produzir?
+Que evento isso gera?
+Esse evento precisa entrar em qual cadeia?
+Como ele é identificado?
+Assim a biblioteca não vira uma lista enorme de funções. Ela vira o catálogo formal do que pode acontecer no mundo.
+
+Vamos seguir. Eu sugiro que o próximo passo seja fechar a estrutura formal da Biblioteca Zero v0.1, antes de criar mais conceitos.
+
+A partir da tabela anterior, temos três níveis que não devemos misturar:
+
+1. Vocabulário
+
+Define o que existe.
+
+Entidade
+Objeto
+Lugar
+Ambiente
+Recurso
+Veículo
+Sistema
+
+2. Comportamento
+
+Define o que pode acontecer.
+
+Impulso
+Condição
+Estado
+Transição
+Ação
+Novo Estado
+
+3. Proveniência
+
+Define como sabemos o que aconteceu.
+
+Evento
+Identidade
+Cadeia
+Pulso
+Âncora
+ZyroKey
+
+O fluxo completo fica:
+
+BIBLIOTECA ZERO
+                       │
+          ┌────────────┴────────────┐
+          │                         │
+      O QUE EXISTE?          O QUE PODE ACONTECER?
+          │                         │
+     Entidade                  Impulso
+     Objeto                       ↓
+     Lugar                    Situação
+     Ambiente                     ↓
+     Recurso                Estado anterior
+                                  ↓
+                              Transição
+                                  ↓
+                                Ação
+                                  ↓
+                             Novo estado
+                                  ↓
+                               Evento
+                                  │
+                       ┌──────────┴──────────┐
+                       ↓                     ↓
+                    Identidade             Cadeia
+                                             ↓
+                                           Pulso
+                                             ↓
+                                          Âncora
+
+Agora vem a parte que eu acho mais importante
+
+Vamos criar o registro padrão de uma definição da Biblioteca Zero.
+
+Por exemplo, não apenas:
+
+copo = objeto
+
+mas:
+
+ID: objeto.copo
+
+tipo:
+  objeto
+
+componentes:
+  físico
+  interagível
+
+estados:
+  cheio
+  vazio
+  quebrado
+
+impulsos aceitos:
+  beber
+  derrubar
+  quebrar
+
+transições:
+  cheio + beber → vazio
+  íntegro + impacto → quebrado
+
+eventos:
+  conteúdo_consumido
+  objeto_quebrado
+
+Isso é muito mais próximo do que você está buscando.
+
+E há uma confirmação importante nos arquivos: a arquitetura já diz que o estado que sai de uma execução é o estado que entra na próxima consulta.  Portanto, nossa Biblioteca Zero pode ser construída em torno dessa ideia de transições de estado, sem transformar cada mecânica em código específico.
+
+Próxima etapa: o catálogo mestre
+
+Eu faria agora a Biblioteca Zero v0.1 — Catálogo Mestre, com estas colunas:
+
+IDTipoConceitoComponentesEstadosImpulsosTransiçõesEvento produzidoPersistência
+
+entity.playerentidadeJogadorposição, interagívelativo/inativocomandomover/interagiração executadasim
+object.doorobjetoPortafísico, interagívelaberta/fechada/trancadaabrir/fecharfechado→abertoporta_abertasim
+object.cupobjetoCopofísico, interagívelcheio/vazio/quebradobeber/quebrarcheio→vazioconteúdo_consumidosim
+entity.npcentidadeNPCposição, diálogodisponível/ocupadodecisãocomportamentoação_npcsim
+entity.vehicleentidadeVeículomóvel, controlávelparado/movendoconduzirparado→movendoveículo_movidosim
+world.floormundoAndarlocalizaçãodisponívelentrar/saircontexto alteradomudança_localsim
+world.timesistemaTempotemporalinstante atualpassagemestado temporaltempo_decorridosim
+world.weathersistemaClimaambientalensolarado/chuva/etc.condição ambientalclima alteradoclima_alteradosim
+
+
+Essa tabela vira nosso documento vivo. A cada novo conceito do mundo, adicionamos uma linha e definimos sua semântica antes de programá-lo.
+
+Posso continuar agora preenchendo o Catálogo Mestre v0.1 com todas as categorias e conceitos iniciais, até termos uma primeira biblioteca realmente utilizável.
+
+
+Exatamente. Esse ajuste é fundamental. Se chamarmos “entidade” apenas de NPC, vamos limitar a arquitetura logo na primeira camada.
+
+Na nossa Biblioteca Zero, entidade deve significar algo que possui identidade própria e pode carregar uma descrição/manifestações internas.
+
+Um NPC é uma entidade. Mas um ponto de interesse também pode ser uma entidade.
+
+Então eu mudaria a definição
+
+> Entidade = qualquer unidade identificável do mundo que possa possuir estado, propriedades, componentes, relações ou manifestações próprias.
+
+
+
+Assim:
+
+EntidadeO que pode conter
+
+NPCestado, atributos, inventário, comportamento
+Jogadorestado, inventário, capacidades
+Portaestado, componentes, transições
+Bicicletaestado, física, veículo, componentes
+Lojalocalização, produtos, regras, entidades internas
+Ponto de interesselocalização, contexto, manifestações, conexões
+Prédioandares, áreas, pontos de interesse
+Andaráreas, objetos, entidades
+Veículocomponentes, controles, passageiros
+Plantaestados, crescimento, ambiente
+Sistema climáticoestado ambiental, ciclos, eventos
+
+
+E o ponto de interesse é especialmente importante
+
+Imagine:
+
+POI: Loja de Bicicletas
+│
+├── identidade
+├── localização
+├── estado
+├── descrição
+├── regras
+├── interações
+│
+├── manifestações
+│   ├── entrada
+│   ├── fachada
+│   ├── interior 3D
+│   ├── NPC vendedor
+│   ├── produtos
+│   └── estoque
+│
+└── conexões
+    ├── shopping
+    ├── corredor
+    └── estacionamento
+
+Ou seja, o POI não é apenas um marcador no mapa.
+
+No mapa isométrico ele pode aparecer como:
+
+[ 🚲 Loja de Bicicletas ]
+
+Quando o jogador interage:
+
+POI
+ ↓
+manifestação/contexto
+ ↓
+cena 3D
+
+E a entidade continua sendo a mesma.
+
+Isso combina muito bem com a separação que já temos entre entidades concretas do mundo e as bibliotecas que fornecem os arquétipos, componentes, estados, ações e regras. 
+
+E “manifesto” pode ser uma peça importante
+
+Eu entendi que quando você fala que uma entidade pode ter “outros manifestos dentro dela mesma”, você está pensando em uma entidade que não é necessariamente indivisível.
+
+Por exemplo:
+
+Shopping
+│
+├── manifesto: estrutura
+├── manifesto: andares
+├── manifesto: lojas
+├── manifesto: estacionamento
+├── manifesto: elevadores
+└── manifesto: pontos_de_interesse
+
+E:
+
+PontoDeInteresse
+│
+├── manifesto: identidade
+├── manifesto: localização
+├── manifesto: interação
+├── manifesto: representação_2D
+├── manifesto: representação_3D
+└── manifesto: entidades_internas
+
+Isso é diferente de simplesmente colocar “filhos” dentro de um objeto. Uma entidade pode declarar como ela se manifesta em diferentes contextos.
+
+Então eu alteraria nosso catálogo para não ter:
+
+Entidade → NPC
+
+mas:
+
+ENTIDADE
+ ├── identidade
+ ├── manifesto
+ ├── componentes
+ ├── estados
+ ├── capacidades
+ ├── relações
+ ├── impulsos
+ ├── transições
+ └── manifestações
+
+E NPC seria apenas um arquétipo de entidade.
+
+Essa mudança é importante o suficiente para eu colocar no núcleo da Biblioteca Zero v0.1 antes de continuarmos preenchendo o catálogo. Posso reformular agora o modelo formal de Entidade + Manifesto + Manifestação e depois aplicar isso ao Ponto de Interesse, Shopping, andar e veículo.
+
+Sim. E essa distinção que você fez agora é muito importante: quando você diz que uma entidade pode ter um manifesto “dentro dela mesma”, eu entendo como uma entidade que declara sua própria composição, capacidades e formas de manifestação, podendo inclusive conter outras entidades.
+
+Isso permite uma estrutura recursiva:
+
+ENTIDADE
+ └── MANIFESTO
+      ├── descreve a própria entidade
+      ├── declara componentes
+      ├── declara estados
+      ├── declara relações
+      ├── declara manifestações
+      └── pode declarar entidades internas
+
+A arquitetura atual já dá suporte conceitual a essa direção porque as bibliotecas fornecem arquétipos, atributos, estados, ações, regras e componentes, enquanto as entidades concretas usam essas peças. 
+
+1. Entidade
+
+Eu definiria assim para a Biblioteca Zero:
+
+> Entidade é uma unidade identificável do mundo que possui um manifesto próprio.
+
+
+
+Não importa se é:
+
+uma pessoa;
+
+uma porta;
+
+um shopping;
+
+um andar;
+
+uma loja;
+
+um ponto de interesse;
+
+um carro;
+
+um planeta;
+
+uma planta;
+
+um sistema climático.
+
+
+A diferença entre eles está no manifesto, não na existência de motores diferentes.
+
+
+---
+
+2. Manifesto
+
+O manifesto é a declaração da entidade sobre o que ela é e como ela pode existir/interagir.
+
+Não é simplesmente uma lista de propriedades.
+
+Ele pode declarar:
+
+MANIFESTO
+│
+├── identidade
+├── tipo/arquétipo
+├── componentes
+├── estados
+├── capacidades
+├── regras
+├── relações
+├── entidades internas
+├── manifestações
+└── transições possíveis
+
+Por exemplo:
+
+ENTIDADE
+ID: shopping.central
+
+MANIFESTO
+tipo: shopping
+
+componentes:
+  localização
+  estrutura
+  interagível
+
+estados:
+  aberto
+  fechado
+
+entidades internas:
+  andares
+  lojas
+  elevadores
+  estacionamentos
+  pontos_de_interesse
+
+manifestações:
+  mapa_isométrico
+  contexto_3D
+
+
+---
+
+3. Manifestação
+
+Aqui eu faria uma distinção importante:
+
+Manifesto = o que a entidade declara que é.
+
+Manifestação = como aquela entidade aparece/atua em determinado contexto.
+
+Por exemplo:
+
+Shopping Central
+│
+├── Manifesto
+│
+├── Manifestação 2D
+│    └── representação no mapa isométrico
+│
+└── Manifestação 3D
+     └── representação detalhada
+
+A entidade continua sendo uma só.
+
+O que muda é a manifestação.
+
+Isso encaixa muito bem com a sua ideia do chão de fábrica: o mapa isométrico pode representar o mundo inteiro, enquanto um ponto de interesse pode abrir uma manifestação 3D.
+
+
+---
+
+4. E sim: entidades dentro de entidades
+
+Aqui está a parte que eu acho mais poderosa do que simplesmente chamar isso de “hierarquia”.
+
+Você pode ter:
+
+SHOPPING
+│
+├── MANIFESTO
+│
+├── ENTIDADE: ANDAR 1
+│   │
+│   ├── MANIFESTO
+│   │
+│   ├── ENTIDADE: LOJA A
+│   │   │
+│   │   ├── MANIFESTO
+│   │   └── ENTIDADES INTERNAS
+│   │
+│   └── ENTIDADE: PONTO DE INTERESSE
+│
+└── ENTIDADE: ESTACIONAMENTO
+
+Mas você pode fazer o contrário também:
+
+PONTO DE INTERESSE
+│
+├── MANIFESTO
+│
+└── ENTIDADE INTERNA
+     └── SHOPPING
+          ├── ANDAR
+          ├── LOJA
+          └── PONTO DE INTERESSE
+
+Ou seja:
+
+> “Shopping” não precisa ser necessariamente a entidade superior absoluta.
+
+
+
+Ele pode ser uma entidade contida em outra entidade.
+
+
+---
+
+5. Exemplo: Ponto de Interesse
+
+Imagine no mapa:
+
+POI: "Complexo Comercial"
+
+Seu manifesto poderia dizer:
+
+ID:
+poi.complexo_comercial
+
+TIPO:
+ponto_de_interesse
+
+MANIFESTO:
+
+componentes:
+  localização
+  interagível
+  navegável
+
+entidades internas:
+  shopping.central
+  estacionamento
+  entrada_principal
+
+manifestações:
+  mapa_2d
+  contexto_3d
+
+interações:
+  entrar
+  observar
+
+Quando o jogador está no mapa:
+
+POI
+↓
+manifestação 2D
+
+Quando entra:
+
+POI
+↓
+manifestação 3D
+↓
+SHOPPING
+
+E o Shopping não foi “criado” naquele momento.
+
+Ele já era uma entidade dentro do manifesto do ponto de interesse.
+
+A visão 3D apenas tornou aquela parte do mundo uma manifestação ativa.
+
+
+---
+
+6. Shopping dentro de Shopping?
+
+Sim.
+
+E eu não colocaria uma regra artificial dizendo que isso é proibido.
+
+Poderíamos ter:
+
+Complexo
+└── Shopping
+    └── Shopping
+        └── Loja
+
+Ou:
+
+Prédio
+└── Shopping
+    ├── Cinema
+    │   └── Sala
+    ├── Mercado
+    └── Restaurante
+
+Porque a biblioteca não precisa conhecer previamente a estrutura.
+
+Ela apenas conhece:
+
+ENTIDADE
+    contém
+       ↓
+ENTIDADE
+
+A regra concreta vem do manifesto.
+
+
+---
+
+7. Aplicando aos quatro casos
+
+Shopping
+
+SHOPPING
+│
+├── manifesto
+│
+├── andares
+├── lojas
+├── corredores
+├── elevadores
+├── estacionamento
+└── pontos_de_interesse
+
+Andar
+
+ANDAR
+│
+├── manifesto
+├── elevação
+├── áreas
+├── objetos
+├── entidades
+└── pontos_de_interesse
+
+Inclusive:
+
+-3
+-2
+-1
+ 0
+ 1
+ 2
+ 3
+...
+
+são simplesmente diferentes entidades/manifestações de FLOOR.
+
+Ponto de Interesse
+
+POI
+│
+├── manifesto
+├── localização
+├── conexões
+├── manifestações
+└── entidades internas
+
+E essas entidades internas podem ser qualquer coisa.
+
+Veículo
+
+VEÍCULO
+│
+├── manifesto
+│
+├── componentes
+│   ├── físico
+│   ├── móvel
+│   └── controlável
+│
+├── estados
+│   ├── parado
+│   └── movimento
+│
+├── capacidades
+│   ├── transportar
+│   └── conduzir
+│
+└── manifestações
+    ├── mapa_2d
+    └── contexto_3d
+
+Uma bicicleta, um carro, um drone e um submarino podem compartilhar o arquétipo veículo, mas manifestar capacidades diferentes.
+
+
+---
+
+8. Então temos uma estrutura recursiva
+
+Acho que o modelo correto para o que você está descrevendo é:
+
+ENTIDADE
+                       │
+                    MANIFESTO
+                       │
+        ┌──────────────┼───────────────┐
+        │              │               │
+     ESTADOS       CAPACIDADES      RELAÇÕES
+        │                              │
+        └──────────┬───────────────────┘
+                   │
+            ENTIDADES INTERNAS
+                   │
+                   ↓
+                ENTIDADE
+                   │
+                MANIFESTO
+                   │
+                  ...
+
+E, paralelamente:
+
+ENTIDADE
+   │
+   └── MANIFESTAÇÕES
+          ├── 2D
+          ├── 3D
+          ├── física
+          ├── interface
+          └── outras
+
+Isso é diferente de pensar “um objeto tem filhos”. A composição é apenas uma das coisas que o manifesto pode declarar.
+
+A entidade continua sendo identificável individualmente, mesmo estando dentro de outra.
+
+E isso preserva o princípio fundamental da arquitetura: o motor não precisa saber previamente que existe “shopping dentro de ponto de interesse”. Ele processa a estrutura; a Biblioteca Zero descreve o significado. A documentação já estabelece justamente que os motores não devem conhecer o conteúdo específico e que a biblioteca fornece o conhecimento, arquétipos, componentes, estados, ações e regras. 
+
+Eu considero essa a definição que devemos congelar para a v0.1: Entidade → Manifesto → composição + estados + capacidades + manifestações, com composição recursiva. A partir daqui podemos montar o schema formal do Manifesto v0.1, campo por campo, antes de escrever qualquer código.
+
+
+
+
+Sim. E essa distinção que você fez agora é muito importante: quando você diz que uma entidade pode ter um manifesto “dentro dela mesma”, eu entendo como uma entidade que declara sua própria composição, capacidades e formas de manifestação, podendo inclusive conter outras entidades.
+
+Isso permite uma estrutura recursiva:
+
+ENTIDADE
+ └── MANIFESTO
+      ├── descreve a própria entidade
+      ├── declara componentes
+      ├── declara estados
+      ├── declara relações
+      ├── declara manifestações
+      └── pode declarar entidades internas
+
+A arquitetura atual já dá suporte conceitual a essa direção porque as bibliotecas fornecem arquétipos, atributos, estados, ações, regras e componentes, enquanto as entidades concretas usam essas peças. 
+
+1. Entidade
+
+Eu definiria assim para a Biblioteca Zero:
+
+> Entidade é uma unidade identificável do mundo que possui um manifesto próprio.
+
+
+
+Não importa se é:
+
+uma pessoa;
+
+uma porta;
+
+um shopping;
+
+um andar;
+
+uma loja;
+
+um ponto de interesse;
+
+um carro;
+
+um planeta;
+
+uma planta;
+
+um sistema climático.
+
+
+A diferença entre eles está no manifesto, não na existência de motores diferentes.
+
+
+---
+
+2. Manifesto
+
+O manifesto é a declaração da entidade sobre o que ela é e como ela pode existir/interagir.
+
+Não é simplesmente uma lista de propriedades.
+
+Ele pode declarar:
+
+MANIFESTO
+│
+├── identidade
+├── tipo/arquétipo
+├── componentes
+├── estados
+├── capacidades
+├── regras
+├── relações
+├── entidades internas
+├── manifestações
+└── transições possíveis
+
+Por exemplo:
+
+ENTIDADE
+ID: shopping.central
+
+MANIFESTO
+tipo: shopping
+
+componentes:
+  localização
+  estrutura
+  interagível
+
+estados:
+  aberto
+  fechado
+
+entidades internas:
+  andares
+  lojas
+  elevadores
+  estacionamentos
+  pontos_de_interesse
+
+manifestações:
+  mapa_isométrico
+  contexto_3D
+
+
+---
+
+3. Manifestação
+
+Aqui eu faria uma distinção importante:
+
+Manifesto = o que a entidade declara que é.
+
+Manifestação = como aquela entidade aparece/atua em determinado contexto.
+
+Por exemplo:
+
+Shopping Central
+│
+├── Manifesto
+│
+├── Manifestação 2D
+│    └── representação no mapa isométrico
+│
+└── Manifestação 3D
+     └── representação detalhada
+
+A entidade continua sendo uma só.
+
+O que muda é a manifestação.
+
+Isso encaixa muito bem com a sua ideia do chão de fábrica: o mapa isométrico pode representar o mundo inteiro, enquanto um ponto de interesse pode abrir uma manifestação 3D.
+
+
+---
+
+4. E sim: entidades dentro de entidades
+
+Aqui está a parte que eu acho mais poderosa do que simplesmente chamar isso de “hierarquia”.
+
+Você pode ter:
+
+SHOPPING
+│
+├── MANIFESTO
+│
+├── ENTIDADE: ANDAR 1
+│   │
+│   ├── MANIFESTO
+│   │
+│   ├── ENTIDADE: LOJA A
+│   │   │
+│   │   ├── MANIFESTO
+│   │   └── ENTIDADES INTERNAS
+│   │
+│   └── ENTIDADE: PONTO DE INTERESSE
+│
+└── ENTIDADE: ESTACIONAMENTO
+
+Mas você pode fazer o contrário também:
+
+PONTO DE INTERESSE
+│
+├── MANIFESTO
+│
+└── ENTIDADE INTERNA
+     └── SHOPPING
+          ├── ANDAR
+          ├── LOJA
+          └── PONTO DE INTERESSE
+
+Ou seja:
+
+> “Shopping” não precisa ser necessariamente a entidade superior absoluta.
+
+
+
+Ele pode ser uma entidade contida em outra entidade.
+
+
+---
+
+5. Exemplo: Ponto de Interesse
+
+Imagine no mapa:
+
+POI: "Complexo Comercial"
+
+Seu manifesto poderia dizer:
+
+ID:
+poi.complexo_comercial
+
+TIPO:
+ponto_de_interesse
+
+MANIFESTO:
+
+componentes:
+  localização
+  interagível
+  navegável
+
+entidades internas:
+  shopping.central
+  estacionamento
+  entrada_principal
+
+manifestações:
+  mapa_2d
+  contexto_3d
+
+interações:
+  entrar
+  observar
+
+Quando o jogador está no mapa:
+
+POI
+↓
+manifestação 2D
+
+Quando entra:
+
+POI
+↓
+manifestação 3D
+↓
+SHOPPING
+
+E o Shopping não foi “criado” naquele momento.
+
+Ele já era uma entidade dentro do manifesto do ponto de interesse.
+
+A visão 3D apenas tornou aquela parte do mundo uma manifestação ativa.
+
+
+---
+
+6. Shopping dentro de Shopping?
+
+Sim.
+
+E eu não colocaria uma regra artificial dizendo que isso é proibido.
+
+Poderíamos ter:
+
+Complexo
+└── Shopping
+    └── Shopping
+        └── Loja
+
+Ou:
+
+Prédio
+└── Shopping
+    ├── Cinema
+    │   └── Sala
+    ├── Mercado
+    └── Restaurante
+
+Porque a biblioteca não precisa conhecer previamente a estrutura.
+
+Ela apenas conhece:
+
+ENTIDADE
+    contém
+       ↓
+ENTIDADE
+
+A regra concreta vem do manifesto.
+
+
+---
+
+7. Aplicando aos quatro casos
+
+Shopping
+
+SHOPPING
+│
+├── manifesto
+│
+├── andares
+├── lojas
+├── corredores
+├── elevadores
+├── estacionamento
+└── pontos_de_interesse
+
+Andar
+
+ANDAR
+│
+├── manifesto
+├── elevação
+├── áreas
+├── objetos
+├── entidades
+└── pontos_de_interesse
+
+Inclusive:
+
+-3
+-2
+-1
+ 0
+ 1
+ 2
+ 3
+...
+
+são simplesmente diferentes entidades/manifestações de FLOOR.
+
+Ponto de Interesse
+
+POI
+│
+├── manifesto
+├── localização
+├── conexões
+├── manifestações
+└── entidades internas
+
+E essas entidades internas podem ser qualquer coisa.
+
+Veículo
+
+VEÍCULO
+│
+├── manifesto
+│
+├── componentes
+│   ├── físico
+│   ├── móvel
+│   └── controlável
+│
+├── estados
+│   ├── parado
+│   └── movimento
+│
+├── capacidades
+│   ├── transportar
+│   └── conduzir
+│
+└── manifestações
+    ├── mapa_2d
+    └── contexto_3d
+
+Uma bicicleta, um carro, um drone e um submarino podem compartilhar o arquétipo veículo, mas manifestar capacidades diferentes.
+
+
+---
+
+8. Então temos uma estrutura recursiva
+
+Acho que o modelo correto para o que você está descrevendo é:
+
+ENTIDADE
+                       │
+                    MANIFESTO
+                       │
+        ┌──────────────┼───────────────┐
+        │              │               │
+     ESTADOS       CAPACIDADES      RELAÇÕES
+        │                              │
+        └──────────┬───────────────────┘
+                   │
+            ENTIDADES INTERNAS
+                   │
+                   ↓
+                ENTIDADE
+                   │
+                MANIFESTO
+                   │
+                  ...
+
+E, paralelamente:
+
+ENTIDADE
+   │
+   └── MANIFESTAÇÕES
+          ├── 2D
+          ├── 3D
+          ├── física
+          ├── interface
+          └── outras
+
+Isso é diferente de pensar “um objeto tem filhos”. A composição é apenas uma das coisas que o manifesto pode declarar.
+
+A entidade continua sendo identificável individualmente, mesmo estando dentro de outra.
+
+E isso preserva o princípio fundamental da arquitetura: o motor não precisa saber previamente que existe “shopping dentro de ponto de interesse”. Ele processa a estrutura; a Biblioteca Zero descreve o significado. A documentação já estabelece justamente que os motores não devem conhecer o conteúdo específico e que a biblioteca fornece o conhecimento, arquétipos, componentes, estados, ações e regras. 
+
+Eu considero essa a definição que devemos congelar para a v0.1: Entidade → Manifesto → composição + estados + capacidades + manifestações, com composição recursiva. A partir daqui podemos montar o schema formal do Manifesto v0.1, campo por campo, antes de escrever qualquer código.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

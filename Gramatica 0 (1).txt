@@ -1,0 +1,2147 @@
+Gramatica zero
+
+Sim. Vou montar a Biblioteca Zero v0.1 como uma especificação de fundação, mas separando claramente o que já está sustentado pelos seus documentos daquilo que estamos propondo agora como extensão.
+
+A base existente diz que a biblioteca guarda arquétipos, atributos, estados, ações, regras e componentes, enquanto os motores executam; a Gramática fornece a sintaxe comum. 
+
+Biblioteca Zero v0.1
+
+01 — Unidade fundamental
+
+CampoDefinição
+
+ImpulsoAlgo que inicia ou solicita uma transformação
+SituaçãoContexto no qual o impulso ocorre
+Estado anteriorEstado conhecido antes da transição
+TransiçãoRegra que determina a transformação
+AçãoExecução da transformação
+Novo estadoEstado resultante
+EventoRegistro factual da transição realizada
+IdentidadeIdentificador único daquele acontecimento
+CadeiaRelação ordenada entre acontecimentos
+PulsoAgregação/publicação de uma cadeia ou conjunto de eventos
+ÂncoraCompromisso externo que permite verificação
+
+
+Observação: “Impulso” é a extensão conceitual que estamos propondo nesta v0.1. A documentação atual formaliza o fluxo Entidade + Verbo + Objeto → Condição → Estado → Ação → Escala + Tempo → Estado, e separadamente descreve situação → estado → evento → cadeia → pulso → âncora.  
+
+
+---
+
+02 — Vocabulário da biblioteca
+
+IDCategoriaConceitoFunção
+
+ENTEntidadeentidadeAlgo identificável no mundo
+OBJObjetoobjetoElemento sobre o qual uma ação pode atuar
+LOCMundolocalizaçãoLugar identificável
+AREAMundoáreaRegião dentro de uma localização
+FLOORMundoandarNível vertical
+ENVMundoambienteCondições físicas/contextuais
+ACTAçãoaçãoTransformação executável
+STATEEstadoestadoFotografia atual da situação
+CONDRegracondiçãoRequisito para uma transição
+COMPComponentecomponenteCapacidade ou característica atribuível
+ARCHArquétipoarquétipoModelo do qual entidades podem ser instanciadas
+EVENTProveniênciaeventoFato ocorrido
+CHAINProveniênciacadeiaEncadeamento de eventos
+PULSEProveniênciapulsoAgregação/publicação
+ANCHORProveniênciaâncoraCompromisso externo verificável
+
+
+A documentação já define explicitamente biblioteca como o lugar de arquétipos, atributos, estados, ações, regras e componentes. 
+
+
+---
+
+03 — Arquétipos iniciais
+
+Aqui eu não inventaria centenas de tipos ainda. Começaria com os que já aparecem no material e alguns tipos estruturais necessários.
+
+ArquétipoEstados iniciaisAções possíveis v0.1
+
+jogadorativomover, interagir
+npcpadrãofalar
+objetopadrãointeragir
+caixapadrão—
+portafechadaabrir, fechar
+localdisponívelentrar, sair
+veiculoparadoentrar, sair, mover
+bicicletaparadamontar, desmontar, mover
+carrodesligado/paradoentrar, sair, ligar, mover
+dronedesligado/paradoentrar/controlar, mover
+aviaoparadoembarcar, pilotar, mover
+barcoparadoembarcar, mover
+submarinoparadoembarcar, submergir, emergir, mover
+plantaestágio inicialcrescer
+produtodisponívelcomprar, vender
+lojaaberta/fechadaabrir, fechar, vender
+elevadorparadochamar, subir, descer
+
+
+Importante: os veículos acima são proposta de biblioteca, não algo que os arquivos atuais já implementam. O arquivo do chão de fábrica atualmente demonstra caixa, porta e npc, com arquétipos contendo label, verbos e estadoInicial. 
+
+
+---
+
+04 — Estados
+
+O conceito de estado deve permanecer muito amplo.
+
+A documentação é explícita: estado não é necessariamente “progresso”; pode representar posição, disponibilidade, condição física ou qualquer fotografia do “agora”. 
+
+FamíliaEstados possíveis
+
+Existênciainexistente, existente
+Disponibilidadedisponível, indisponível
+Portaaberta, fechada, trancada
+Movimentoparado, movendo
+Energialigado, desligado
+Ocupaçãoocupado, livre
+Conteúdocheio, vazio
+Integridadeíntegro, danificado, quebrado
+Posiçãolocalização + coordenadas
+Verticalidadeandar/subsolo
+Ambienteterra, água, ar
+Plantaestágio de crescimento
+Lojaaberta, fechada
+Veículodisponível, ocupado
+Comunicaçãosilencioso, falando
+Economiasaldo/quantidade
+Tempoinstante, duração, agenda
+
+
+
+---
+
+05 — Ações
+
+FamíliaAções
+
+Interaçãoobservar, tocar, usar, interagir
+Movimentomover, andar, correr
+Acessoentrar, sair, abrir, fechar
+Transportemontar, desmontar, conduzir, pilotar
+Verticalsubir, descer
+Aquáticonadar, submergir, emergir
+Aéreodecolar, voar, pousar
+Inventáriopegar, guardar, retirar, entregar
+Economiacomprar, vender, pagar, receber
+Comunicaçãofalar, responder, notificar
+Mundocriar, instanciar, remover
+Tempoesperar, iniciar, concluir
+Estadoativar, desativar, transformar
+
+
+O ponto importante é que “ação” não significa necessariamente uma função JavaScript. É um conceito semântico que o motor correspondente saberá executar.
+
+
+---
+
+06 — Condições
+
+CondiçãoExemplo
+
+ao_alcancejogador próximo da porta
+slot_livreposição disponível
+entidade_presenteentidade existe
+acesso_permitidojogador pode entrar
+objeto_disponivelproduto disponível
+estado_compativelestado permite ação
+energia_suficienteveículo pode funcionar
+capacidade_disponivelveículo pode transportar
+tempo_atingidohorário necessário chegou
+recurso_disponiveldinheiro/energia/água disponível
+autoridade_confirmadaação exige confirmação externa
+ambiente_compativelação exige água/ar/terra
+condicao_satisfeitaregra específica foi satisfeita
+
+
+O chão de fábrica já usa, por exemplo, slot_livre, entidade_presente, ao_alcance e sem_verbo_disponivel.  
+
+
+---
+
+07 — Componentes
+
+Aqui está uma parte importante para o futuro.
+
+ComponenteSignificado
+
+posicaoentidade possui localização
+fisicaparticipa das regras físicas
+colisaopode colidir
+interagivelaceita interação
+controlavelpode receber controle
+movelpode mudar de posição
+inventariopode possuir itens
+transportadorpode transportar entidades
+veiculopossui capacidades de transporte
+terrestreopera em ambiente terrestre
+aquaticoopera na água
+aereoopera no ar
+submersivelpode operar submerso
+dialogoparticipa de comunicação
+comercioparticipa de compra/venda
+temporalpossui comportamento dependente do tempo
+crescimentopossui evolução por tempo
+proveniênciagera/recebe eventos rastreáveis
+
+
+A ideia de componentes está explicitamente presente na biblioteca existente, embora essa lista concreta seja nossa proposta v0.1. 
+
+
+---
+
+08 — Transição
+
+Essa é a peça central.
+
+CampoExemplo
+
+impulsobeber
+entidadeNPC
+verbobeber
+objetosuco
+condiçãosuco disponível
+estado_anteriorcopo cheio
+açãoconsumir conteúdo
+escala1 unidade
+tempoinstantâneo
+estado_novocopo vazio
+eventosuco_consumido
+
+
+O exemplo do copo já existe na documentação: NPC → Beber → Suco, condição de disponibilidade, estado de copo cheio e resultado sobre hidratação/felicidade. 
+
+
+---
+
+09 — Evento
+
+O evento é o fato ocorrido, não simplesmente a possibilidade de uma ação.
+
+CampoFunção
+
+ididentificação do evento
+entidadequem participou
+verboação semântica
+objetoalvo
+condiçãocondição observada
+estado_anteriorestado antes
+açãotransformação
+estado_novoresultado
+timestampquando ocorreu
+evento_anteriorelo anterior
+hashidentificação/prova do conteúdo
+
+
+Isso já está demonstrado concretamente no chao-de-fabrica.html. 
+
+
+---
+
+10 — Cadeia
+
+EVENTO 001
+   ↓
+EVENTO 002
+   ↓
+EVENTO 003
+   ↓
+EVENTO 004
+
+ElementoFunção
+
+GENESISponto inicial
+evento_anteriorreferência ao elo anterior
+digestidentificação derivada
+evento_atualnovo elo
+cadeiaconjunto ordenado
+
+
+O documento estabelece que cada evento aponta para o anterior e que a alteração de um elo faz a cadeia deixar de conferir. 
+
+
+---
+
+11 — Pulso
+
+Aqui eu manteria a ideia separada do evento individual.
+
+eventos
+   ↓
+agrupamento
+   ↓
+Merkle tree
+   ↓
+raiz
+   ↓
+PULSO
+   ↓
+ÂNCORA
+
+O documento dá explicitamente o exemplo de milhares de eventos formando uma Merkle tree, uma raiz e depois um pulso/âncora. 
+
+E isso evita um erro importante:
+
+> Nem todo evento precisa ser ancorado individualmente.
+
+
+
+
+---
+
+12 — Identidade
+
+Também precisamos separar identidade da coisa de identidade do acontecimento.
+
+TipoExemplo conceitual
+
+Identidade da entidadeporta_001
+Identidade do objetocopo_034
+Identidade da localizaçãoshopping.terreo.loja_07
+Identidade do eventoZYR:event:<hash>
+Identidade do transportepayload/identificador correspondente
+Identidade da cadeiaidentificador da cadeia
+Identidade da âncorareferência externa
+
+
+O documento já propõe ZYR:event:<hash> como identificador universal de evento e distingue identificação de transporte. 
+
+
+---
+
+13 — O catálogo inicial do mundo
+
+Agora juntamos tudo:
+
+CoisaÉ entidade?Tem estado?É interagível?Pode gerar evento?Pode mudar de estado?
+
+Jogador✓✓✓✓✓
+NPC✓✓✓✓✓
+Porta✓✓✓✓✓
+Caixa✓✓possível✓possível
+Planta✓✓possível✓✓
+Loja✓✓✓✓✓
+Elevador✓✓✓✓✓
+Bicicleta✓✓✓✓✓
+Carro✓✓✓✓✓
+Drone✓✓✓✓✓
+Avião✓✓✓✓✓
+Barco✓✓✓✓✓
+Submarino✓✓✓✓✓
+Temposistema✓indireto✓✓
+Climasistema✓indireto✓✓
+Andarestrutura✓indireto✓✓
+Ambientesistema✓indireto✓✓
+
+
+
+---
+
+14 — A biblioteca completa começa a ficar assim
+
+BIBLIOTECA ZERO
+│
+├── VOCABULÁRIO
+│   ├── entidades
+│   ├── objetos
+│   ├── lugares
+│   ├── ambientes
+│   └── recursos
+│
+├── ARQUÉTIPOS
+│   ├── jogador
+│   ├── NPC
+│   ├── objeto
+│   ├── planta
+│   └── veículo
+│
+├── COMPONENTES
+│   ├── físico
+│   ├── móvel
+│   ├── interagível
+│   ├── controlável
+│   └── transportador
+│
+├── ESTADOS
+│   ├── físicos
+│   ├── espaciais
+│   ├── temporais
+│   ├── econômicos
+│   └── comportamentais
+│
+├── IMPULSOS
+│   ├── jogador
+│   ├── NPC
+│   ├── tempo
+│   ├── ambiente
+│   ├── física
+│   └── sistemas externos
+│
+├── CONDIÇÕES
+│
+├── TRANSIÇÕES
+│
+├── AÇÕES
+│
+└── PROVENIÊNCIA
+    ├── evento
+    ├── identidade
+    ├── cadeia
+    ├── pulso
+    ├── âncora
+    └── ZyroKey
+
+Essa estrutura respeita o princípio original de que a biblioteca sabe e o motor executa. 
+
+E eu colocaria uma regra de ouro na v0.1
+
+> Nada entra na Biblioteca Zero apenas porque “parece útil”.
+
+
+
+Cada novo conceito precisa responder:
+
+1. O que é?
+
+
+2. Que estados pode possuir?
+
+
+3. Que impulsos pode receber?
+
+
+4. Quais transições são permitidas?
+
+
+5. Qual novo estado pode produzih
+Qual novo estado pode produzir?
+Que evento isso gera?
+Esse evento precisa entrar em qual cadeia?
+Como ele é identificado?
+Assim a biblioteca não vira uma lista enorme de funções. Ela vira o catálogo formal do que pode acontecer no mundo.
+
+Vamos seguir. Eu sugiro que o próximo passo seja fechar a estrutura formal da Biblioteca Zero v0.1, antes de criar mais conceitos.
+
+A partir da tabela anterior, temos três níveis que não devemos misturar:
+
+1. Vocabulário
+
+Define o que existe.
+
+Entidade
+Objeto
+Lugar
+Ambiente
+Recurso
+Veículo
+Sistema
+
+2. Comportamento
+
+Define o que pode acontecer.
+
+Impulso
+Condição
+Estado
+Transição
+Ação
+Novo Estado
+
+3. Proveniência
+
+Define como sabemos o que aconteceu.
+
+Evento
+Identidade
+Cadeia
+Pulso
+Âncora
+ZyroKey
+
+O fluxo completo fica:
+
+BIBLIOTECA ZERO
+                       │
+          ┌────────────┴────────────┐
+          │                         │
+      O QUE EXISTE?          O QUE PODE ACONTECER?
+          │                         │
+     Entidade                  Impulso
+     Objeto                       ↓
+     Lugar                    Situação
+     Ambiente                     ↓
+     Recurso                Estado anterior
+                                  ↓
+                              Transição
+                                  ↓
+                                Ação
+                                  ↓
+                             Novo estado
+                                  ↓
+                               Evento
+                                  │
+                       ┌──────────┴──────────┐
+                       ↓                     ↓
+                    Identidade             Cadeia
+                                             ↓
+                                           Pulso
+                                             ↓
+                                          Âncora
+
+Agora vem a parte que eu acho mais importante
+
+Vamos criar o registro padrão de uma definição da Biblioteca Zero.
+
+Por exemplo, não apenas:
+
+copo = objeto
+
+mas:
+
+ID: objeto.copo
+
+tipo:
+  objeto
+
+componentes:
+  físico
+  interagível
+
+estados:
+  cheio
+  vazio
+  quebrado
+
+impulsos aceitos:
+  beber
+  derrubar
+  quebrar
+
+transições:
+  cheio + beber → vazio
+  íntegro + impacto → quebrado
+
+eventos:
+  conteúdo_consumido
+  objeto_quebrado
+
+Isso é muito mais próximo do que você está buscando.
+
+E há uma confirmação importante nos arquivos: a arquitetura já diz que o estado que sai de uma execução é o estado que entra na próxima consulta.  Portanto, nossa Biblioteca Zero pode ser construída em torno dessa ideia de transições de estado, sem transformar cada mecânica em código específico.
+
+Próxima etapa: o catálogo mestre
+
+Eu faria agora a Biblioteca Zero v0.1 — Catálogo Mestre, com estas colunas:
+
+IDTipoConceitoComponentesEstadosImpulsosTransiçõesEvento produzidoPersistência
+
+entity.playerentidadeJogadorposição, interagívelativo/inativocomandomover/interagiração executadasim
+object.doorobjetoPortafísico, interagívelaberta/fechada/trancadaabrir/fecharfechado→abertoporta_abertasim
+object.cupobjetoCopofísico, interagívelcheio/vazio/quebradobeber/quebrarcheio→vazioconteúdo_consumidosim
+entity.npcentidadeNPCposição, diálogodisponível/ocupadodecisãocomportamentoação_npcsim
+entity.vehicleentidadeVeículomóvel, controlávelparado/movendoconduzirparado→movendoveículo_movidosim
+world.floormundoAndarlocalizaçãodisponívelentrar/saircontexto alteradomudança_localsim
+world.timesistemaTempotemporalinstante atualpassagemestado temporaltempo_decorridosim
+world.weathersistemaClimaambientalensolarado/chuva/etc.condição ambientalclima alteradoclima_alteradosim
+
+
+Essa tabela vira nosso documento vivo. A cada novo conceito do mundo, adicionamos uma linha e definimos sua semântica antes de programá-lo.
+
+Posso continuar agora preenchendo o Catálogo Mestre v0.1 com todas as categorias e conceitos iniciais, até termos uma primeira biblioteca realmente utilizável.
+
+
+Exatamente. Esse ajuste é fundamental. Se chamarmos “entidade” apenas de NPC, vamos limitar a arquitetura logo na primeira camada.
+
+Na nossa Biblioteca Zero, entidade deve significar algo que possui identidade própria e pode carregar uma descrição/manifestações internas.
+
+Um NPC é uma entidade. Mas um ponto de interesse também pode ser uma entidade.
+
+Então eu mudaria a definição
+
+> Entidade = qualquer unidade identificável do mundo que possa possuir estado, propriedades, componentes, relações ou manifestações próprias.
+
+
+
+Assim:
+
+EntidadeO que pode conter
+
+NPCestado, atributos, inventário, comportamento
+Jogadorestado, inventário, capacidades
+Portaestado, componentes, transições
+Bicicletaestado, física, veículo, componentes
+Lojalocalização, produtos, regras, entidades internas
+Ponto de interesselocalização, contexto, manifestações, conexões
+Prédioandares, áreas, pontos de interesse
+Andaráreas, objetos, entidades
+Veículocomponentes, controles, passageiros
+Plantaestados, crescimento, ambiente
+Sistema climáticoestado ambiental, ciclos, eventos
+
+
+E o ponto de interesse é especialmente importante
+
+Imagine:
+
+POI: Loja de Bicicletas
+│
+├── identidade
+├── localização
+├── estado
+├── descrição
+├── regras
+├── interações
+│
+├── manifestações
+│   ├── entrada
+│   ├── fachada
+│   ├── interior 3D
+│   ├── NPC vendedor
+│   ├── produtos
+│   └── estoque
+│
+└── conexões
+    ├── shopping
+    ├── corredor
+    └── estacionamento
+
+Ou seja, o POI não é apenas um marcador no mapa.
+
+No mapa isométrico ele pode aparecer como:
+
+[ 🚲 Loja de Bicicletas ]
+
+Quando o jogador interage:
+
+POI
+ ↓
+manifestação/contexto
+ ↓
+cena 3D
+
+E a entidade continua sendo a mesma.
+
+Isso combina muito bem com a separação que já temos entre entidades concretas do mundo e as bibliotecas que fornecem os arquétipos, componentes, estados, ações e regras. 
+
+E “manifesto” pode ser uma peça importante
+
+Eu entendi que quando você fala que uma entidade pode ter “outros manifestos dentro dela mesma”, você está pensando em uma entidade que não é necessariamente indivisível.
+
+Por exemplo:
+
+Shopping
+│
+├── manifesto: estrutura
+├── manifesto: andares
+├── manifesto: lojas
+├── manifesto: estacionamento
+├── manifesto: elevadores
+└── manifesto: pontos_de_interesse
+
+E:
+
+PontoDeInteresse
+│
+├── manifesto: identidade
+├── manifesto: localização
+├── manifesto: interação
+├── manifesto: representação_2D
+├── manifesto: representação_3D
+└── manifesto: entidades_internas
+
+Isso é diferente de simplesmente colocar “filhos” dentro de um objeto. Uma entidade pode declarar como ela se manifesta em diferentes contextos.
+
+Então eu alteraria nosso catálogo para não ter:
+
+Entidade → NPC
+
+mas:
+
+ENTIDADE
+ ├── identidade
+ ├── manifesto
+ ├── componentes
+ ├── estados
+ ├── capacidades
+ ├── relações
+ ├── impulsos
+ ├── transições
+ └── manifestações
+
+E NPC seria apenas um arquétipo de entidade.
+
+Essa mudança é importante o suficiente para eu colocar no núcleo da Biblioteca Zero v0.1 antes de continuarmos preenchendo o catálogo. Posso reformular agora o modelo formal de Entidade + Manifesto + Manifestação e depois aplicar isso ao Ponto de Interesse, Shopping, andar e veículo.
+
+Sim. E essa distinção que você fez agora é muito importante: quando você diz que uma entidade pode ter um manifesto “dentro dela mesma”, eu entendo como uma entidade que declara sua própria composição, capacidades e formas de manifestação, podendo inclusive conter outras entidades.
+
+Isso permite uma estrutura recursiva:
+
+ENTIDADE
+ └── MANIFESTO
+      ├── descreve a própria entidade
+      ├── declara componentes
+      ├── declara estados
+      ├── declara relações
+      ├── declara manifestações
+      └── pode declarar entidades internas
+
+A arquitetura atual já dá suporte conceitual a essa direção porque as bibliotecas fornecem arquétipos, atributos, estados, ações, regras e componentes, enquanto as entidades concretas usam essas peças. 
+
+1. Entidade
+
+Eu definiria assim para a Biblioteca Zero:
+
+> Entidade é uma unidade identificável do mundo que possui um manifesto próprio.
+
+
+
+Não importa se é:
+
+uma pessoa;
+
+uma porta;
+
+um shopping;
+
+um andar;
+
+uma loja;
+
+um ponto de interesse;
+
+um carro;
+
+um planeta;
+
+uma planta;
+
+um sistema climático.
+
+
+A diferença entre eles está no manifesto, não na existência de motores diferentes.
+
+
+---
+
+2. Manifesto
+
+O manifesto é a declaração da entidade sobre o que ela é e como ela pode existir/interagir.
+
+Não é simplesmente uma lista de propriedades.
+
+Ele pode declarar:
+
+MANIFESTO
+│
+├── identidade
+├── tipo/arquétipo
+├── componentes
+├── estados
+├── capacidades
+├── regras
+├── relações
+├── entidades internas
+├── manifestações
+└── transições possíveis
+
+Por exemplo:
+
+ENTIDADE
+ID: shopping.central
+
+MANIFESTO
+tipo: shopping
+
+componentes:
+  localização
+  estrutura
+  interagível
+
+estados:
+  aberto
+  fechado
+
+entidades internas:
+  andares
+  lojas
+  elevadores
+  estacionamentos
+  pontos_de_interesse
+
+manifestações:
+  mapa_isométrico
+  contexto_3D
+
+
+---
+
+3. Manifestação
+
+Aqui eu faria uma distinção importante:
+
+Manifesto = o que a entidade declara que é.
+
+Manifestação = como aquela entidade aparece/atua em determinado contexto.
+
+Por exemplo:
+
+Shopping Central
+│
+├── Manifesto
+│
+├── Manifestação 2D
+│    └── representação no mapa isométrico
+│
+└── Manifestação 3D
+     └── representação detalhada
+
+A entidade continua sendo uma só.
+
+O que muda é a manifestação.
+
+Isso encaixa muito bem com a sua ideia do chão de fábrica: o mapa isométrico pode representar o mundo inteiro, enquanto um ponto de interesse pode abrir uma manifestação 3D.
+
+
+---
+
+4. E sim: entidades dentro de entidades
+
+Aqui está a parte que eu acho mais poderosa do que simplesmente chamar isso de “hierarquia”.
+
+Você pode ter:
+
+SHOPPING
+│
+├── MANIFESTO
+│
+├── ENTIDADE: ANDAR 1
+│   │
+│   ├── MANIFESTO
+│   │
+│   ├── ENTIDADE: LOJA A
+│   │   │
+│   │   ├── MANIFESTO
+│   │   └── ENTIDADES INTERNAS
+│   │
+│   └── ENTIDADE: PONTO DE INTERESSE
+│
+└── ENTIDADE: ESTACIONAMENTO
+
+Mas você pode fazer o contrário também:
+
+PONTO DE INTERESSE
+│
+├── MANIFESTO
+│
+└── ENTIDADE INTERNA
+     └── SHOPPING
+          ├── ANDAR
+          ├── LOJA
+          └── PONTO DE INTERESSE
+
+Ou seja:
+
+> “Shopping” não precisa ser necessariamente a entidade superior absoluta.
+
+
+
+Ele pode ser uma entidade contida em outra entidade.
+
+
+---
+
+5. Exemplo: Ponto de Interesse
+
+Imagine no mapa:
+
+POI: "Complexo Comercial"
+
+Seu manifesto poderia dizer:
+
+ID:
+poi.complexo_comercial
+
+TIPO:
+ponto_de_interesse
+
+MANIFESTO:
+
+componentes:
+  localização
+  interagível
+  navegável
+
+entidades internas:
+  shopping.central
+  estacionamento
+  entrada_principal
+
+manifestações:
+  mapa_2d
+  contexto_3d
+
+interações:
+  entrar
+  observar
+
+Quando o jogador está no mapa:
+
+POI
+↓
+manifestação 2D
+
+Quando entra:
+
+POI
+↓
+manifestação 3D
+↓
+SHOPPING
+
+E o Shopping não foi “criado” naquele momento.
+
+Ele já era uma entidade dentro do manifesto do ponto de interesse.
+
+A visão 3D apenas tornou aquela parte do mundo uma manifestação ativa.
+
+
+---
+
+6. Shopping dentro de Shopping?
+
+Sim.
+
+E eu não colocaria uma regra artificial dizendo que isso é proibido.
+
+Poderíamos ter:
+
+Complexo
+└── Shopping
+    └── Shopping
+        └── Loja
+
+Ou:
+
+Prédio
+└── Shopping
+    ├── Cinema
+    │   └── Sala
+    ├── Mercado
+    └── Restaurante
+
+Porque a biblioteca não precisa conhecer previamente a estrutura.
+
+Ela apenas conhece:
+
+ENTIDADE
+    contém
+       ↓
+ENTIDADE
+
+A regra concreta vem do manifesto.
+
+
+---
+
+7. Aplicando aos quatro casos
+
+Shopping
+
+SHOPPING
+│
+├── manifesto
+│
+├── andares
+├── lojas
+├── corredores
+├── elevadores
+├── estacionamento
+└── pontos_de_interesse
+
+Andar
+
+ANDAR
+│
+├── manifesto
+├── elevação
+├── áreas
+├── objetos
+├── entidades
+└── pontos_de_interesse
+
+Inclusive:
+
+-3
+-2
+-1
+ 0
+ 1
+ 2
+ 3
+...
+
+são simplesmente diferentes entidades/manifestações de FLOOR.
+
+Ponto de Interesse
+
+POI
+│
+├── manifesto
+├── localização
+├── conexões
+├── manifestações
+└── entidades internas
+
+E essas entidades internas podem ser qualquer coisa.
+
+Veículo
+
+VEÍCULO
+│
+├── manifesto
+│
+├── componentes
+│   ├── físico
+│   ├── móvel
+│   └── controlável
+│
+├── estados
+│   ├── parado
+│   └── movimento
+│
+├── capacidades
+│   ├── transportar
+│   └── conduzir
+│
+└── manifestações
+    ├── mapa_2d
+    └── contexto_3d
+
+Uma bicicleta, um carro, um drone e um submarino podem compartilhar o arquétipo veículo, mas manifestar capacidades diferentes.
+
+
+---
+
+8. Então temos uma estrutura recursiva
+
+Acho que o modelo correto para o que você está descrevendo é:
+
+ENTIDADE
+                       │
+                    MANIFESTO
+                       │
+        ┌──────────────┼───────────────┐
+        │              │               │
+     ESTADOS       CAPACIDADES      RELAÇÕES
+        │                              │
+        └──────────┬───────────────────┘
+                   │
+            ENTIDADES INTERNAS
+                   │
+                   ↓
+                ENTIDADE
+                   │
+                MANIFESTO
+                   │
+                  ...
+
+E, paralelamente:
+
+ENTIDADE
+   │
+   └── MANIFESTAÇÕES
+          ├── 2D
+          ├── 3D
+          ├── física
+          ├── interface
+          └── outras
+
+Isso é diferente de pensar “um objeto tem filhos”. A composição é apenas uma das coisas que o manifesto pode declarar.
+
+A entidade continua sendo identificável individualmente, mesmo estando dentro de outra.
+
+E isso preserva o princípio fundamental da arquitetura: o motor não precisa saber previamente que existe “shopping dentro de ponto de interesse”. Ele processa a estrutura; a Biblioteca Zero descreve o significado. A documentação já estabelece justamente que os motores não devem conhecer o conteúdo específico e que a biblioteca fornece o conhecimento, arquétipos, componentes, estados, ações e regras. 
+
+Eu considero essa a definição que devemos congelar para a v0.1: Entidade → Manifesto → composição + estados + capacidades + manifestações, com composição recursiva. A partir daqui podemos montar o schema formal do Manifesto v0.1, campo por campo, antes de escrever qualquer código.
+
+
+
+
+Sim. E essa distinção que você fez agora é muito importante: quando você diz que uma entidade pode ter um manifesto “dentro dela mesma”, eu entendo como uma entidade que declara sua própria composição, capacidades e formas de manifestação, podendo inclusive conter outras entidades.
+
+Isso permite uma estrutura recursiva:
+
+ENTIDADE
+ └── MANIFESTO
+      ├── descreve a própria entidade
+      ├── declara componentes
+      ├── declara estados
+      ├── declara relações
+      ├── declara manifestações
+      └── pode declarar entidades internas
+
+A arquitetura atual já dá suporte conceitual a essa direção porque as bibliotecas fornecem arquétipos, atributos, estados, ações, regras e componentes, enquanto as entidades concretas usam essas peças. 
+
+1. Entidade
+
+Eu definiria assim para a Biblioteca Zero:
+
+> Entidade é uma unidade identificável do mundo que possui um manifesto próprio.
+
+
+
+Não importa se é:
+
+uma pessoa;
+
+uma porta;
+
+um shopping;
+
+um andar;
+
+uma loja;
+
+um ponto de interesse;
+
+um carro;
+
+um planeta;
+
+uma planta;
+
+um sistema climático.
+
+
+A diferença entre eles está no manifesto, não na existência de motores diferentes.
+
+
+---
+
+2. Manifesto
+
+O manifesto é a declaração da entidade sobre o que ela é e como ela pode existir/interagir.
+
+Não é simplesmente uma lista de propriedades.
+
+Ele pode declarar:
+
+MANIFESTO
+│
+├── identidade
+├── tipo/arquétipo
+├── componentes
+├── estados
+├── capacidades
+├── regras
+├── relações
+├── entidades internas
+├── manifestações
+└── transições possíveis
+
+Por exemplo:
+
+ENTIDADE
+ID: shopping.central
+
+MANIFESTO
+tipo: shopping
+
+componentes:
+  localização
+  estrutura
+  interagível
+
+estados:
+  aberto
+  fechado
+
+entidades internas:
+  andares
+  lojas
+  elevadores
+  estacionamentos
+  pontos_de_interesse
+
+manifestações:
+  mapa_isométrico
+  contexto_3D
+
+
+---
+
+3. Manifestação
+
+Aqui eu faria uma distinção importante:
+
+Manifesto = o que a entidade declara que é.
+
+Manifestação = como aquela entidade aparece/atua em determinado contexto.
+
+Por exemplo:
+
+Shopping Central
+│
+├── Manifesto
+│
+├── Manifestação 2D
+│    └── representação no mapa isométrico
+│
+└── Manifestação 3D
+     └── representação detalhada
+
+A entidade continua sendo uma só.
+
+O que muda é a manifestação.
+
+Isso encaixa muito bem com a sua ideia do chão de fábrica: o mapa isométrico pode representar o mundo inteiro, enquanto um ponto de interesse pode abrir uma manifestação 3D.
+
+
+---
+
+4. E sim: entidades dentro de entidades
+
+Aqui está a parte que eu acho mais poderosa do que simplesmente chamar isso de “hierarquia”.
+
+Você pode ter:
+
+SHOPPING
+│
+├── MANIFESTO
+│
+├── ENTIDADE: ANDAR 1
+│   │
+│   ├── MANIFESTO
+│   │
+│   ├── ENTIDADE: LOJA A
+│   │   │
+│   │   ├── MANIFESTO
+│   │   └── ENTIDADES INTERNAS
+│   │
+│   └── ENTIDADE: PONTO DE INTERESSE
+│
+└── ENTIDADE: ESTACIONAMENTO
+
+Mas você pode fazer o contrário também:
+
+PONTO DE INTERESSE
+│
+├── MANIFESTO
+│
+└── ENTIDADE INTERNA
+     └── SHOPPING
+          ├── ANDAR
+          ├── LOJA
+          └── PONTO DE INTERESSE
+
+Ou seja:
+
+> “Shopping” não precisa ser necessariamente a entidade superior absoluta.
+
+
+
+Ele pode ser uma entidade contida em outra entidade.
+
+
+---
+
+5. Exemplo: Ponto de Interesse
+
+Imagine no mapa:
+
+POI: "Complexo Comercial"
+
+Seu manifesto poderia dizer:
+
+ID:
+poi.complexo_comercial
+
+TIPO:
+ponto_de_interesse
+
+MANIFESTO:
+
+componentes:
+  localização
+  interagível
+  navegável
+
+entidades internas:
+  shopping.central
+  estacionamento
+  entrada_principal
+
+manifestações:
+  mapa_2d
+  contexto_3d
+
+interações:
+  entrar
+  observar
+
+Quando o jogador está no mapa:
+
+POI
+↓
+manifestação 2D
+
+Quando entra:
+
+POI
+↓
+manifestação 3D
+↓
+SHOPPING
+
+E o Shopping não foi “criado” naquele momento.
+
+Ele já era uma entidade dentro do manifesto do ponto de interesse.
+
+A visão 3D apenas tornou aquela parte do mundo uma manifestação ativa.
+
+
+---
+
+6. Shopping dentro de Shopping?
+
+Sim.
+
+E eu não colocaria uma regra artificial dizendo que isso é proibido.
+
+Poderíamos ter:
+
+Complexo
+└── Shopping
+    └── Shopping
+        └── Loja
+
+Ou:
+
+Prédio
+└── Shopping
+    ├── Cinema
+    │   └── Sala
+    ├── Mercado
+    └── Restaurante
+
+Porque a biblioteca não precisa conhecer previamente a estrutura.
+
+Ela apenas conhece:
+
+ENTIDADE
+    contém
+       ↓
+ENTIDADE
+
+A regra concreta vem do manifesto.
+
+
+---
+
+7. Aplicando aos quatro casos
+
+Shopping
+
+SHOPPING
+│
+├── manifesto
+│
+├── andares
+├── lojas
+├── corredores
+├── elevadores
+├── estacionamento
+└── pontos_de_interesse
+
+Andar
+
+ANDAR
+│
+├── manifesto
+├── elevação
+├── áreas
+├── objetos
+├── entidades
+└── pontos_de_interesse
+
+Inclusive:
+
+-3
+-2
+-1
+ 0
+ 1
+ 2
+ 3
+...
+
+são simplesmente diferentes entidades/manifestações de FLOOR.
+
+Ponto de Interesse
+
+POI
+│
+├── manifesto
+├── localização
+├── conexões
+├── manifestações
+└── entidades internas
+
+E essas entidades internas podem ser qualquer coisa.
+
+Veículo
+
+VEÍCULO
+│
+├── manifesto
+│
+├── componentes
+│   ├── físico
+│   ├── móvel
+│   └── controlável
+│
+├── estados
+│   ├── parado
+│   └── movimento
+│
+├── capacidades
+│   ├── transportar
+│   └── conduzir
+│
+└── manifestações
+    ├── mapa_2d
+    └── contexto_3d
+
+Uma bicicleta, um carro, um drone e um submarino podem compartilhar o arquétipo veículo, mas manifestar capacidades diferentes.
+
+
+---
+
+8. Então temos uma estrutura recursiva
+
+Acho que o modelo correto para o que você está descrevendo é:
+
+ENTIDADE
+                       │
+                    MANIFESTO
+                       │
+        ┌──────────────┼───────────────┐
+        │              │               │
+     ESTADOS       CAPACIDADES      RELAÇÕES
+        │                              │
+        └──────────┬───────────────────┘
+                   │
+            ENTIDADES INTERNAS
+                   │
+                   ↓
+                ENTIDADE
+                   │
+                MANIFESTO
+                   │
+                  ...
+
+E, paralelamente:
+
+ENTIDADE
+   │
+   └── MANIFESTAÇÕES
+          ├── 2D
+          ├── 3D
+          ├── física
+          ├── interface
+          └── outras
+
+Isso é diferente de pensar “um objeto tem filhos”. A composição é apenas uma das coisas que o manifesto pode declarar.
+
+A entidade continua sendo identificável individualmente, mesmo estando dentro de outra.
+
+E isso preserva o princípio fundamental da arquitetura: o motor não precisa saber previamente que existe “shopping dentro de ponto de interesse”. Ele processa a estrutura; a Biblioteca Zero descreve o significado. A documentação já estabelece justamente que os motores não devem conhecer o conteúdo específico e que a biblioteca fornece o conhecimento, arquétipos, componentes, estados, ações e regras. 
+
+Eu considero essa a definição que devemos congelar para a v0.1: Entidade → Manifesto → composição + estados + capacidades + manifestações, com composição recursiva. A partir daqui podemos montar o schema formal do Manifesto v0.1, campo por campo, antes de escrever qualquer código.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Gramática do Mundo — ZYRO Engine v4</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap');
+
+  :root{
+    --bg: #eef1f3;
+    --paper: #ffffff;
+    --ink: #1c2530;
+    --muted: #5c6774;
+    --line: #d7dde2;
+    --amber: #b9772f;
+    --teal: #2f7d76;
+    --teal-bg: #e6f0ee;
+    --amber-bg: #f5ece0;
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family:'Source Sans 3', sans-serif;
+    font-size:16px;
+    line-height:1.6;
+  }
+  h1,h2,h3{ font-family:'Space Grotesk', sans-serif; margin:0; letter-spacing:-0.01em; }
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+  .wrap{ max-width: 900px; margin:0 auto; padding: 0 32px; }
+
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    text-transform:uppercase;
+    letter-spacing:0.12em;
+    font-size:11.5px;
+    color: var(--teal);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom: 14px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:16px; height:1px;
+    background: var(--teal);
+    display:inline-block;
+  }
+
+  header{
+    padding: 80px 0 56px;
+    border-bottom: 1px solid var(--line);
+  }
+  header h1{
+    font-size: clamp(32px, 5vw, 46px);
+    font-weight:700;
+    max-width: 700px;
+  }
+  header h1 em{ font-style:normal; color: var(--amber); }
+  header p.lede{
+    max-width: 580px;
+    color: var(--muted);
+    font-size: 17px;
+    margin-top: 18px;
+  }
+
+  /* flat formula strip */
+  .formula{
+    margin-top: 44px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 22px 24px;
+    display:flex;
+    flex-wrap:wrap;
+    gap: 10px 6px;
+    align-items:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13.5px;
+  }
+  .formula .term{ color: var(--ink); font-weight:500; }
+  .formula .op{ color: var(--muted); }
+  .formula .verb{ color: var(--teal); }
+
+  section{ padding: 56px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type{ border-bottom:none; }
+  section h2{ font-size: clamp(24px, 3.4vw, 30px); margin-bottom: 12px; }
+  section > .wrap > p.intro{
+    color: var(--muted);
+    max-width: 620px;
+    font-size: 15.5px;
+    margin-bottom: 34px;
+  }
+
+  /* two-card duo */
+  .duo{ display:grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width:700px){ .duo{ grid-template-columns:1fr; } }
+  .card{
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 24px;
+  }
+  .card h3{ font-size:18px; margin-bottom:10px; }
+  .card p{ color: var(--muted); font-size:14.5px; }
+  .card ul{ margin:14px 0 0; padding-left:18px; color: var(--muted); font-size:14px; }
+  .card ul li{ margin-bottom:5px; }
+
+  /* pipeline - flat */
+  .pipeline{
+    display:flex; flex-wrap:wrap;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow:hidden;
+    background: var(--paper);
+  }
+  .pstep{
+    flex:1 1 110px;
+    padding: 18px 14px;
+    border-right:1px solid var(--line);
+    text-align:center;
+  }
+  .pstep:last-child{ border-right:none; background: var(--amber-bg); }
+  .pstep .n{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; color:var(--muted); display:block; margin-bottom:6px; }
+  .pstep .label{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px; }
+  .pstep:last-child .label{ color: var(--amber); }
+
+  /* estado callout */
+  .callout{
+    background: var(--teal-bg);
+    border-left: 3px solid var(--teal);
+    border-radius: 2px;
+    padding: 18px 22px;
+    margin-top: 26px;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .callout strong{ color: var(--teal); }
+
+  /* hierarchy - flat rows */
+  .tree{ display:flex; flex-direction:column; gap:1px; background: var(--line); border:1px solid var(--line); border-radius:4px; overflow:hidden; }
+  .root-row{ display:grid; grid-template-columns: 190px 1fr; background: var(--paper); }
+  @media (max-width:640px){ .root-row{ grid-template-columns: 1fr; } }
+  .root-label{
+    padding: 16px 18px;
+    border-right: 1px solid var(--line);
+    display:flex; flex-direction:column; justify-content:center;
+    background: #fbfbfa;
+  }
+  @media (max-width:640px){ .root-label{ border-right:none; border-bottom:1px solid var(--line); } }
+  .root-label .idx{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; color: var(--amber); }
+  .root-label .name{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:15.5px; margin-top:2px; }
+  .sub-box{ padding: 14px 18px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .sub-box .plain{ color: var(--muted); font-size:14px; }
+  .chip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    padding:4px 10px;
+    border-radius:20px;
+    border:1px solid var(--teal);
+    color: var(--teal);
+    white-space:nowrap;
+  }
+  .chip.amber{ border-color: var(--amber); color: var(--amber); }
+
+  /* example tables */
+  .example-block{ margin-bottom: 42px; }
+  .example-block:last-child{ margin-bottom:0; }
+  .example-block h3{
+    font-size: 16px;
+    margin-bottom: 6px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .example-block h3 .tagnum{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--paper);
+    background: var(--teal);
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+  .example-block p.desc{ color: var(--muted); font-size: 14px; margin: 6px 0 16px; max-width: 600px; }
+
+  .table-scroll{ overflow-x:auto; border:1px solid var(--line); border-radius:4px; }
+  table.ex-table{ width:100%; border-collapse:collapse; font-size:13.5px; background: var(--paper); }
+  table.ex-table th{
+    font-family:'IBM Plex Mono', monospace;
+    text-transform:uppercase; letter-spacing:0.05em;
+    font-size: 10.5px; color: var(--amber);
+    background: var(--amber-bg);
+    padding: 10px 12px; text-align:left;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  table.ex-table td{
+    padding: 12px; border-bottom:1px solid var(--line);
+    border-right: 1px solid var(--line);
+    vertical-align:top; color: var(--ink);
+  }
+  table.ex-table td:last-child, table.ex-table th:last-child{ border-right:none; }
+  table.ex-table tr:last-child td{ border-bottom:none; }
+  table.ex-table td.muted{ color: var(--muted); font-size:12.5px; }
+
+  .closing p{ color: var(--muted); max-width: 580px; }
+  .tag-row{ margin-top: 24px; display:flex; gap:8px; flex-wrap:wrap; }
+  .tag-row span{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px;
+    color: var(--muted); border:1px solid var(--line);
+    padding:5px 11px; border-radius:20px;
+  }
+  footer{
+    padding: 26px 0 44px; text-align:center;
+    color: var(--muted); font-family:'IBM Plex Mono', monospace; font-size:11px;
+  }
+
+  /* layer stack */
+  .layers{ display:flex; flex-direction:column; gap:1px; background: var(--line); border:1px solid var(--line); border-radius:4px; overflow:hidden; margin-bottom: 44px; }
+  .layer-row{ display:grid; grid-template-columns: 160px 1fr; background: var(--paper); }
+  @media (max-width:640px){ .layer-row{ grid-template-columns:1fr; } }
+  .layer-row .lname{
+    padding:16px 18px; background:#fbfbfa;
+    border-right:1px solid var(--line);
+    display:flex; flex-direction:column; justify-content:center;
+  }
+  @media (max-width:640px){ .layer-row .lname{ border-right:none; border-bottom:1px solid var(--line); } }
+  .layer-row .lname .idx{ font-family:'IBM Plex Mono', monospace; font-size:10px; color:var(--teal); }
+  .layer-row .lname .name{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:15px; margin-top:2px; }
+  .layer-row .ldesc{ padding:14px 18px; display:flex; align-items:center; color:var(--muted); font-size:14px; }
+
+  /* hub diagram */
+  .hub-wrap{ background: var(--paper); border:1px solid var(--line); border-radius:4px; padding: 36px 24px 28px; }
+  .motor-row{ display:flex; flex-wrap:wrap; justify-content:center; gap: 10px 8px; margin-bottom: 0; }
+  .motor-chip{
+    font-family:'IBM Plex Mono', monospace; font-size:12px;
+    padding: 8px 14px; border:1px solid var(--line); border-radius:4px;
+    color: var(--ink); background:#fbfbfa; position:relative;
+  }
+  .motor-chip::after{
+    content:""; position:absolute; left:50%; bottom:-22px;
+    width:1px; height:22px; background: var(--line);
+    transform: translateX(-50%);
+  }
+  .hub-lines{ height: 22px; }
+  .hub-bar{
+    margin-top: 0;
+    background: var(--teal-bg);
+    border: 1px solid var(--teal);
+    border-radius: 4px;
+    padding: 16px 20px;
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--teal);
+  }
+  .hub-bar .cap{
+    display:block; font-family:'Space Grotesk', sans-serif;
+    font-weight:600; font-size:14px; color: var(--ink); margin-bottom:6px;
+  }
+
+  /* vertical flow (eventos -> merkle -> raiz -> pulso -> ancora) */
+  .flow-vertical{
+    display:flex; flex-direction:column; align-items:center; gap:0;
+    background: var(--paper); border:1px solid var(--line); border-radius:4px;
+    padding: 26px 20px;
+  }
+  .flow-box{
+    font-family:'IBM Plex Mono', monospace; font-size:13px;
+    padding: 10px 20px; border:1px solid var(--line); border-radius:4px;
+    background:#fbfbfa; color:var(--ink); min-width:200px; text-align:center;
+  }
+  .flow-box.final{ border-color: var(--amber); color: var(--amber); background: var(--amber-bg); }
+  .flow-arrow-v{ color: var(--muted); font-family:'IBM Plex Mono', monospace; padding: 4px 0; }
+
+  /* two chains diagram */
+  .chains{ display:grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items:center; background: var(--paper); border:1px solid var(--line); border-radius:4px; padding: 26px 20px; }
+  @media (max-width:640px){ .chains{ grid-template-columns:1fr; } }
+  .chain-col{ display:flex; flex-direction:column; gap:8px; align-items:center; }
+  .chain-col .clabel{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:13.5px; color: var(--teal); margin-bottom:4px; }
+  .chain-node{ font-family:'IBM Plex Mono', monospace; font-size:12px; border:1px solid var(--line); border-radius:4px; padding:7px 14px; background:#fbfbfa; width:100%; text-align:center; }
+  .chain-mid{ display:flex; flex-direction:column; align-items:center; color: var(--muted); font-family:'IBM Plex Mono', monospace; font-size:11.5px; text-align:center; gap:4px; }
+
+  /* five-layer meaning stack reuses .layers but with question column */
+  .lname .q{ display:block; font-size:11.5px; color: var(--muted); margin-top:2px; font-style:italic; }
+
+  /* branch diagram: Gramatica Zero -> 3 branches -> converge */
+  .branch{ background: var(--paper); border:1px solid var(--line); border-radius:4px; padding: 30px 20px; display:flex; flex-direction:column; align-items:center; gap:0; }
+  .branch-top{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:15px; color:var(--ink); border:1px solid var(--teal); background: var(--teal-bg); padding:10px 22px; border-radius:4px; }
+  .branch-mid{ display:flex; justify-content:center; gap: 30px; margin: 18px 0; flex-wrap:wrap; }
+  .branch-node{ font-family:'IBM Plex Mono', monospace; font-size:12.5px; border:1px solid var(--line); border-radius:4px; padding:9px 16px; background:#fbfbfa; }
+  .branch-chain{ display:flex; flex-direction:column; align-items:center; gap:0; margin-top: 6px; }
+  .branch-chain .flow-box{ min-width:160px; margin: 3px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">ZYRO Engine — Documento de Arquitetura, v4</div>
+    <h1>A gramática que faz <em>o mundo</em> se encaixar sozinho.</h1>
+    <p class="lede">Motores genéricos não sabem o que é um panfleto, um copo de suco ou um pagamento em sats. Eles só sabem ler frases. Quem dá sentido às frases é a biblioteca de conhecimento.</p>
+
+    <div class="formula">
+      <span class="term">Entidade + Verbo + Objeto</span>
+      <span class="op">→</span>
+      <span class="verb">verificar</span> <span class="term">Condição</span>
+      <span class="op">→</span>
+      <span class="verb">consultar</span> <span class="term">Estado</span>
+      <span class="op">→</span>
+      <span class="verb">executar</span> <span class="term">Ação Resultante</span>
+      <span class="op">→</span>
+      <span class="verb">aplicar</span> <span class="term">Escala + Tempo</span>
+      <span class="op">→</span>
+      <span class="verb">atualizar</span> <span class="term">Estado</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">00 — A posição da gramática</div>
+    <h2>Uma língua comum, não um motor central</h2>
+    <p class="intro">A Gramática Zero não executa nada e não substitui motor nenhum. Ela garante que todos os motores descrevam o mundo da mesma forma — cada um continua especialista no seu próprio domínio.</p>
+
+    <div class="layers">
+      <div class="layer-row">
+        <div class="lname"><span class="idx">CAMADA 01</span><span class="name">Gramática Zero</span></div>
+        <div class="ldesc">Define como uma situação é descrita — a sintaxe comum entre todos os motores.</div>
+      </div>
+      <div class="layer-row">
+        <div class="lname"><span class="idx">CAMADA 02</span><span class="name">Bibliotecas</span></div>
+        <div class="ldesc">Definem o vocabulário: conhecimento, componentes, estados, ações e regras disponíveis.</div>
+      </div>
+      <div class="layer-row">
+        <div class="lname"><span class="idx">CAMADA 03</span><span class="name">Motores</span></div>
+        <div class="ldesc">Executam as regras — cada um especialista no seu domínio, mundo, interação, transporte, IA.</div>
+      </div>
+      <div class="layer-row">
+        <div class="lname"><span class="idx">CAMADA 04</span><span class="name">Entidades do mundo</span></div>
+        <div class="ldesc">Usam essas peças pra formar situações concretas no momento do jogo.</div>
+      </div>
+    </div>
+
+    <div class="hub-wrap">
+      <div class="motor-row">
+        <span class="motor-chip">Motor de Mundo</span>
+        <span class="motor-chip">Motor de Entidades</span>
+        <span class="motor-chip">Motor de Interação</span>
+        <span class="motor-chip">Motor de Inventário</span>
+        <span class="motor-chip">Motor de IA</span>
+        <span class="motor-chip">Motor de Transporte</span>
+        <span class="motor-chip">Motor de Smartphone</span>
+      </div>
+      <div class="hub-lines"></div>
+      <div class="hub-bar">
+        <span class="cap">Gramática Zero — a língua comum</span>
+        Entidade + Verbo + Objeto + Condição + Estado → Efeito + Escala + Tempo
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">01 — O princípio</div>
+    <h2>Dois tipos de peça, nunca confundidas</h2>
+    <p class="intro">Um motor processa. Uma biblioteca sabe. Nenhum dos dois faz o trabalho do outro.</p>
+
+    <div class="duo">
+      <div class="card">
+        <h3>Motores</h3>
+        <p>Executam. Não sabem nada sobre o conteúdo específico do jogo — só sabem seguir uma estrutura de frase.</p>
+        <ul>
+          <li>Mundo</li>
+          <li>Entidades</li>
+          <li>Interações</li>
+          <li>Inventário</li>
+          <li>IA de NPCs</li>
+          <li>Economia</li>
+          <li>Eventos</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Bibliotecas de conhecimento</h3>
+        <p>Sabem. Guardam as regras, os arquétipos e as combinações possíveis que os motores consultam antes de agir.</p>
+        <ul>
+          <li>Arquétipos</li>
+          <li>Atributos</li>
+          <li>Estados</li>
+          <li>Ações</li>
+          <li>Regras</li>
+          <li>Componentes</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">02 — O fluxo</div>
+    <h2>Um ciclo fechado</h2>
+    <p class="intro">O estado que sai de uma execução é o estado que entra na próxima consulta.</p>
+
+    <div class="pipeline">
+      <div class="pstep"><span class="n">01</span><span class="label">Entidade+Verbo+Objeto</span></div>
+      <div class="pstep"><span class="n">02</span><span class="label">Verificar Condição</span></div>
+      <div class="pstep"><span class="n">03</span><span class="label">Consultar Estado</span></div>
+      <div class="pstep"><span class="n">04</span><span class="label">Executar Ação</span></div>
+      <div class="pstep"><span class="n">05</span><span class="label">Aplicar Escala+Tempo</span></div>
+      <div class="pstep"><span class="n">06</span><span class="label">Atualizar Estado</span></div>
+    </div>
+
+    <div class="callout">
+      <strong>Estado</strong> não é memória. É a representação da situação atual de uma entidade ou objeto no mundo. Memória e progresso persistente são só uma das formas que esse estado pode assumir — junto de posição, disponibilidade, condição física, ou qualquer outra fotografia do "agora".
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">03 — A gramática</div>
+    <h2>Colunas raiz e seus sub-campos</h2>
+    <p class="intro">Cada linha da biblioteca monta uma frase válida. Oito colunas raiz, independentes entre si — o resto vive dentro delas, pra nenhuma disputar o mesmo papel.</p>
+
+    <div class="tree">
+      <div class="root-row">
+        <div class="root-label"><span class="idx">RAIZ 01</span><span class="name">Entidade</span></div>
+        <div class="sub-box"><span class="plain">Quem executa a ação — jogador, NPC, comerciante, sistema, ou um objeto do mundo.</span></div>
+      </div>
+      <div class="root-row">
+        <div class="root-label"><span class="idx">RAIZ 02</span><span class="name">Verbo</span></div>
+        <div class="sub-box"><span class="plain">O catálogo base:</span> <span class="chip">pegar</span><span class="chip">pagar</span><span class="chip">beber</span><span class="chip">entrar</span><span class="chip">andar</span></div>
+      </div>
+      <div class="root-row">
+        <div class="root-label"><span class="idx">RAIZ 03</span><span class="name">Objeto</span></div>
+        <div class="sub-box"><span class="plain">O alvo — item, pessoa, lugar, missão, evento abstrato.</span></div>
+      </div>
+      <div class="root-row">
+        <div class="root-label"><span class="idx">RAIZ 04</span><span class="name">Condição</span></div>
+        <div class="sub-box"><span class="plain">O que precisa ser satisfeito.</span> <span class="chip amber">sub-campo: custo</span></div>
+      </div>
+      <div class="root-row">
+        <div class="root-label"><span class="idx">RAIZ 05</span><span class="name">Estado</span></div>
+        <div class="sub-box"><span class="plain">A situação atual da entidade/objeto.</span> <span class="chip amber">sub-campo: persistente</span><span class="chip amber">sub-campo: autoridade</span></div>
+      </div>
+      <div class="root-row">
+        <div class="root-label"><span class="idx">RAIZ 06</span><span class="name">Ação resultante</span></div>
+        <div class="sub-box"><span class="plain">O que acontece quando a condição bate.</span></div>
+      </div>
+      <div class="root-row">
+        <div class="root-label"><span class="idx">RAIZ 07</span><span class="name">Escala</span></div>
+        <div class="sub-box"><span class="plain">O raio de efeito.</span> <span class="chip">entidade</span><span class="chip">área</span><span class="chip">mundo</span></div>
+      </div>
+      <div class="root-row">
+        <div class="root-label"><span class="idx">RAIZ 08</span><span class="name">Tempo</span></div>
+        <div class="sub-box"><span class="plain">A natureza temporal.</span> <span class="chip">instantânea</span><span class="chip">diferida</span><span class="chip">com prazo</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">04 — Exemplos aplicados</div>
+    <h2>Mesmo mecanismo, resultados diferentes</h2>
+    <p class="intro">Um copo, um NPC, uma árvore ou um pagamento em sats entram na mesma estrutura. O que muda são os componentes e atributos ligados à entidade — nunca o motor.</p>
+
+    <div class="example-block">
+      <h3><span class="tagnum">01</span>O panfleto do comerciante</h3>
+      <p class="desc">Progresso persistente como forma de estado — a condição só é satisfeita depois de várias execuções da mesma ação.</p>
+      <div class="table-scroll">
+        <table class="ex-table">
+          <thead>
+            <tr><th>Entidade</th><th>Verbo</th><th>Objeto</th><th>Condição</th><th>Estado</th><th>Ação resultante</th><th>Tempo</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Jogador</td><td>Pegar</td><td>Panfleto do comerciante</td>
+              <td class="muted">Entregar a 5 pessoas distintas</td>
+              <td class="muted">Contador 0/5</td>
+              <td class="muted">Nenhuma — aguarda condição</td>
+              <td class="muted">Instantânea (por entrega)</td>
+            </tr>
+            <tr>
+              <td>Jogador</td><td>Entregar</td><td>Panfleto → NPC #5</td>
+              <td class="muted">Contador atinge 5/5</td>
+              <td class="muted">Condição satisfeita</td>
+              <td class="muted">Comerciante libera cashback</td>
+              <td class="muted">Instantânea</td>
+            </tr>
+            <tr>
+              <td>Comerciante</td><td>Pagar</td><td>Cashback em sats</td>
+              <td class="muted">Requer autoridade externa</td>
+              <td class="muted">Aguardando confirmação (Lightning)</td>
+              <td class="muted">Saldo do jogador atualizado</td>
+              <td class="muted">Diferida</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="example-block">
+      <h3><span class="tagnum">02</span>O copo de suco</h3>
+      <p class="desc">Estado como propriedade física do objeto, não como progresso. Trocar um atributo do objeto muda o resultado sem tocar no motor.</p>
+      <div class="table-scroll">
+        <table class="ex-table">
+          <thead>
+            <tr><th>Entidade</th><th>Verbo</th><th>Objeto</th><th>Condição</th><th>Estado</th><th>Ação resultante</th><th>Tempo</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>NPC</td><td>Beber</td><td>Suco</td>
+              <td class="muted">Suco disponível</td>
+              <td class="muted">Copo cheio</td>
+              <td class="muted">Hidratação e felicidade aumentam</td>
+              <td class="muted">Instantânea</td>
+            </tr>
+            <tr>
+              <td>NPC</td><td>Beber</td><td>Suco <span class="chip amber" style="margin-left:4px;">+ veneno</span></td>
+              <td class="muted">Suco disponível</td>
+              <td class="muted">Copo cheio</td>
+              <td class="muted">Hidratação sobe, saúde despenca</td>
+              <td class="muted">Instantânea</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">05 — Por que isso escala</div>
+    <h2>Uma profissão nova não é um motor novo. É uma linha nova.</h2>
+    <p>O motor de interação nunca precisa saber o que é uma "barbearia", nem que suco pode ter veneno. Ele só sabe ler entidade, verbo, objeto, condição, estado, ação, escala e tempo — a biblioteca de conhecimento é quem decide o que essas colunas significam pra cada caso novo do mundo.</p>
+    <div class="tag-row">
+      <span>ZyroLog</span>
+      <span>Rota dos Romeiros</span>
+      <span>Prova de evento</span>
+      <span>Pirapora do Bom Jesus</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">06 — A camada de proveniência</div>
+    <h2>ZyroLog: de agenda a proveniência</h2>
+    <p class="intro">O ZyroLog não é mais uma função do sistema. É a camada que responde uma pergunta diferente em cada nível — do significado até a prova externa.</p>
+
+    <div class="layers">
+      <div class="layer-row">
+        <div class="lname"><span class="idx">CAMADA 01</span><span class="name">Gramática Zero</span><span class="q">O que significa?</span></div>
+        <div class="ldesc">A sintaxe: entidade, verbo, objeto, condição, estado.</div>
+      </div>
+      <div class="layer-row">
+        <div class="lname"><span class="idx">CAMADA 02</span><span class="name">ZyroLog</span><span class="q">O que aconteceu?</span></div>
+        <div class="ldesc">O evento concreto, padronizado, gerado a partir da gramática.</div>
+      </div>
+      <div class="layer-row">
+        <div class="lname"><span class="idx">CAMADA 03</span><span class="name">Cadeia</span><span class="q">O que aconteceu antes disso?</span></div>
+        <div class="ldesc">Cada evento aponta pro anterior — altere um elo e a cadeia inteira deixa de conferir.</div>
+      </div>
+      <div class="layer-row">
+        <div class="lname"><span class="idx">CAMADA 04</span><span class="name">Âncora</span><span class="q">O que foi publicado pra tornar aquilo verificável?</span></div>
+        <div class="ldesc">Um compromisso externo — não precisa ser Bitcoin, mas pode ser.</div>
+      </div>
+      <div class="layer-row">
+        <div class="lname"><span class="idx">CAMADA 05</span><span class="name">ZyroKey</span><span class="q">Como outra parte reproduz aquilo?</span></div>
+        <div class="ldesc">A chave compacta que outro processo interpreta e reconstrói.</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Não ancore todo evento.</strong> Satoshi não é "uma prova" — é o recurso econômico usado pra publicar um estado. A prova criptográfica existe independente do valor financeiro, o que evita prender o sistema conceitualmente ao Bitcoin.
+    </div>
+
+    <div style="margin-top:22px;" class="flow-vertical">
+      <div class="flow-box">5.000 eventos</div>
+      <div class="flow-arrow-v">↓</div>
+      <div class="flow-box">Merkle tree</div>
+      <div class="flow-arrow-v">↓</div>
+      <div class="flow-box">uma raiz</div>
+      <div class="flow-arrow-v">↓</div>
+      <div class="flow-box final">Pulso → âncora Bitcoin</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">07 — Carteiras como entidades</div>
+    <h2>Duas cadeias confirmando o mesmo evento</h2>
+    <p class="intro">Em vez de "A diz que pagou", o sistema procura a correspondência entre os estados independentes dos dois participantes.</p>
+
+    <div class="chains">
+      <div class="chain-col">
+        <div class="clabel">Cadeia do cliente</div>
+        <div class="chain-node">A1 → A2 → A3</div>
+        <div class="chain-node" style="border-color:var(--amber); color:var(--amber);">A4 — agendamento</div>
+      </div>
+      <div class="chain-mid">correspondência<br>cruzada<br>↔</div>
+      <div class="chain-col">
+        <div class="clabel">Cadeia do Carlão</div>
+        <div class="chain-node">B1 → B2 → B3</div>
+        <div class="chain-node" style="border-color:var(--amber); color:var(--amber);">B4 — confirmação</div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:22px;">
+      <strong>Identificador universal de evento.</strong> <span class="mono">ZYR:event:&lt;hash&gt;</span> identifica o quê. <span class="mono">ZYR:&lt;payload compacto&gt;</span> transporta o quê. Separar identificação de transporte evita confundir "isso é isso" com "isso carrega isso" — é a mesma lógica por trás da ZyroKey.
+    </div>
+  </div>
+</section>
+
+<section style="border-bottom:none;">
+  <div class="wrap">
+    <div class="eyebrow">08 — A arquitetura completa</div>
+    <h2>Gramática por cima, proveniência por baixo</h2>
+    <p class="intro">A gramática se ramifica em motor, biblioteca e ZyroLog — os três convergem numa situação concreta, que desce até virar prova externa.</p>
+
+    <div class="branch">
+      <div class="branch-top">GRAMÁTICA ZERO</div>
+      <div class="branch-mid">
+        <div class="branch-node">MOTOR</div>
+        <div class="branch-node">BIBLIOTECA</div>
+        <div class="branch-node">ZYROLOG</div>
+      </div>
+      <div class="branch-chain">
+        <div class="flow-box">situação</div>
+        <div class="flow-arrow-v">↓</div>
+        <div class="flow-box">estado</div>
+        <div class="flow-arrow-v">↓</div>
+        <div class="flow-box">evento</div>
+        <div class="flow-arrow-v">↓</div>
+        <div class="flow-box">cadeia</div>
+        <div class="flow-arrow-v">↓</div>
+        <div class="flow-box">pulso</div>
+        <div class="flow-arrow-v">↓</div>
+        <div class="flow-box final">âncora</div>
+      </div>
+    </div>
+
+    <p style="color:var(--muted); font-size:14.5px; margin-top:24px; max-width:600px;">A mesma estrutura serve pro corte no Carlão, o pagamento, o cupom, a entrega, o QR Code da gincana e o cardápio. A gramática não muda — muda só a biblioteca e o contexto.</p>
+  </div>
+</section>
+
+<footer>ZYRO ENGINE · DOCUMENTO DE ARQUITETURA · GUI LABRIOLAG</footer>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+

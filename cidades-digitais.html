@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Programa Cidades Digitais — Labriolag</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+:root{
+  --ink:#0A0C10;
+  --ink2:#111318;
+  --ink3:#181B22;
+  --surface:#1C2030;
+  --line:rgba(255,255,255,0.07);
+  --white:#F4F3EF;
+  --off:#B8B5AC;
+  --muted:#6B6860;
+  --gold:#C9A84C;
+  --gold-light:#E2C47A;
+  --gold-pale:rgba(201,168,76,0.12);
+  --gold-border:rgba(201,168,76,0.25);
+  --blue:#1A3A5C;
+  --blue-mid:#1E4D7B;
+}
+
+html{scroll-behavior:smooth;}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--ink);
+  color:var(--white);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--ink);}
+::-webkit-scrollbar-thumb{background:var(--gold);border-radius:2px;}
+
+/* ─── NOISE OVERLAY ─── */
+body::before{
+  content:'';
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  opacity:.03;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size:200px 200px;
+}
+
+/* ─── NAV ─── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:90;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:24px 60px;
+  transition:all .4s ease;
+}
+nav.stuck{
+  background:rgba(10,12,16,.92);
+  backdrop-filter:blur(24px);
+  padding:16px 60px;
+  border-bottom:1px solid var(--line);
+}
+.nav-logo{
+  display:flex;flex-direction:column;gap:2px;text-decoration:none;
+}
+.nav-logo-main{
+  font-family:'DM Serif Display',serif;
+  font-size:1.1rem;letter-spacing:.5px;color:var(--white);
+}
+.nav-logo-sub{
+  font-size:.62rem;letter-spacing:3px;text-transform:uppercase;
+  color:var(--gold);font-weight:500;
+}
+.nav-right{display:flex;align-items:center;gap:36px;}
+.nav-links{display:flex;gap:28px;list-style:none;}
+.nav-links a{
+  color:var(--off);font-size:.82rem;text-decoration:none;
+  letter-spacing:.3px;font-weight:400;transition:color .3s;
+}
+.nav-links a:hover{color:var(--white);}
+.nav-btn{
+  background:var(--gold);color:var(--ink);
+  padding:9px 22px;border-radius:2px;
+  font-size:.8rem;font-weight:600;letter-spacing:.5px;
+  text-decoration:none;text-transform:uppercase;
+  transition:all .3s;
+}
+.nav-btn:hover{background:var(--gold-light);transform:translateY(-1px);}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;}
+.hamburger span{width:22px;height:1.5px;background:var(--white);transition:all .3s;}
+
+/* ─── MOBILE MENU ─── */
+.mob-menu{
+  display:none;position:fixed;inset:0;z-index:89;
+  background:rgba(10,12,16,.98);
+  flex-direction:column;align-items:center;justify-content:center;gap:36px;
+}
+.mob-menu.open{display:flex;}
+.mob-menu a{font-family:'DM Serif Display',serif;font-size:2rem;color:var(--white);text-decoration:none;}
+.mob-close{position:absolute;top:24px;right:24px;background:none;border:none;color:var(--off);font-size:1.6rem;cursor:pointer;}
+
+/* ─── HERO ─── */
+#hero{
+  min-height:100vh;
+  display:flex;align-items:center;
+  position:relative;overflow:hidden;
+  padding:140px 60px 100px;
+}
+.hero-gradient{
+  position:absolute;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 60% 80% at 100% 40%, rgba(26,58,92,.35) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 50% at 0% 100%, rgba(201,168,76,.06) 0%, transparent 60%);
+}
+.hero-lines{
+  position:absolute;inset:0;z-index:0;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:80px 80px;
+  mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,black 0%,transparent 100%);
+}
+.hero-inner{
+  position:relative;z-index:1;
+  max-width:1200px;width:100%;margin:0 auto;
+  display:grid;grid-template-columns:1fr 420px;gap:80px;align-items:center;
+}
+.hero-eyebrow{
+  display:flex;align-items:center;gap:12px;margin-bottom:28px;
+  animation:fadeUp .7s ease both;
+}
+.eyebrow-line{width:32px;height:1px;background:var(--gold);}
+.eyebrow-text{font-size:.7rem;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-weight:500;}
+
+h1{
+  font-family:'DM Serif Display',serif;
+  font-size:clamp(2.8rem,5.5vw,4.4rem);
+  line-height:1.08;letter-spacing:-.5px;
+  margin-bottom:28px;
+  animation:fadeUp .7s .08s ease both;
+}
+h1 em{color:var(--gold);font-style:italic;}
+
+.hero-lead{
+  font-size:1.02rem;color:var(--off);line-height:1.82;
+  max-width:520px;margin-bottom:44px;
+  animation:fadeUp .7s .16s ease both;
+}
+.hero-actions{
+  display:flex;gap:14px;flex-wrap:wrap;
+  animation:fadeUp .7s .24s ease both;
+}
+.btn-gold{
+  background:var(--gold);color:var(--ink);
+  padding:14px 32px;border-radius:2px;
+  font-weight:600;font-size:.85rem;letter-spacing:.8px;text-transform:uppercase;
+  text-decoration:none;transition:all .3s;display:inline-flex;align-items:center;gap:8px;
+}
+.btn-gold:hover{background:var(--gold-light);transform:translateY(-2px);box-shadow:0 12px 40px rgba(201,168,76,.25);}
+.btn-ghost{
+  background:transparent;color:var(--off);
+  padding:14px 28px;border-radius:2px;
+  font-size:.85rem;letter-spacing:.5px;
+  text-decoration:none;border:1px solid var(--line);
+  transition:all .3s;
+}
+.btn-ghost:hover{border-color:rgba(255,255,255,.25);color:var(--white);}
+
+/* hero right panel */
+.hero-panel{
+  background:var(--ink2);
+  border:1px solid var(--line);
+  border-radius:4px;overflow:hidden;
+  animation:fadeUp .7s .2s ease both;
+}
+.panel-header{
+  background:var(--gold-pale);
+  border-bottom:1px solid var(--gold-border);
+  padding:18px 28px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.panel-header-label{
+  font-size:.68rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);font-weight:600;
+}
+.panel-dots{display:flex;gap:6px;}
+.panel-dot{width:8px;height:8px;border-radius:50%;background:var(--line);}
+.panel-dot.a{background:var(--gold);}
+.panel-body{padding:28px;}
+.panel-stat{
+  padding:18px 0;
+  border-bottom:1px solid var(--line);
+  display:flex;align-items:flex-start;justify-content:space-between;
+}
+.panel-stat:last-child{border-bottom:none;padding-bottom:0;}
+.pstat-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.pstat-val{font-family:'DM Serif Display',serif;font-size:1.8rem;color:var(--white);line-height:1;}
+.pstat-val span{color:var(--gold);}
+.pstat-note{font-size:.72rem;color:var(--muted);text-align:right;max-width:120px;line-height:1.5;}
+.panel-footer{
+  margin-top:24px;padding-top:20px;
+  border-top:1px solid var(--gold-border);
+  display:flex;align-items:center;gap:10px;
+}
+.pf-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.pf-text{font-size:.72rem;color:var(--gold);letter-spacing:1px;text-transform:uppercase;}
+.panel-city-badge{
+  display:flex;align-items:center;gap:10px;margin-bottom:8px;
+  padding:12px 16px;
+  background:rgba(26,58,92,.3);border:1px solid rgba(30,77,123,.4);border-radius:2px;
+}
+.city-badge-icon{font-size:1.2rem;}
+.city-badge-name{font-size:.82rem;font-weight:600;color:var(--white);}
+.city-badge-sub{font-size:.68rem;color:var(--muted);}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+
+/* ─── SECTIONS ─── */
+section{padding:100px 60px;}
+.section-max{max-width:1200px;margin:0 auto;}
+
+.s-eyebrow{
+  display:flex;align-items:center;gap:12px;margin-bottom:20px;
+}
+.s-eyebrow-line{width:28px;height:1px;background:var(--gold);}
+.s-eyebrow-text{font-size:.68rem;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-weight:600;}
+
+h2{
+  font-family:'DM Serif Display',serif;
+  font-size:clamp(2rem,3.5vw,3rem);
+  line-height:1.15;letter-spacing:-.3px;
+  margin-bottom:18px;
+}
+h2 em{color:var(--gold);font-style:italic;}
+h2 span{color:var(--gold);}
+
+.section-lead{
+  font-size:.96rem;color:var(--off);line-height:1.8;max-width:560px;
+}
+
+/* ─── CONTEXTO ─── */
+#contexto{background:var(--ink2);}
+.contexto-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;
+}
+.contexto-left{}
+.contexto-quote{
+  margin-top:48px;padding:28px 32px;
+  border-left:2px solid var(--gold);
+  background:var(--gold-pale);
+}
+.cq-text{
+  font-family:'DM Serif Display',serif;font-style:italic;
+  font-size:1.2rem;line-height:1.65;color:var(--white);
+}
+.contexto-right{}
+.pain-list{margin-top:36px;display:flex;flex-direction:column;gap:0;}
+.pain-item{
+  padding:22px 0;border-bottom:1px solid var(--line);
+  display:flex;align-items:flex-start;gap:18px;
+}
+.pain-item:last-child{border-bottom:none;}
+.pain-num{
+  font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--gold);
+  opacity:.5;min-width:32px;line-height:1;margin-top:2px;
+}
+.pain-title{font-size:.9rem;font-weight:600;margin-bottom:6px;}
+.pain-desc{font-size:.82rem;color:var(--off);line-height:1.65;}
+
+/* ─── PROGRAMA ─── */
+#programa{background:var(--ink);}
+.programa-header{text-align:center;margin-bottom:72px;}
+.programa-header h2{font-size:clamp(2.2rem,4vw,3.2rem);}
+.programa-header .section-lead{margin:0 auto;}
+.fases-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+  background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden;
+}
+.fase-card{
+  background:var(--ink2);padding:36px 28px;
+  transition:background .3s;position:relative;overflow:hidden;
+}
+.fase-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--gold);transform:scaleX(0);transform-origin:left;
+  transition:transform .4s ease;
+}
+.fase-card:hover{background:var(--ink3);}
+.fase-card:hover::before{transform:scaleX(1);}
+.fase-num{
+  font-family:'DM Serif Display',serif;font-size:3rem;color:var(--gold);
+  opacity:.2;line-height:1;margin-bottom:16px;
+  transition:opacity .3s;
+}
+.fase-card:hover .fase-num{opacity:.5;}
+.fase-label{
+  font-size:.62rem;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--gold);font-weight:600;margin-bottom:10px;
+}
+.fase-title{font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:14px;}
+.fase-desc{font-size:.8rem;color:var(--off);line-height:1.7;}
+
+/* ─── METODOLOGIA ─── */
+#metodologia{background:var(--ink2);}
+.metodologia-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;
+}
+.met-steps{display:flex;flex-direction:column;gap:0;}
+.met-step{
+  display:flex;gap:24px;padding:24px 0;
+  border-bottom:1px solid var(--line);align-items:flex-start;
+}
+.met-step:last-child{border-bottom:none;}
+.met-icon{
+  width:44px;height:44px;border-radius:2px;
+  border:1px solid var(--gold-border);
+  background:var(--gold-pale);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;flex-shrink:0;
+}
+.met-title{font-size:.9rem;font-weight:600;margin-bottom:6px;}
+.met-desc{font-size:.8rem;color:var(--off);line-height:1.65;}
+
+.met-panel{
+  background:var(--ink);border:1px solid var(--line);border-radius:4px;
+  overflow:hidden;
+}
+.met-panel-head{
+  padding:20px 28px;
+  border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.mph-title{font-size:.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.mph-badge{
+  background:var(--gold-pale);border:1px solid var(--gold-border);
+  padding:4px 10px;border-radius:2px;
+  font-size:.62rem;color:var(--gold);font-weight:600;letter-spacing:1px;
+}
+.met-panel-body{padding:28px;}
+.bar-row{margin-bottom:22px;}
+.bar-row:last-child{margin-bottom:0;}
+.br-top{display:flex;justify-content:space-between;margin-bottom:8px;}
+.br-name{font-size:.78rem;font-weight:500;}
+.br-pct{font-size:.78rem;color:var(--gold);font-weight:600;}
+.br-track{height:4px;background:var(--line);border-radius:2px;overflow:hidden;}
+.br-fill{height:100%;background:var(--gold);border-radius:2px;width:0;transition:width 1.4s ease;}
+
+/* ─── RESULTADOS ─── */
+#resultados{background:var(--ink);}
+.res-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:24px;
+  margin-bottom:64px;
+}
+.res-card{
+  padding:36px 32px;
+  border:1px solid var(--line);border-radius:4px;
+  background:var(--ink2);
+  transition:border-color .3s,transform .3s;
+}
+.res-card:hover{border-color:var(--gold-border);transform:translateY(-4px);}
+.res-icon{font-size:1.6rem;margin-bottom:18px;}
+.res-title{font-family:'DM Serif Display',serif;font-size:1.1rem;margin-bottom:10px;}
+.res-desc{font-size:.8rem;color:var(--off);line-height:1.7;}
+
+.res-banner{
+  background:linear-gradient(120deg,var(--blue) 0%,var(--blue-mid) 60%,rgba(26,58,92,.6) 100%);
+  border:1px solid rgba(30,77,123,.5);
+  border-radius:4px;padding:48px 60px;
+  display:flex;align-items:center;justify-content:space-between;gap:32px;
+  flex-wrap:wrap;
+}
+.rb-text{}
+.rb-label{font-size:.68rem;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:10px;}
+.rb-title{font-family:'DM Serif Display',serif;font-size:1.8rem;color:var(--white);}
+.rb-title em{color:var(--gold-light);font-style:italic;}
+
+/* ─── FUNDADOR ─── */
+#fundador{
+  background:var(--ink2);
+  border-top:1px solid var(--line);
+}
+.fundador-inner{
+  display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;
+}
+.fund-card{
+  background:var(--ink);
+  border:1px solid var(--gold-border);
+  border-radius:4px;overflow:hidden;
+}
+.fund-card-head{
+  background:var(--gold-pale);
+  border-bottom:1px solid var(--gold-border);
+  padding:20px 32px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.fch-label{font-size:.68rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);font-weight:600;}
+.fch-badge{
+  background:var(--gold);color:var(--ink);
+  padding:4px 12px;border-radius:2px;
+  font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+}
+.fund-card-body{padding:32px;}
+.fund-price{
+  font-family:'DM Serif Display',serif;
+  font-size:2.8rem;color:var(--white);margin-bottom:4px;line-height:1;
+}
+.fund-price span{font-size:1.1rem;color:var(--off);font-family:'DM Sans',sans-serif;}
+.fund-price-note{font-size:.72rem;color:var(--muted);margin-bottom:28px;}
+.fund-benefits{display:flex;flex-direction:column;gap:12px;margin-bottom:28px;}
+.fb-item{display:flex;align-items:flex-start;gap:12px;}
+.fb-check{color:var(--gold);font-size:.9rem;margin-top:1px;flex-shrink:0;}
+.fb-text{font-size:.83rem;color:var(--off);line-height:1.5;}
+.fund-card-footer{
+  padding:20px 32px;
+  border-top:1px solid var(--line);
+  background:rgba(0,0,0,.2);
+}
+.fcf-note{font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:8px;}
+
+.fund-text{}
+.fund-cotas{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:36px;
+}
+.cota-item{
+  padding:16px 18px;
+  background:var(--ink);border:1px solid var(--line);border-radius:2px;
+  transition:border-color .3s;
+}
+.cota-item:hover{border-color:var(--gold-border);}
+.cota-sector{font-size:.68rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:4px;}
+.cota-count{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--white);}
+.cota-label{font-size:.72rem;color:var(--muted);}
+
+/* ─── FORMULÁRIO ─── */
+#inscricao{background:var(--ink);}
+.form-wrapper{
+  max-width:640px;margin:0 auto;
+}
+.form-header{text-align:center;margin-bottom:48px;}
+.form-box{
+  background:var(--ink2);border:1px solid var(--line);border-radius:4px;padding:48px;
+}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.f-group{margin-bottom:20px;}
+label{
+  display:block;font-size:.7rem;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--muted);font-weight:500;margin-bottom:8px;
+}
+input,select,textarea{
+  width:100%;background:var(--ink);
+  border:1px solid var(--line);border-radius:2px;
+  padding:12px 16px;color:var(--white);
+  font-family:'DM Sans',sans-serif;font-size:.88rem;
+  transition:border-color .3s;outline:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);}
+input::placeholder,textarea::placeholder{color:var(--muted);}
+select{appearance:none;cursor:pointer;}
+select option{background:var(--ink2);}
+textarea{resize:none;height:100px;}
+.form-submit{
+  margin-top:28px;
+  background:var(--gold);color:var(--ink);
+  width:100%;padding:16px;border-radius:2px;
+  border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  font-size:.85rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  transition:all .3s;
+}
+.form-submit:hover{background:var(--gold-light);transform:translateY(-1px);}
+.form-legal{
+  margin-top:16px;font-size:.72rem;color:var(--muted);
+  text-align:center;line-height:1.6;
+}
+
+/* ─── FOOTER ─── */
+footer{
+  background:var(--ink2);
+  border-top:1px solid var(--line);
+  padding:48px 60px;
+}
+.footer-inner{
+  max-width:1200px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:24px;
+}
+.footer-brand{}
+.fb-name{font-family:'DM Serif Display',serif;font-size:1.1rem;margin-bottom:4px;}
+.fb-tagline{font-size:.72rem;color:var(--muted);letter-spacing:.5px;}
+.footer-right{text-align:right;}
+.fr-item{font-size:.75rem;color:var(--muted);margin-bottom:4px;}
+.fr-item span{color:var(--gold);}
+.footer-bottom{
+  max-width:1200px;margin:28px auto 0;
+  padding-top:24px;border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+}
+.copy{font-size:.72rem;color:var(--muted);}
+.copy span{color:var(--gold-light);}
+
+/* ─── REVEAL ─── */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+.rd1{transition-delay:.08s;}
+.rd2{transition-delay:.16s;}
+.rd3{transition-delay:.24s;}
+.rd4{transition-delay:.32s;}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:1024px){
+  .hero-inner{grid-template-columns:1fr;}
+  .hero-panel{max-width:480px;}
+  .contexto-grid,.metodologia-grid,.fundador-inner{grid-template-columns:1fr;gap:48px;}
+  .fases-grid{grid-template-columns:1fr 1fr;}
+  .res-grid{grid-template-columns:1fr 1fr;}
+  nav{padding:20px 32px;}
+  nav.stuck{padding:14px 32px;}
+  section{padding:80px 32px;}
+  #hero{padding:120px 32px 80px;}
+}
+@media(max-width:640px){
+  nav{padding:18px 20px;}
+  nav.stuck{padding:12px 20px;}
+  .nav-links,.nav-btn{display:none;}
+  .hamburger{display:flex;}
+  section{padding:64px 20px;}
+  #hero{padding:100px 20px 64px;}
+  .fases-grid{grid-template-columns:1fr;}
+  .res-grid{grid-template-columns:1fr;}
+  .f-row{grid-template-columns:1fr;}
+  .form-box{padding:28px 20px;}
+  .fund-cotas{grid-template-columns:1fr 1fr;}
+  .res-banner{padding:32px 24px;}
+  footer{padding:40px 20px;}
+  .rb-title{font-size:1.4rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">
+    <span class="nav-logo-main">Programa Cidades Digitais</span>
+    <span class="nav-logo-sub">Uma iniciativa Labriolag</span>
+  </a>
+  <nav class="nav-right">
+    <ul class="nav-links">
+      <li><a href="#contexto">Contexto</a></li>
+      <li><a href="#programa">Programa</a></li>
+      <li><a href="#metodologia">Metodologia</a></li>
+      <li><a href="#fundador">Fundador</a></li>
+    </ul>
+    <a href="#inscricao" class="nav-btn">Solicitar adesão</a>
+  </nav>
+  <button class="hamburger" onclick="openMob()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mob-menu" id="mobMenu">
+  <button class="mob-close" onclick="closeMob()">✕</button>
+  <a href="#contexto" onclick="closeMob()">Contexto</a>
+  <a href="#programa" onclick="closeMob()">Programa</a>
+  <a href="#metodologia" onclick="closeMob()">Metodologia</a>
+  <a href="#fundador" onclick="closeMob()">Fundador</a>
+  <a href="#inscricao" onclick="closeMob()">Solicitar adesão</a>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-gradient"></div>
+  <div class="hero-lines"></div>
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <div class="eyebrow-line"></div>
+        <span class="eyebrow-text">Labriolag — Iniciativa Estratégica 2025</span>
+      </div>
+      <h1>Transformação<br>digital do <em>comércio</em><br>local.</h1>
+      <p class="hero-lead">
+        Estamos implantando o Programa Cidades Digitais em Pirapora do Bom Jesus — uma estrutura tecnológica integrada para modernizar, fortalecer e tornar competitivo o comércio da cidade.
+      </p>
+      <div class="hero-actions">
+        <a href="#inscricao" class="btn-gold">Quero participar →</a>
+        <a href="#programa" class="btn-ghost">Entender o programa</a>
+      </div>
+    </div>
+    <div class="hero-panel">
+      <div class="panel-header">
+        <span class="panel-header-label">Implantação Piloto</span>
+        <div class="panel-dots">
+          <div class="panel-dot a"></div>
+          <div class="panel-dot"></div>
+          <div class="panel-dot"></div>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="panel-city-badge">
+          <span class="city-badge-icon">📍</span>
+          <div>
+            <div class="city-badge-name">Pirapora do Bom Jesus</div>
+            <div class="city-badge-sub">Cidade piloto — SP</div>
+          </div>
+        </div>
+        <div class="panel-stat">
+          <div>
+            <div class="pstat-label">Cotas Fundador</div>
+            <div class="pstat-val"><span>15</span> vagas</div>
+          </div>
+          <div class="pstat-note">Grupo fechado de pioneiros</div>
+        </div>
+        <div class="panel-stat">
+          <div>
+            <div class="pstat-label">Modelo</div>
+            <div class="pstat-val" style="font-size:1.1rem;margin-top:4px;">Infraestrutura<br>digital integrada</div>
+          </div>
+        </div>
+        <div class="panel-stat">
+          <div>
+            <div class="pstat-label">Preço travado</div>
+            <div class="pstat-val"><span>24</span> meses</div>
+          </div>
+          <div class="pstat-note">Exclusivo para fundadores</div>
+        </div>
+        <div class="panel-footer">
+          <div class="pf-dot"></div>
+          <span class="pf-text">Fase Fundadores — aberta</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTEXTO -->
+<section id="contexto">
+  <div class="section-max">
+    <div class="contexto-grid">
+      <div class="contexto-left">
+        <div class="s-eyebrow reveal">
+          <div class="s-eyebrow-line"></div>
+          <span class="s-eyebrow-text">Por que agora</span>
+        </div>
+        <h2 class="reveal">O comportamento do<br>consumidor já <em>mudou.</em></h2>
+        <p class="section-lead reveal">
+          Hoje, decisões de compra começam no ambiente digital: pesquisas online, avaliações, redes sociais, catálogos e contato instantâneo. O consumidor chegou ao digital. O comércio local ainda não.
+        </p>
+        <div class="contexto-quote reveal rd1">
+          <p class="cq-text">"Grande parte do comércio de cidades de pequeno e médio porte opera sem estrutura digital padronizada — e perde vendas todos os dias por isso."</p>
+        </div>
+      </div>
+      <div class="contexto-right">
+        <div class="s-eyebrow reveal" style="opacity:0">.</div>
+        <p class="section-lead reveal" style="margin-bottom:8px;">O resultado dessa defasagem é concreto:</p>
+        <div class="pain-list">
+          <div class="pain-item reveal rd1">
+            <div class="pain-num">01</div>
+            <div>
+              <div class="pain-title">Perda de oportunidades de venda</div>
+              <div class="pain-desc">Clientes buscam online e não encontram. A venda vai para quem aparece.</div>
+            </div>
+          </div>
+          <div class="pain-item reveal rd2">
+            <div class="pain-num">02</div>
+            <div>
+              <div class="pain-title">Baixa retenção de clientes</div>
+              <div class="pain-desc">Sem canal digital, o relacionamento termina na saída da loja.</div>
+            </div>
+          </div>
+          <div class="pain-item reveal rd3">
+            <div class="pain-num">03</div>
+            <div>
+              <div class="pain-title">Competição desigual</div>
+              <div class="pain-desc">Grandes centros e e-commerce avançam. O comércio local fica para trás.</div>
+            </div>
+          </div>
+          <div class="pain-item reveal rd4">
+            <div class="pain-num">04</div>
+            <div>
+              <div class="pain-title">Impossibilidade de mensurar resultados</div>
+              <div class="pain-desc">Sem métricas, não há como saber o que funciona — ou o que melhorar.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROGRAMA -->
+<section id="programa">
+  <div class="section-max">
+    <div class="programa-header">
+      <div class="s-eyebrow reveal" style="justify-content:center;">
+        <div class="s-eyebrow-line"></div>
+        <span class="s-eyebrow-text">Estrutura do programa</span>
+        <div class="s-eyebrow-line"></div>
+      </div>
+      <h2 class="reveal">Quatro fases.<br>Um modelo <em>replicável.</em></h2>
+      <p class="section-lead reveal" style="margin:0 auto;text-align:center;">
+        O Programa Cidades Digitais opera em ciclo estratégico progressivo — do piloto à expansão regional, com validação em cada etapa.
+      </p>
+    </div>
+    <div class="fases-grid reveal">
+      <div class="fase-card">
+        <div class="fase-num">01</div>
+        <div class="fase-label">Fase Beta</div>
+        <div class="fase-title">Validação</div>
+        <p class="fase-desc">Implantação piloto em grupo reduzido de estabelecimentos selecionados. Validação de metodologia e coleta de dados iniciais.</p>
+      </div>
+      <div class="fase-card">
+        <div class="fase-num">02</div>
+        <div class="fase-label">Fase Fundadores</div>
+        <div class="fase-title">Expansão Controlada</div>
+        <p class="fase-desc">15 estabelecimentos pioneiros com condições exclusivas. Participação estruturante no desenvolvimento do programa na cidade.</p>
+      </div>
+      <div class="fase-card">
+        <div class="fase-num">03</div>
+        <div class="fase-label">Consolidação</div>
+        <div class="fase-title">Padronização Municipal</div>
+        <p class="fase-desc">Ampliação do número de participantes. Padronização digital integrada no município com base nos dados coletados.</p>
+      </div>
+      <div class="fase-card">
+        <div class="fase-num">04</div>
+        <div class="fase-label">Expansão</div>
+        <div class="fase-title">Escala Regional</div>
+        <p class="fase-desc">Replicação do modelo em novas cidades com base nos resultados comprovados. Pirapora como caso de referência.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- METODOLOGIA -->
+<section id="metodologia">
+  <div class="section-max">
+    <div class="metodologia-grid">
+      <div>
+        <div class="s-eyebrow reveal">
+          <div class="s-eyebrow-line"></div>
+          <span class="s-eyebrow-text">Como funciona</span>
+        </div>
+        <h2 class="reveal">Metodologia<br><em>própria.</em> Processo claro.</h2>
+        <p class="section-lead reveal">Não atuamos como agência. Somos modelo estruturado de implantação tecnológica — com foco em padronização, mensuração e resultado real.</p>
+        <div class="met-steps">
+          <div class="met-step reveal rd1">
+            <div class="met-icon">🔍</div>
+            <div>
+              <div class="met-title">Diagnóstico digital</div>
+              <div class="met-desc">Mapeamento completo da presença e maturidade digital do estabelecimento.</div>
+            </div>
+          </div>
+          <div class="met-step reveal rd2">
+            <div class="met-icon">⚙️</div>
+            <div>
+              <div class="met-title">Implantação estruturada</div>
+              <div class="met-desc">Configuração da infraestrutura digital padronizada conforme o plano contratado.</div>
+            </div>
+          </div>
+          <div class="met-step reveal rd3">
+            <div class="met-icon">📊</div>
+            <div>
+              <div class="met-title">Métricas e rastreamento</div>
+              <div class="met-desc">Configuração de indicadores de desempenho e painéis de acompanhamento.</div>
+            </div>
+          </div>
+          <div class="met-step reveal rd4">
+            <div class="met-icon">📋</div>
+            <div>
+              <div class="met-title">Relatório de impacto</div>
+              <div class="met-desc">Geração periódica de relatórios com dados de crescimento e oportunidades.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="met-panel reveal rd2">
+        <div class="met-panel-head">
+          <span class="mph-title">Resultados esperados</span>
+          <span class="mph-badge">Projeção 6 meses</span>
+        </div>
+        <div class="met-panel-body">
+          <div class="bar-row">
+            <div class="br-top"><span class="br-name">Presença digital</span><span class="br-pct">+85%</span></div>
+            <div class="br-track"><div class="br-fill" data-w="85%"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="br-top"><span class="br-name">Interações com clientes</span><span class="br-pct">+120%</span></div>
+            <div class="br-track"><div class="br-fill" data-w="78%"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="br-top"><span class="br-name">Oportunidades de venda</span><span class="br-pct">+60%</span></div>
+            <div class="br-track"><div class="br-fill" data-w="60%"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="br-top"><span class="br-name">Retenção de clientes</span><span class="br-pct">+45%</span></div>
+            <div class="br-track"><div class="br-fill" data-w="45%"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="br-top"><span class="br-name">Competitividade local</span><span class="br-pct">Alta</span></div>
+            <div class="br-track"><div class="br-fill" data-w="92%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESULTADOS ESPERADOS -->
+<section id="resultados">
+  <div class="section-max">
+    <div class="s-eyebrow reveal" style="justify-content:center;">
+      <div class="s-eyebrow-line"></div>
+      <span class="s-eyebrow-text">Impacto do programa</span>
+      <div class="s-eyebrow-line"></div>
+    </div>
+    <h2 class="reveal" style="text-align:center;">O que a cidade <em>ganha.</em></h2>
+    <div class="res-grid" style="margin-top:48px;">
+      <div class="res-card reveal">
+        <div class="res-icon">🏙️</div>
+        <div class="res-title">Padrão digital municipal</div>
+        <p class="res-desc">Pirapora passa a ter infraestrutura digital padronizada no comércio — referência para a região.</p>
+      </div>
+      <div class="res-card reveal rd1">
+        <div class="res-icon">📈</div>
+        <div class="res-title">Crescimento mensurável</div>
+        <p class="res-desc">Dados reais de interações, oportunidades geradas e evolução de cada estabelecimento participante.</p>
+      </div>
+      <div class="res-card reveal rd2">
+        <div class="res-icon">💰</div>
+        <div class="res-title">Fortalecimento econômico</div>
+        <p class="res-desc">Mais vendas para o comércio local significa mais economia circulando dentro da própria cidade.</p>
+      </div>
+      <div class="res-card reveal rd3">
+        <div class="res-icon">🗺️</div>
+        <div class="res-title">Base estatística territorial</div>
+        <p class="res-desc">Relatórios de impacto econômico que posicionam Pirapora como cidade digital de referência.</p>
+      </div>
+      <div class="res-card reveal rd1">
+        <div class="res-icon">🔗</div>
+        <div class="res-title">Ecossistema integrado</div>
+        <p class="res-desc">Estabelecimentos conectados entre si, criando rede de comércio digital com identidade própria.</p>
+      </div>
+      <div class="res-card reveal rd2">
+        <div class="res-icon">🚀</div>
+        <div class="res-title">Competitividade sustentável</div>
+        <p class="res-desc">O comércio local competindo em condições equivalentes às grandes redes — com tecnologia estruturada.</p>
+      </div>
+    </div>
+    <div class="res-banner reveal">
+      <div class="rb-text">
+        <div class="rb-label">Visão de longo prazo</div>
+        <div class="rb-title">Pirapora como <em>marco histórico</em><br>da transformação digital municipal.</div>
+      </div>
+      <a href="#inscricao" class="btn-gold">Fazer parte da história →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FUNDADOR -->
+<section id="fundador">
+  <div class="section-max">
+    <div class="fundador-inner">
+      <div class="fund-text">
+        <div class="s-eyebrow reveal">
+          <div class="s-eyebrow-line"></div>
+          <span class="s-eyebrow-text">Cota Fundador Pioneiro</span>
+        </div>
+        <h2 class="reveal">Um grupo fechado.<br><em>15 vagas.</em> Uma cidade.</h2>
+        <p class="section-lead reveal">
+          Os estabelecimentos que aderirem agora integrarão o grupo dos Fundadores Pioneiros — aqueles que lideraram a transformação digital de Pirapora do Bom Jesus.
+        </p>
+        <p class="section-lead reveal rd1" style="margin-top:16px;">
+          Preço travado por 24 meses, reconhecimento institucional e acesso prioritário a novas funcionalidades. Após o preenchimento das 15 cotas, novas adesões ocorrem sob tabela padrão.
+        </p>
+        <div class="fund-cotas reveal rd2">
+          <div class="cota-item">
+            <div class="cota-sector">Alimentação</div>
+            <div class="cota-count">5</div>
+            <div class="cota-label">vagas setoriais</div>
+          </div>
+          <div class="cota-item">
+            <div class="cota-sector">Varejo</div>
+            <div class="cota-count">4</div>
+            <div class="cota-label">vagas setoriais</div>
+          </div>
+          <div class="cota-item">
+            <div class="cota-sector">Serviços</div>
+            <div class="cota-count">4</div>
+            <div class="cota-label">vagas setoriais</div>
+          </div>
+          <div class="cota-item">
+            <div class="cota-sector">Estratégicas</div>
+            <div class="cota-count">2</div>
+            <div class="cota-label">vagas livres</div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal rd2">
+        <div class="fund-card">
+          <div class="fund-card-head">
+            <span class="fch-label">Condição Fundador</span>
+            <span class="fch-badge">Exclusivo</span>
+          </div>
+          <div class="fund-card-body">
+            <div class="fund-price">A definir<span></span></div>
+            <div class="fund-price-note">Valor mensal · Preço travado 24 meses</div>
+            <div class="fund-benefits">
+              <div class="fb-item">
+                <span class="fb-check">✦</span>
+                <span class="fb-text">Implantação de infraestrutura digital completa</span>
+              </div>
+              <div class="fb-item">
+                <span class="fb-check">✦</span>
+                <span class="fb-text">Configuração inicial e acompanhamento técnico</span>
+              </div>
+              <div class="fb-item">
+                <span class="fb-check">✦</span>
+                <span class="fb-text">Métricas e relatório de impacto periódico</span>
+              </div>
+              <div class="fb-item">
+                <span class="fb-check">✦</span>
+                <span class="fb-text">Reconhecimento como Fundador Pioneiro oficial</span>
+              </div>
+              <div class="fb-item">
+                <span class="fb-check">✦</span>
+                <span class="fb-text">Preço travado por 24 meses — independente de reajustes</span>
+              </div>
+              <div class="fb-item">
+                <span class="fb-check">✦</span>
+                <span class="fb-text">Acesso prioritário a novas funcionalidades do programa</span>
+              </div>
+              <div class="fb-item">
+                <span class="fb-check">✦</span>
+                <span class="fb-text">Prazo mínimo de 12 meses para estabilidade estrutural</span>
+              </div>
+            </div>
+            <a href="#inscricao" class="btn-gold" style="display:flex;justify-content:center;">Solicitar minha vaga →</a>
+          </div>
+          <div class="fund-card-footer">
+            <span class="fcf-note">🔒 Vagas limitadas. Ordem de formalização contratual.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INSCRIÇÃO -->
+<section id="inscricao">
+  <div class="form-wrapper">
+    <div class="form-header">
+      <div class="s-eyebrow reveal" style="justify-content:center;">
+        <div class="s-eyebrow-line"></div>
+        <span class="s-eyebrow-text">Solicitação de adesão</span>
+        <div class="s-eyebrow-line"></div>
+      </div>
+      <h2 class="reveal">Quero ser <em>Fundador.</em></h2>
+      <p class="section-lead reveal" style="text-align:center;margin:0 auto;">
+        Preencha abaixo para iniciar o processo. Nossa equipe entrará em contato em até 48 horas para apresentação formal e proposta.
+      </p>
+    </div>
+    <div class="form-box reveal">
+      <div class="f-row">
+        <div class="f-group">
+          <label>Nome do responsável</label>
+          <input type="text" placeholder="Seu nome completo">
+        </div>
+        <div class="f-group">
+          <label>Nome do estabelecimento</label>
+          <input type="text" placeholder="Nome do negócio">
+        </div>
+      </div>
+      <div class="f-row">
+        <div class="f-group">
+          <label>WhatsApp</label>
+          <input type="tel" placeholder="(11) 9 0000-0000">
+        </div>
+        <div class="f-group">
+          <label>E-mail</label>
+          <input type="email" placeholder="contato@seusite.com">
+        </div>
+      </div>
+      <div class="f-group">
+        <label>Setor de atuação</label>
+        <select>
+          <option value="">Selecione seu setor</option>
+          <option>Alimentação (restaurante, pizzaria, lanchonete, café)</option>
+          <option>Varejo (roupas, calçados, utilidades, papelaria)</option>
+          <option>Serviços (salão, barbearia, clínica, oficina)</option>
+          <option>Outro setor estratégico</option>
+        </select>
+      </div>
+      <div class="f-group">
+        <label>Mensagem (opcional)</label>
+        <textarea placeholder="Conte brevemente sobre seu estabelecimento ou dúvidas sobre o programa..."></textarea>
+      </div>
+      <button class="form-submit">Solicitar adesão ao programa →</button>
+      <p class="form-legal">
+        Ao enviar, você declara ciência de que esta é uma solicitação de contato. A adesão formal ocorre mediante apresentação da proposta e assinatura do Termo de Adesão Fundador.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="fb-name">Programa Cidades Digitais</div>
+      <div class="fb-tagline">Uma iniciativa Labriolag · Pirapora do Bom Jesus · 2025</div>
+    </div>
+    <div class="footer-right">
+      <div class="fr-item">Coordenação técnica: <span>Labriolag</span></div>
+      <div class="fr-item">Implantação piloto: <span>Pirapora do Bom Jesus — SP</span></div>
+      <div class="fr-item">Contato: <span>contato@labriolag.com</span></div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="copy">© 2025 <span>Labriolag</span>. Programa Cidades Digitais. Todos os direitos reservados.</div>
+    <div class="copy">Iniciativa privada estruturada · Não constitui franquia ou vínculo societário.</div>
+  </div>
+</footer>
+
+<script>
+// Nav scroll
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>{nav.classList.toggle('stuck',scrollY>40);});
+
+// Mobile menu
+function openMob(){document.getElementById('mobMenu').classList.add('open');}
+function closeMob(){document.getElementById('mobMenu').classList.remove('open');}
+
+// Scroll reveal
+const revEls=document.querySelectorAll('.reveal');
+const ro=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});
+},{threshold:.1});
+revEls.forEach(el=>ro.observe(el));
+
+// Animate bars
+const bars=document.querySelectorAll('.br-fill');
+const bo=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const w=e.target.dataset.w;
+      e.target.style.transition='width 1.6s ease';
+      setTimeout(()=>{e.target.style.width=w;},150);
+      bo.unobserve(e.target);
+    }
+  });
+},{threshold:.5});
+bars.forEach(b=>bo.observe(b));
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const t=document.querySelector(a.getAttribute('href'));
+    if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth'});}
+  });
+});
+</script>
+</body>
+</html>

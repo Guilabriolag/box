@@ -1,0 +1,698 @@
+{
+  "version": 3,
+  "world": {
+    "id": "world_zyro_pista_01",
+    "name": "Pista ZYRO",
+    "slug": "pista-zyro"
+  },
+  "locations": [
+    {
+      "id": "region_zyro_pista",
+      "type": "regiao",
+      "name": "Pista ZYRO",
+      "parentId": null
+    },
+    {
+      "id": "zone_pista_zyro",
+      "type": "zona",
+      "name": "Pista Completa",
+      "parentId": "region_zyro_pista"
+    }
+  ],
+  "entities": [
+    {
+      "id": "entity_pista1_mini_direita",
+      "type": "pista",
+      "name": "Pista 1 - Mini-ramp direita",
+      "slug": "pista1-mini-direita",
+      "layer": "infraestrutura",
+      "state": "ativo",
+      "geometry": {
+        "type": "line",
+        "points": [
+          { "x": 18.0, "y": 0.0 },
+          { "x": 20.0, "y": 0.25 },
+          { "x": 21.3, "y": 1.0 },
+          { "x": 21.6, "y": 2.0 },
+          { "x": 21.2, "y": 3.0 },
+          { "x": 20.0, "y": 3.6 }
+        ]
+      },
+      "transform": {
+        "z": 0,
+        "rotation": 0
+      },
+      "style": {
+        "color": "#c7c2b6",
+        "material": "concreto"
+      },
+      "metadata": {
+        "access": "público",
+        "floors": 0,
+        "width": 6,
+        "height": 3.6,
+        "radius": 3.6,
+        "parentId": "zone_pista_zyro"
+      }
+    },
+    {
+      "id": "entity_pista1_mini_esquerda",
+      "type": "pista",
+      "name": "Pista 1 - Mini-ramp esquerda",
+      "slug": "pista1-mini-esquerda",
+      "layer": "infraestrutura",
+      "state": "ativo",
+      "geometry": {
+        "type": "line",
+        "points": [
+          { "x": 14.5, "y": 0.0 },
+          { "x": 13.0, "y": 0.25 },
+          { "x": 11.7, "y": 1.0 },
+          { "x": 11.4, "y": 2.0 },
+          { "x": 11.8, "y": 3.0 },
+          { "x": 13.0, "y": 3.6 }
+        ]
+      },
+      "transform": {
+        "z": 0,
+        "rotation": 0
+      },
+      "style": {
+        "color": "#c7c2b6",
+        "material": "concreto"
+      },
+      "metadata": {
+        "access": "público",
+        "floors": 0,
+        "width": 6,
+        "height": 3.6,
+        "radius": 3.6,
+        "parentId": "zone_pista_zyro"
+      }
+    },
+    {
+      "id": "entity_pista1_plato_alto",
+      "type": "pista",
+      "name": "Pista 1 - Platô alto",
+      "slug": "pista1-plato-alto",
+      "layer": "infraestrutura",
+      "state": "ativo",
+      "geometry": {
+        "type": "line",
+        "points": [
+          { "x": 13.0, "y": 3.6 },
+          { "x": 11.0, "y": 3.6 }
+        ]
+      },
+      "transform": {
+        "z": 0,
+        "rotation": 0
+      },
+      "style": {
+        "color": "#c7c2b6",
+        "material": "concreto"
+      },
+      "metadata": {
+        "access": "público",
+        "floors": 0,
+        "width": 6,
+        "height": 3.6,
+        "parentId": "zone_pista_zyro"
+      }
+    },
+    {
+      "id": "entity_pista1_rampa45",
+      "type": "pista",
+      "name": "Pista 1 - Descida 45 graus",
+      "slug": "pista1-rampa-45",
+      "layer": "infraestrutura",
+      "state": "ativo",
+      "geometry": {
+        "type": "line",
+        "points": [
+          { "x": 11.0, "y": 3.6 },
+          { "x": 7.4, "y": 0.0 }
+        ]
+      },
+      "transform": {
+        "z": 0,
+        "rotation": 0
+      },
+      "style": {
+        "color": "#c7c2b6",
+        "material": "concreto"
+      },
+      "metadata": {
+        "access": "público",
+        "floors": 0,
+        "width": 6,
+        "slope": 45,
+        "parentId": "zone_pista_zyro"
+      }
+    },
+    {
+      "id": "entity_pista1_aproximacao",
+      "type": "pista",
+      "name": "Pista 1 - Aproximação do caixote",
+      "slug": "pista1-aproximacao-caixote",
+      "layer": "infraestrutura",
+      "state": "ativo",
+      "geometry": {
+        "type": "line",
+        "points": [
+          { "x": 7.4, "y": 0.0 },
+          { "x": 4.9, "y": 0.0 }
+        ]
+      },
+      "transform": {
+        "z": 0,
+        "rotation": 0
+      },
+      "style": {
+        "color": "#c7c2b6",
+        "material": "concreto"
+      },
+      "metadata": {
+        "access": "público",
+        "floors": 0,
+        "width": 6,
+        "parentId": "zone_pista_zyro"
+      }
+    },
+    {
+      "id": "entity_pista1_caixote",
+      "type": "pista",
+      "name": "Pista 1 - Caixote central",
+      "slug": "pista1-caixote",
+      "layer": "infraestrutura",
+      "state": "ativo",
+      "geometry": {
+        "type": "line",
+        "points": [
+          { "x": 4.9, "y": 0.0 },
+          { "x": 3.3, "y": 1.4 },
+          { "x": 1.3, "y": 1.4 },
+          { "x": -0.3, "y": 0.0 }
+        ]
+      },
+      "transform": {
+        "z": 0,
+        "rotation": 0
+      },
+      "style": {
+        "color": "#c7c2b6",
+        "material": "concreto"
+      },
+      "metadata": {
+        "access": "público",
+        "floors": 0,
+        "width": 6,
+        "height": 1.4,
+        "parentId": "zone_pista_zyro"
+      }
+    },
+    {
+      "id": "entity_pista1_pos_caixote",
+      "type": "pista",
+      "name": "Pista 1 - Pós-caixote",
+      "slug": "pista1-pos-caixote",
+      "layer": "infraestrutura",
+      "state": "ativo",
+      "geometry": {
+        "type": "line",
+        "points": [
+          { "x": -0.3, "y": 0.0 },
+          { "x": -3.3, "y": 0.0 }
+        ]
+      },
+      "transform": {
+        "z": 0,
+        "rotation": 0
+      },
+      "style": {
+        "color": "#c7c2b6",
+        "material": "concreto"
+      },
+      "metadata": {
+        "access": "público",
+        "floors": 0,
+        "width": 6,
+        "parentId": "zone_pista_zyro"
+      }
+    },
+    {
+      "id": "entity_pista1_curva90",
+      "type": "pista",
+      "name": "Pista 1 - Curva 90 graus",
+      "slug": "pista1-curva-90",
+      "layer": "infraestrutura",
+      "state": "ativo",
+      "geometry": {
+        "type": "line",
+        "points": [
+          { "x": -3.3, "y": 0.0 },
+          { "x": -3.9, "y": 0.04 },
+          { "x": -4.7, "y": 0.6 },
+          { "x": -5.6, "y": 1.5 },
+          { "x": -6.5, "y": 2.6 },
+          { "x": -7.2, "y": 3.5 },
+          { "x": -7.8, "y": 4.5 },
+          { "x": -11.3, "y": 4.5 }
+        ]
+      },
+      "transform": {
+        "z": 0,
+        "rotation": 0
+      },
+      "style": {
+        "color": "#c7c2b6",
+        "material": "concreto"
+      },
+      "metadata": {
+        "access": "público",
+        "floors": 0,
+        "width": 6,
+        "radius": 4.5,
+        "angle": 90,
+        "parentId": "zone_pista_zyro"
+      }
+    },
+
+    {
+      "id": "entity_pista2_mini_direita",
+      "type": "pista",
+      "name": "Pista 2 - Mini-ramp direita",
+      "slug": "pista2-mini-direita",
+      "layer": "infraestrutura",
+      "state": "ativo",
+      "geometry": {
+        "type": "line",
+        "points": [
+          { "x": 18.0, "y": 8.0 },
+          { "x": 20.0, "y": 8.25 },
+          { "x": 21.3, "y": 9.0 },
+          { "x": 21.6, "y": 10.0 },
+          { "x": 21.2, "y": 11.0 },
+          { "x": 20.0, "y": 11.6 }
+        ]
+      },
+      "transform": {
+        "z": 0,
+        "rotation": 0
+      },
+      "style": {
+        "color": "#c7c2b6",
+        "material": "concreto"
+      },
+      "metadata": {
+        "access": "público",
+        "floors": 0,
+        "width": 6,
+        "height": 3.6,
+        "radius": 3.6,
+        "parentId": "zone_pista_zyro"
+      }
+    },
+    {
+      "id": "entity_pista2_mini_esquerda",
+      "type": "pista",
+      "name": "Pista 2 - Mini-ramp esquerda",
+      "slug": "pista2-mini-esquerda",
+      "layer": "infraestrutura",
+      "state": "ativo",
+      "geometry": {
+        "type": "line",
+        "points": [
+          { "x": 14.5, "y": 8.0 },
+          { "x": 13.0, "y": 8.25 },
+          { "x": 11.7, "y": 9.0 },
+          { "x": 11.4, "y": 10.0 },
+          { "x": 11.8, "y": 11.0 },
+          { "x": 13.0, "y": 11.6 }
+        ]
+      },
+      "transform": {
+        "z": 0,
+        "rotation": 0
+      },
+      "style": {
+        "color": "#c7c2b6",
+        "material": "concreto"
+      },
+      "metadata": {
+        "access": "público",
+        "floors": 0,
+        "width": 6,
+        "height": 3.6,
+        "radius": 3.6,
+        "parentId": "zone_pista_zyro"
+      }
+    },
+    {
+      "id": "entity_pista2_plato",
+      "type": "pista",
+      "name": "Pista 2 - Platô superior",
+      "slug": "pista2-plato-superior",
+      "layer": "infraestrutura",
+      "state": "ativo",
+      "geometry": {
+        "type": "line",
+        "points": [
+          { "x": 13.0, "y": 11.6 },
+          { "x": 12.0, "y": 11.6 }
+        ]
+      },
+      "transform": {
+        "z": 0,
+        "rotation": 0
+      },
+      "style": {
+        "color": "#c7c2b6",
+        "material": "concreto"
+      },
+      "metadata": {
+        "access": "público",
+        "floors": 0,
+        "width": 6,
+        "height": 3.6,
+        "parentId": "zone_pista_zyro"
+      }
+    },
+    {
+      "id": "entity_pista2_curva90",
+      "type": "pista",
+      "name": "Pista 2 - Curva 90 graus",
+      "slug": "pista2-curva-90",
+      "layer": "infraestrutura",
+      "state": "ativo",
+      "geometry": {
+        "type": "line",
+        "points": [
+          { "x": 12.0, "y": 11.6 },
+          { "x": 11.9, "y": 10.9 },
+          { "x": 11.5, "y": 10.0 },
+          { "x": 10.8, "y": 9.1 },
+          { "x": 9.9, "y": 8.4 },
+          { "x": 8.4, "y": 8.0 }
+        ]
+      },
+      "transform": {
+        "z": 0,
+        "rotation": 0
+      },
+      "style": {
+        "color": "#c7c2b6",
+        "material": "concreto"
+      },
+      "metadata": {
+        "access": "público",
+        "floors": 0,
+        "width": 6,
+        "radius": 3.6,
+        "angle": 90,
+        "parentId": "zone_pista_zyro"
+      }
+    },
+    {
+      "id": "entity_pista2_aproximacao",
+      "type": "pista",
+      "name": "Pista 2 - Aproximação do caixote",
+      "slug": "pista2-aproximacao-caixote",
+      "layer": "infraestrutura",
+      "state": "ativo",
+      "geometry": {
+        "type": "line",
+        "points": [
+          { "x": 8.4, "y": 8.0 },
+          { "x": 4.9, "y": 8.0 }
+        ]
+      },
+      "transform": {
+        "z": 0,
+        "rotation": 0
+      },
+      "style": {
+        "color": "#c7c2b6",
+        "material": "concreto"
+      },
+      "metadata": {
+        "access": "público",
+        "floors": 0,
+        "width": 6,
+        "parentId": "zone_pista_zyro"
+      }
+    },
+    {
+      "id": "entity_pista2_caixote",
+      "type": "pista",
+      "name": "Pista 2 - Caixote central",
+      "slug": "pista2-caixote",
+      "layer": "infraestrutura",
+      "state": "ativo",
+      "geometry": {
+        "type": "line",
+        "points": [
+          { "x": 4.9, "y": 8.0 },
+          { "x": 3.3, "y": 9.4 },
+          { "x": 1.3, "y": 9.4 },
+          { "x": -0.3, "y": 8.0 }
+        ]
+      },
+      "transform": {
+        "z": 0,
+        "rotation": 0
+      },
+      "style": {
+        "color": "#c7c2b6",
+        "material": "concreto"
+      },
+      "metadata": {
+        "access": "público",
+        "floors": 0,
+        "width": 6,
+        "height": 1.4,
+        "parentId": "zone_pista_zyro"
+      }
+    },
+    {
+      "id": "entity_pista2_pos_caixote",
+      "type": "pista",
+      "name": "Pista 2 - Pós-caixote",
+      "slug": "pista2-pos-caixote",
+      "layer": "infraestrutura",
+      "state": "ativo",
+      "geometry": {
+        "type": "line",
+        "points": [
+          { "x": -0.3, "y": 8.0 },
+          { "x": -2.8, "y": 8.0 }
+        ]
+      },
+      "transform": {
+        "z": 0,
+        "rotation": 0
+      },
+      "style": {
+        "color": "#c7c2b6",
+        "material": "concreto"
+      },
+      "metadata": {
+        "access": "público",
+        "floors": 0,
+        "width": 6,
+        "parentId": "zone_pista_zyro"
+      }
+    },
+    {
+      "id": "entity_pista2_rampa45",
+      "type": "pista",
+      "name": "Pista 2 - Rampa 45 graus",
+      "slug": "pista2-rampa-45",
+      "layer": "infraestrutura",
+      "state": "ativo",
+      "geometry": {
+        "type": "line",
+        "points": [
+          { "x": -2.8, "y": 8.0 },
+          { "x": -6.4, "y": 11.6 },
+          { "x": -9.9, "y": 11.6 }
+        ]
+      },
+      "transform": {
+        "z": 0,
+        "rotation": 0
+      },
+      "style": {
+        "color": "#c7c2b6",
+        "material": "concreto"
+      },
+      "metadata": {
+        "access": "público",
+        "floors": 0,
+        "width": 6,
+        "height": 3.6,
+        "slope": 45,
+        "parentId": "zone_pista_zyro"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation_pista1_mini_direita",
+      "fromId": "entity_pista1_mini_direita",
+      "type": "belongs_to",
+      "toId": "zone_pista_zyro"
+    },
+    {
+      "id": "relation_pista1_mini_esquerda",
+      "fromId": "entity_pista1_mini_esquerda",
+      "type": "belongs_to",
+      "toId": "zone_pista_zyro"
+    },
+    {
+      "id": "relation_pista1_plato",
+      "fromId": "entity_pista1_plato_alto",
+      "type": "belongs_to",
+      "toId": "zone_pista_zyro"
+    },
+    {
+      "id": "relation_pista1_rampa",
+      "fromId": "entity_pista1_rampa45",
+      "type": "belongs_to",
+      "toId": "zone_pista_zyro"
+    },
+    {
+      "id": "relation_pista1_aprox",
+      "fromId": "entity_pista1_aproximacao",
+      "type": "belongs_to",
+      "toId": "zone_pista_zyro"
+    },
+    {
+      "id": "relation_pista1_caixote",
+      "fromId": "entity_pista1_caixote",
+      "type": "belongs_to",
+      "toId": "zone_pista_zyro"
+    },
+    {
+      "id": "relation_pista1_pos",
+      "fromId": "entity_pista1_pos_caixote",
+      "type": "belongs_to",
+      "toId": "zone_pista_zyro"
+    },
+    {
+      "id": "relation_pista1_curva",
+      "fromId": "entity_pista1_curva90",
+      "type": "belongs_to",
+      "toId": "zone_pista_zyro"
+    },
+    {
+      "id": "relation_pista2_mini_direita",
+      "fromId": "entity_pista2_mini_direita",
+      "type": "belongs_to",
+      "toId": "zone_pista_zyro"
+    },
+    {
+      "id": "relation_pista2_mini_esquerda",
+      "fromId": "entity_pista2_mini_esquerda",
+      "type": "belongs_to",
+      "toId": "zone_pista_zyro"
+    },
+    {
+      "id": "relation_pista2_plato",
+      "fromId": "entity_pista2_plato",
+      "type": "belongs_to",
+      "toId": "zone_pista_zyro"
+    },
+    {
+      "id": "relation_pista2_curva",
+      "fromId": "entity_pista2_curva90",
+      "type": "belongs_to",
+      "toId": "zone_pista_zyro"
+    },
+    {
+      "id": "relation_pista2_aprox",
+      "fromId": "entity_pista2_aproximacao",
+      "type": "belongs_to",
+      "toId": "zone_pista_zyro"
+    },
+    {
+      "id": "relation_pista2_caixote",
+      "fromId": "entity_pista2_caixote",
+      "type": "belongs_to",
+      "toId": "zone_pista_zyro"
+    },
+    {
+      "id": "relation_pista2_pos",
+      "fromId": "entity_pista2_pos_caixote",
+      "type": "belongs_to",
+      "toId": "zone_pista_zyro"
+    },
+    {
+      "id": "relation_pista2_rampa",
+      "fromId": "entity_pista2_rampa45",
+      "type": "belongs_to",
+      "toId": "zone_pista_zyro"
+    }
+  ],
+  "layers": {
+    "terreno": {
+      "visible": true,
+      "locked": false
+    },
+    "infraestrutura": {
+      "visible": true,
+      "locked": false
+    },
+    "vias": {
+      "visible": true,
+      "locked": false
+    },
+    "calcadas": {
+      "visible": true,
+      "locked": false
+    },
+    "pracas": {
+      "visible": true,
+      "locked": false
+    },
+    "zonas": {
+      "visible": true,
+      "locked": false
+    },
+    "lotes": {
+      "visible": true,
+      "locked": false
+    },
+    "construcoes": {
+      "visible": true,
+      "locked": false
+    },
+    "interiores": {
+      "visible": true,
+      "locked": false
+    },
+    "urbanos": {
+      "visible": true,
+      "locked": false
+    },
+    "entidades": {
+      "visible": true,
+      "locked": false
+    },
+    "debug": {
+      "visible": true,
+      "locked": false
+    }
+  },
+  "events": [
+    {
+      "id": "event_pista_created",
+      "type": "world.created",
+      "timestamp": "2026-08-25T00:00:00Z",
+      "payload": {
+        "source": "Pista ZYRO extraída do HTML Pista Dupla v13",
+        "entities": 16
+      }
+    }
+  ]
+}

@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#05070A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Cidades Digitais · Labriolag</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── RESET + VARS ─────────────────────────────── */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --ink:    #05070A;
+  --ink2:   #0A0D14;
+  --ink3:   #111520;
+  --gold:   #D4AF37;
+  --gold-l: #E8CC6A;
+  --gold-d: #A8891E;
+  --gold-p: rgba(212,175,55,0.10);
+  --gold-b: rgba(212,175,55,0.22);
+  --cyber:  #00E5FF;
+  --cyber-d:rgba(0,229,255,0.10);
+  --cyber-b:rgba(0,229,255,0.22);
+  --white:  #F4F2EC;
+  --off:    #A8A5A0;
+  --muted:  #52504C;
+  --line:   rgba(255,255,255,0.07);
+
+  /* safe areas */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+html{
+  background:var(--ink);
+  height:100%;
+  overflow:hidden;
+}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--ink);
+  color:var(--white);
+  height:100%;
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  -webkit-text-size-adjust:100%;
+  touch-action:none;
+}
+
+/* ── STATUS BAR SPACER (iOS notch) ────────────── */
+.status-bar{
+  height:calc(var(--sat) + 10px);
+  background:rgba(5,7,10,0.92);
+  position:fixed;top:0;left:0;right:0;z-index:900;
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+}
+
+/* ── TOP CHROME ───────────────────────────────── */
+.top-chrome{
+  position:fixed;
+  top:calc(var(--sat) + 10px);
+  left:0;right:0;z-index:800;
+  height:44px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;
+  background:rgba(5,7,10,0.88);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--line);
+}
+.tc-logo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1rem;font-weight:700;letter-spacing:2.5px;color:var(--gold);
+}
+.tc-badge{
+  font-size:.55rem;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--cyber);font-weight:600;
+  background:var(--cyber-d);border:1px solid var(--cyber-b);
+  padding:3px 9px;border-radius:20px;
+}
+
+/* ── PROGRESS BAR ─────────────────────────────── */
+.prog-bar{
+  position:fixed;
+  top:calc(var(--sat) + 54px);
+  left:0;right:0;z-index:800;
+  height:2px;background:var(--line);
+}
+.prog-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--gold-d),var(--gold),var(--cyber));
+  transition:width .45s cubic-bezier(.4,0,.2,1);
+  will-change:width;
+}
+
+/* ── DECK WRAPPER ─────────────────────────────── */
+.deck{
+  position:fixed;
+  top:calc(var(--sat) + 56px);
+  left:0;right:0;
+  bottom:calc(var(--sab) + 72px);
+  overflow:hidden;
+  will-change:transform;
+}
+
+/* ── SLIDE ────────────────────────────────────── */
+.slide{
+  position:absolute;inset:0;
+  overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  opacity:0;pointer-events:none;
+  transform:translateX(100%);
+  transition:transform .42s cubic-bezier(.4,0,.2,1),
+             opacity   .42s cubic-bezier(.4,0,.2,1);
+  will-change:transform,opacity;
+}
+.slide.active{
+  opacity:1;pointer-events:all;transform:translateX(0);
+}
+.slide.exit-left{
+  opacity:0;transform:translateX(-30%);
+  pointer-events:none;
+}
+
+/* scroll inner */
+.slide-inner{
+  min-height:100%;
+  display:flex;flex-direction:column;
+  padding:20px 20px 32px;
+}
+
+/* grid bg */
+.gbg{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(var(--line) 1px,transparent 1px),
+    linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:44px 44px;
+  mask-image:radial-gradient(ellipse 80% 60% at 50% 40%,black,transparent);
+  -webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 40%,black,transparent);
+}
+
+/* ── BOTTOM NAV ───────────────────────────────── */
+.bottom-nav{
+  position:fixed;
+  bottom:0;left:0;right:0;z-index:800;
+  height:calc(72px + var(--sab));
+  background:rgba(5,7,10,0.92);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border-top:1px solid var(--line);
+  display:flex;align-items:flex-start;justify-content:space-between;
+  padding:14px 24px 0;
+}
+.bn-left{display:flex;flex-direction:column;justify-content:center;gap:10px;}
+.bn-dots{display:flex;gap:6px;align-items:center;}
+.bn-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--muted);transition:all .3s;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.bn-dot.active{background:var(--gold);width:18px;border-radius:3px;}
+.bn-counter{font-size:.6rem;letter-spacing:2px;color:var(--muted);font-weight:500;}
+.bn-arrows{display:flex;gap:10px;}
+.bn-btn{
+  width:40px;height:40px;border-radius:50%;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.03);
+  color:var(--off);font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  transition:border-color .25s,background .25s,color .25s;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+}
+.bn-btn:active{border-color:var(--gold);background:var(--gold-p);color:var(--gold);}
+
+/* ── SHARED TYPOGRAPHY ────────────────────────── */
+.eyebrow{
+  display:flex;align-items:center;gap:8px;
+  font-size:.58rem;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--gold);font-weight:700;margin-bottom:10px;
+}
+.ew-line{width:18px;height:1px;background:var(--gold);flex-shrink:0;}
+
+.slide-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.7rem,7vw,2.2rem);
+  font-weight:700;color:var(--white);
+  line-height:1.15;margin-bottom:12px;
+}
+.slide-title em{color:var(--gold);font-style:italic;}
+
+.slide-lead{
+  font-size:.82rem;color:var(--off);line-height:1.75;margin-bottom:20px;
+}
+
+/* ── NOISE OVERLAY ────────────────────────────── */
+body::after{
+  content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
+  opacity:.022;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:160px;
+}
+
+/* ═══════════════════════════════════════════════
+   SLIDE 1 — CAPA
+═══════════════════════════════════════════════ */
+#s1{background:var(--ink);}
+#s1 .slide-inner{
+  justify-content:center;align-items:center;
+  text-align:center;
+  min-height:100%;
+  padding-top:24px;
+}
+.s1-glow{
+  position:absolute;width:280px;height:280px;border-radius:50%;
+  background:radial-gradient(circle,rgba(212,175,55,.1) 0%,transparent 70%);
+  top:50%;left:50%;transform:translate(-50%,-58%);
+  pointer-events:none;
+}
+.iso-wrap{
+  margin-bottom:24px;
+  animation:floatY 5s ease-in-out infinite;
+  position:relative;z-index:1;
+}
+@keyframes floatY{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-8px);}
+}
+.s1-tag{
+  font-size:.58rem;letter-spacing:3.5px;text-transform:uppercase;
+  color:var(--cyber);font-weight:600;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-bottom:12px;position:relative;z-index:1;
+}
+.s1-tag::before,.s1-tag::after{content:'';width:20px;height:1px;background:var(--cyber);opacity:.5;}
+.s1-h{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2rem,9vw,2.6rem);
+  font-weight:700;color:var(--white);
+  line-height:1.1;margin-bottom:8px;
+  position:relative;z-index:1;
+}
+.s1-h em{color:var(--gold);font-style:italic;}
+.s1-sub{font-size:.8rem;color:var(--off);margin-bottom:28px;position:relative;z-index:1;}
+.s1-badges{
+  display:flex;flex-direction:column;gap:8px;align-items:center;
+  position:relative;z-index:1;
+}
+.s1-badge{
+  padding:8px 20px;border-radius:2px;
+  font-size:.62rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;
+  width:100%;max-width:280px;text-align:center;
+}
+.bg-gold{background:var(--gold-p);border:1px solid var(--gold-b);color:var(--gold);}
+.bg-cyber{background:var(--cyber-d);border:1px solid var(--cyber-b);color:var(--cyber);}
+.bg-white{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:var(--off);}
+
+/* ═══════════════════════════════════════════════
+   SLIDE 2 — DESAFIO
+═══════════════════════════════════════════════ */
+#s2{background:var(--ink2);}
+.pain-list{display:flex;flex-direction:column;gap:10px;}
+.pain-card{
+  padding:14px 16px;
+  background:var(--ink3);
+  border:1px solid var(--line);border-radius:4px;
+  display:flex;align-items:flex-start;gap:12px;
+  transition:border-color .2s;
+}
+.pain-card:active{border-color:var(--gold-b);}
+.pi-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px;}
+.pi-title{font-size:.8rem;font-weight:700;color:var(--white);margin-bottom:3px;}
+.pi-desc{font-size:.72rem;color:var(--off);line-height:1.55;}
+
+/* ═══════════════════════════════════════════════
+   SLIDE 3 — PIRAPORA
+═══════════════════════════════════════════════ */
+#s3{background:var(--ink);}
+.city-hero{
+  background:var(--ink3);
+  border:1px solid var(--gold-b);border-radius:6px;
+  padding:20px;margin-bottom:18px;
+  position:relative;overflow:hidden;
+}
+.city-hero::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--gold-d),var(--gold),var(--gold-d));
+}
+.ch-header{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.ch-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--gold);animation:blink 2s infinite;
+}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.25;}}
+.ch-label{font-size:.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700;}
+.ch-city{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.5rem;font-weight:700;color:var(--white);margin-bottom:2px;
+}
+.ch-state{font-size:.68rem;color:var(--muted);}
+
+.score-pill{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--gold-p);border:1px solid var(--gold-b);
+  border-radius:4px;padding:12px 16px;margin-top:14px;width:100%;
+}
+.sp-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:2rem;font-weight:700;color:var(--gold);line-height:1;
+}
+.sp-text{font-size:.68rem;color:var(--off);line-height:1.5;}
+.sp-sub{font-size:.6rem;color:var(--muted);}
+
+.factor-list{display:flex;flex-direction:column;gap:8px;}
+.factor-row{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;
+  background:var(--ink2);border:1px solid var(--line);border-radius:3px;
+}
+.fr-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.3rem;color:var(--cyber);font-weight:600;
+  min-width:26px;line-height:1;
+}
+.fr-label{font-size:.78rem;font-weight:600;color:var(--white);margin-bottom:2px;}
+.fr-desc{font-size:.66rem;color:var(--muted);}
+
+/* ═══════════════════════════════════════════════
+   SLIDE 4 — COTA FUNDADOR
+═══════════════════════════════════════════════ */
+#s4{background:var(--ink2);}
+.vagas-pill{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  background:var(--gold-p);border:1px solid var(--gold-b);
+  padding:9px 18px;border-radius:2px;margin-bottom:20px;
+  font-size:.62rem;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--gold);font-weight:700;
+}
+.vp-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--gold);animation:blink 2s infinite;flex-shrink:0;
+}
+.benefit-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+.benefit-row{
+  padding:16px;
+  background:var(--ink3);border:1px solid var(--line);border-radius:4px;
+  position:relative;overflow:hidden;
+  transition:border-color .2s;
+}
+.benefit-row:active{border-color:var(--gold-b);}
+.benefit-row::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--gold);
+}
+.br-icon{font-size:1.2rem;margin-bottom:8px;}
+.br-title{font-size:.82rem;font-weight:700;color:var(--white);margin-bottom:4px;}
+.br-desc{font-size:.72rem;color:var(--off);line-height:1.55;margin-bottom:8px;}
+.br-tag{
+  display:inline-block;
+  background:var(--gold-p);border-radius:2px;
+  font-size:.6rem;font-weight:700;color:var(--gold);
+  padding:4px 8px;letter-spacing:.5px;
+}
+
+.setores-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+.setor-box{
+  padding:14px 12px;border-radius:3px;
+  background:var(--ink3);border:1px solid var(--line);
+  text-align:center;
+}
+.sb-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.8rem;color:var(--cyber);font-weight:700;line-height:1;
+}
+.sb-sector{font-size:.6rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-top:3px;}
+.sb-lbl{font-size:.65rem;color:var(--off);margin-top:2px;}
+
+/* ═══════════════════════════════════════════════
+   SLIDE 5 — METODOLOGIA
+═══════════════════════════════════════════════ */
+#s5{background:var(--ink);}
+.metric-card{
+  background:var(--ink3);border:1px solid var(--line);
+  border-radius:5px;overflow:hidden;margin-bottom:14px;
+}
+.mc-head{
+  padding:12px 16px;background:var(--ink2);
+  border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.mc-name{font-size:.62rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);font-weight:700;}
+.mc-badge{
+  font-size:.56rem;padding:3px 7px;border-radius:20px;
+  background:var(--gold-p);border:1px solid var(--gold-b);
+  color:var(--gold);letter-spacing:1px;text-transform:uppercase;
+}
+.mc-body{padding:16px;}
+.formula-box{
+  font-size:.72rem;color:var(--cyber);line-height:1.6;
+  background:rgba(0,229,255,.05);border:1px solid var(--cyber-b);
+  border-radius:3px;padding:10px 12px;margin-bottom:12px;
+  word-break:break-all;
+}
+.var-list{display:flex;flex-direction:column;gap:5px;}
+.var-row{
+  display:flex;align-items:center;gap:8px;
+  font-size:.7rem;color:var(--off);
+}
+.vr-key{
+  font-family:'Cormorant Garamond',serif;
+  font-size:.88rem;font-weight:700;color:var(--gold);min-width:16px;
+}
+.vr-w{margin-left:auto;font-size:.64rem;color:var(--muted);font-weight:500;}
+
+.tpc-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
+.tpc-box{
+  padding:12px 8px;border-radius:3px;text-align:center;
+  background:var(--ink3);border:1px solid var(--line);
+}
+.tpc-n{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.5rem;color:var(--cyber);font-weight:700;line-height:1;
+}
+.tpc-l{font-size:.62rem;color:var(--off);margin-top:3px;}
+.tpc-s{font-size:.58rem;color:var(--muted);margin-top:2px;}
+
+/* ═══════════════════════════════════════════════
+   SLIDE 6 — EXPANSÃO
+═══════════════════════════════════════════════ */
+#s6{background:var(--ink2);}
+.exp-list{display:flex;flex-direction:column;gap:10px;margin-top:20px;}
+.exp-card{
+  padding:18px 16px;
+  background:var(--ink3);border:1px solid var(--line);border-radius:5px;
+  position:relative;overflow:hidden;
+  display:flex;align-items:flex-start;gap:14px;
+}
+.exp-card.piloto{border-color:var(--gold-b);}
+.exp-card.bronze{border-color:rgba(176,138,90,.35);}
+.exp-card.prata {border-color:rgba(160,165,180,.3);}
+.exp-card.ouro  {border-color:rgba(212,175,55,.5);background:rgba(212,175,55,.03);}
+
+.ec-score-col{text-align:center;min-width:44px;flex-shrink:0;}
+.ec-rank{font-size:.5rem;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:4px;}
+.exp-card.piloto .ec-rank{color:var(--cyber);}
+.exp-card.bronze .ec-rank{color:#B08A5A;}
+.exp-card.prata  .ec-rank{color:#A0A5B4;}
+.exp-card.ouro   .ec-rank{color:var(--gold);}
+
+.ec-score{
+  font-family:'Cormorant Garamond',serif;
+  font-size:2rem;font-weight:700;line-height:1;
+}
+.exp-card.piloto .ec-score{color:var(--cyber);}
+.exp-card.bronze .ec-score{color:#B08A5A;}
+.exp-card.prata  .ec-score{color:#A0A5B4;}
+.exp-card.ouro   .ec-score{color:var(--gold);}
+
+.ec-divider{width:1px;background:var(--line);align-self:stretch;flex-shrink:0;}
+.ec-info{flex:1;}
+.ec-city{font-size:.85rem;font-weight:700;color:var(--white);margin-bottom:2px;}
+.ec-state{font-size:.65rem;color:var(--muted);margin-bottom:8px;}
+.ec-strat{font-size:.7rem;color:var(--off);line-height:1.55;}
+
+.ouro-star{
+  position:absolute;top:12px;right:12px;
+  font-size:1rem;color:var(--gold);opacity:.4;
+}
+
+.exp-note{
+  margin-top:14px;
+  padding:14px 16px;
+  background:var(--ink);border:1px solid var(--line);border-radius:4px;
+  display:flex;align-items:flex-start;gap:10px;
+}
+.en-icon{font-size:1rem;flex-shrink:0;margin-top:1px;}
+.en-txt{font-size:.7rem;color:var(--off);line-height:1.65;}
+.en-txt b{color:var(--gold);}
+
+/* ── ANIMATIONS ───────────────────────────────── */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(16px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.slide.active .pain-card,
+.slide.active .factor-row,
+.slide.active .benefit-row,
+.slide.active .exp-card{
+  animation:fadeUp .5s ease both;
+}
+.slide.active .pain-card:nth-child(1){animation-delay:.04s;}
+.slide.active .pain-card:nth-child(2){animation-delay:.1s;}
+.slide.active .pain-card:nth-child(3){animation-delay:.16s;}
+.slide.active .pain-card:nth-child(4){animation-delay:.22s;}
+.slide.active .pain-card:nth-child(5){animation-delay:.28s;}
+.slide.active .factor-row:nth-child(1){animation-delay:.06s;}
+.slide.active .factor-row:nth-child(2){animation-delay:.13s;}
+.slide.active .factor-row:nth-child(3){animation-delay:.2s;}
+.slide.active .benefit-row:nth-child(1){animation-delay:.05s;}
+.slide.active .benefit-row:nth-child(2){animation-delay:.12s;}
+.slide.active .benefit-row:nth-child(3){animation-delay:.19s;}
+.slide.active .exp-card:nth-child(1){animation-delay:.04s;}
+.slide.active .exp-card:nth-child(2){animation-delay:.1s;}
+.slide.active .exp-card:nth-child(3){animation-delay:.16s;}
+.slide.active .exp-card:nth-child(4){animation-delay:.22s;}
+</style>
+</head>
+<body>
+
+<!-- iOS status bar spacer -->
+<div class="status-bar"></div>
+
+<!-- Top chrome -->
+<div class="top-chrome">
+  <div class="tc-logo">LABRIOLAG</div>
+  <div class="tc-badge">Cota Fundador</div>
+</div>
+
+<!-- Progress -->
+<div class="prog-bar"><div class="prog-fill" id="prog"></div></div>
+
+<!-- ═══════ DECK ═══════ -->
+<div class="deck" id="deck">
+
+  <!-- ── S1: CAPA ── -->
+  <div class="slide active" id="s1">
+    <div class="gbg"></div>
+    <div class="s1-glow"></div>
+    <div class="slide-inner">
+      <div class="iso-wrap">
+        <svg viewBox="0 0 340 280" width="220" height="181" aria-label="Labriolag logo">
+          <defs>
+            <filter id="gw"><feGaussianBlur stdDeviation="2" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <path d="M170,240 L300,180 L170,120 L40,180 Z" fill="rgba(0,229,255,.03)" stroke="rgba(0,229,255,.08)" stroke-width=".4"/>
+          <!-- p1 -->
+          <path d="M80,230 V170 L115,152 V212 L80,230" fill="rgba(16,20,28,.95)" stroke="#D4AF37" stroke-width=".7"/>
+          <rect x="88" y="166" width="5" height="6" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="98" y="166" width="5" height="6" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="88" y="182" width="5" height="6" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="98" y="182" width="5" height="6" fill="#D4AF37" opacity=".4" class="win"/>
+          <rect x="88" y="198" width="5" height="6" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="98" y="198" width="5" height="6" fill="#00E5FF" opacity=".2" class="win"/>
+          <!-- p2 -->
+          <path d="M115,152 L148,168 V238 L115,222 V152" fill="rgba(18,24,36,.95)" stroke="#D4AF37" stroke-width=".7"/>
+          <rect x="122" y="162" width="5" height="7" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="133" y="162" width="5" height="7" fill="#D4AF37" opacity=".35" class="win"/>
+          <rect x="122" y="178" width="5" height="7" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="133" y="178" width="5" height="7" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="122" y="194" width="5" height="7" fill="#D4AF37" opacity=".35" class="win"/>
+          <rect x="133" y="194" width="5" height="7" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="122" y="210" width="5" height="7" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="133" y="210" width="5" height="7" fill="#00E5FF" opacity=".2" class="win"/>
+          <!-- p3 central alto -->
+          <path d="M148,238 V106 L186,88 V220 L148,238" fill="rgba(10,14,22,.97)" stroke="#D4AF37" stroke-width=".9"/>
+          <path d="M148,106 L186,88 L186,98 L148,116 Z" fill="rgba(212,175,55,.12)" stroke="#D4AF37" stroke-width=".5"/>
+          <line x1="167" y1="88" x2="167" y2="72" stroke="#D4AF37" stroke-width="1" opacity=".6"/>
+          <circle cx="167" cy="70" r="2.5" fill="#D4AF37" opacity=".8"/>
+          <circle cx="167" cy="70" r="5" fill="none" stroke="#D4AF37" stroke-width=".5" opacity=".3">
+            <animate attributeName="r" values="4;9;4" dur="2.2s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values=".3;0;.3" dur="2.2s" repeatCount="indefinite"/>
+          </circle>
+          <rect x="156" y="100" width="5" height="7" fill="#00E5FF" opacity=".25" class="win"/>
+          <rect x="167" y="100" width="5" height="7" fill="#D4AF37" opacity=".4" class="win"/>
+          <rect x="175" y="100" width="5" height="7" fill="#00E5FF" opacity=".25" class="win"/>
+          <rect x="156" y="116" width="5" height="7" fill="#00E5FF" opacity=".25" class="win"/>
+          <rect x="167" y="116" width="5" height="7" fill="#00E5FF" opacity=".25" class="win"/>
+          <rect x="175" y="116" width="5" height="7" fill="#D4AF37" opacity=".4" class="win"/>
+          <rect x="156" y="132" width="5" height="7" fill="#D4AF37" opacity=".4" class="win"/>
+          <rect x="167" y="132" width="5" height="7" fill="#00E5FF" opacity=".25" class="win"/>
+          <rect x="175" y="132" width="5" height="7" fill="#00E5FF" opacity=".25" class="win"/>
+          <rect x="156" y="148" width="5" height="7" fill="#00E5FF" opacity=".25" class="win"/>
+          <rect x="167" y="148" width="5" height="7" fill="#00E5FF" opacity=".25" class="win"/>
+          <rect x="175" y="148" width="5" height="7" fill="#D4AF37" opacity=".4" class="win"/>
+          <rect x="156" y="164" width="5" height="7" fill="#00E5FF" opacity=".25" class="win"/>
+          <rect x="167" y="164" width="5" height="7" fill="#D4AF37" opacity=".4" class="win"/>
+          <rect x="175" y="164" width="5" height="7" fill="#00E5FF" opacity=".25" class="win"/>
+          <rect x="156" y="180" width="5" height="7" fill="#00E5FF" opacity=".25" class="win"/>
+          <rect x="167" y="180" width="5" height="7" fill="#00E5FF" opacity=".25" class="win"/>
+          <rect x="175" y="180" width="5" height="7" fill="#D4AF37" opacity=".4" class="win"/>
+          <rect x="156" y="196" width="5" height="7" fill="#D4AF37" opacity=".4" class="win"/>
+          <rect x="167" y="196" width="5" height="7" fill="#00E5FF" opacity=".25" class="win"/>
+          <rect x="175" y="196" width="5" height="7" fill="#00E5FF" opacity=".25" class="win"/>
+          <!-- p4 -->
+          <path d="M186,88 L224,106 V248 L186,230 V88" fill="rgba(14,18,26,.96)" stroke="#D4AF37" stroke-width=".8"/>
+          <rect x="194" y="100" width="5" height="7" fill="#D4AF37" opacity=".35" class="win"/>
+          <rect x="204" y="100" width="5" height="7" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="214" y="100" width="5" height="7" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="194" y="116" width="5" height="7" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="204" y="116" width="5" height="7" fill="#D4AF37" opacity=".35" class="win"/>
+          <rect x="214" y="116" width="5" height="7" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="194" y="132" width="5" height="7" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="204" y="132" width="5" height="7" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="214" y="132" width="5" height="7" fill="#D4AF37" opacity=".35" class="win"/>
+          <rect x="194" y="148" width="5" height="7" fill="#D4AF37" opacity=".35" class="win"/>
+          <rect x="204" y="148" width="5" height="7" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="214" y="148" width="5" height="7" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="194" y="164" width="5" height="7" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="204" y="164" width="5" height="7" fill="#D4AF37" opacity=".35" class="win"/>
+          <rect x="214" y="164" width="5" height="7" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="194" y="180" width="5" height="7" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="204" y="180" width="5" height="7" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="214" y="180" width="5" height="7" fill="#D4AF37" opacity=".35" class="win"/>
+          <rect x="194" y="196" width="5" height="7" fill="#D4AF37" opacity=".35" class="win"/>
+          <rect x="204" y="196" width="5" height="7" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="214" y="196" width="5" height="7" fill="#00E5FF" opacity=".2" class="win"/>
+          <!-- p5 -->
+          <path d="M224,248 V180 L260,162 V228 L224,248" fill="rgba(16,20,28,.95)" stroke="#D4AF37" stroke-width=".7"/>
+          <rect x="232" y="174" width="5" height="6" fill="#D4AF37" opacity=".35" class="win"/>
+          <rect x="244" y="174" width="5" height="6" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="232" y="188" width="5" height="6" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="244" y="188" width="5" height="6" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="232" y="202" width="5" height="6" fill="#00E5FF" opacity=".2" class="win"/>
+          <rect x="244" y="202" width="5" height="6" fill="#D4AF37" opacity=".35" class="win"/>
+          <!-- wifi -->
+          <path d="M150,258 Q170,245 190,258" fill="none" stroke="rgba(0,229,255,.15)" stroke-width="1.2"/>
+          <path d="M155,265 Q170,255 185,265" fill="none" stroke="rgba(0,229,255,.1)" stroke-width="1"/>
+          <circle cx="170" cy="270" r="2" fill="rgba(0,229,255,.25)"/>
+        </svg>
+      </div>
+
+      <div class="s1-tag">Iniciativa Estratégica 2025</div>
+      <h1 class="s1-h">Programa<br><em>Cidades Digitais</em></h1>
+      <p class="s1-sub">Implantação Piloto · Labriolag Holding</p>
+      <div class="s1-badges">
+        <span class="s1-badge bg-gold">Cota Fundador Pioneiro</span>
+        <span class="s1-badge bg-cyber">15 Vagas · Grupo Fechado</span>
+        <span class="s1-badge bg-white">Pirapora do Bom Jesus — SP</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── S2: DESAFIO ── -->
+  <div class="slide" id="s2">
+    <div class="gbg"></div>
+    <div class="slide-inner">
+      <div class="eyebrow"><span class="ew-line"></span>O Desafio Estrutural</div>
+      <h2 class="slide-title">O comércio local está perdendo a <em>guerra digital.</em></h2>
+      <p class="slide-lead">O consumidor já está no digital. Quem não aparece online, não vende. O comércio local, sem estrutura padronizada, perde espaço todo dia.</p>
+      <div class="pain-list">
+        <div class="pain-card">
+          <div class="pi-icon">📉</div>
+          <div><div class="pi-title">Perda de vendas invisível</div><div class="pi-desc">Clientes buscam online e não encontram. A venda vai para quem aparece — geralmente grandes plataformas.</div></div>
+        </div>
+        <div class="pain-card">
+          <div class="pi-icon">🔄</div>
+          <div><div class="pi-title">Zero recorrência estruturada</div><div class="pi-desc">Sem canal digital, o relacionamento termina na saída da loja. Não há como reconectar com o cliente.</div></div>
+        </div>
+        <div class="pain-card">
+          <div class="pi-icon">📊</div>
+          <div><div class="pi-title">Dados inexistentes</div><div class="pi-desc">Sem métricas, não há como saber o que funciona, o que muda ou onde o crescimento está sendo perdido.</div></div>
+        </div>
+        <div class="pain-card">
+          <div class="pi-icon">🏙️</div>
+          <div><div class="pi-title">Competição desigual</div><div class="pi-desc">Grandes centros e e-commerce avançam com tecnologia. O comércio local compete com as mãos atadas.</div></div>
+        </div>
+        <div class="pain-card">
+          <div class="pi-icon">🧩</div>
+          <div><div class="pi-title">Falta de padronização</div><div class="pi-desc">Cada estabelecimento tenta o digital de forma isolada e informal, sem metodologia e sem resultado consistente.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── S3: PIRAPORA ── -->
+  <div class="slide" id="s3">
+    <div class="gbg"></div>
+    <div class="slide-inner">
+      <div class="eyebrow"><span class="ew-line"></span>A Cidade-Laboratório</div>
+      <h2 class="slide-title">Por que <em>Pirapora</em> primeiro?</h2>
+      <p class="slide-lead">A escolha da cidade piloto é estratégica — não geográfica. Pirapora reúne condições ideais para validar o modelo com risco controlado e aprendizado máximo.</p>
+
+      <div class="city-hero">
+        <div class="ch-header">
+          <div class="ch-dot"></div>
+          <span class="ch-label">Cidade Piloto Ativa</span>
+        </div>
+        <div class="ch-city">Pirapora do Bom Jesus</div>
+        <div class="ch-state">Estado de São Paulo · Região Metropolitana</div>
+        <div class="score-pill">
+          <div class="sp-num">4.9</div>
+          <div>
+            <div class="sp-text">Score ISTD<br>Índice de Potencial de Transformação Digital</div>
+            <div class="sp-sub">Base piloto · Domínio rápido garantido</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="factor-list">
+        <div class="factor-row">
+          <div class="fr-num">01</div>
+          <div><div class="fr-label">Alta concentração comercial</div><div class="fr-desc">Alta densidade de estabelecimentos por km² — favorável à escala rápida.</div></div>
+        </div>
+        <div class="factor-row">
+          <div class="fr-num">02</div>
+          <div><div class="fr-label">Menor custo de aprendizado</div><div class="fr-desc">Cidade pequena = errar custa pouco e ensina muito. Validação de baixo risco.</div></div>
+        </div>
+        <div class="factor-row">
+          <div class="fr-num">03</div>
+          <div><div class="fr-label">Mercado virgem digitalmente</div><div class="fr-desc">Alto potencial de impacto mensurável desde o primeiro mês de operação.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── S4: COTA FUNDADOR ── -->
+  <div class="slide" id="s4">
+    <div class="gbg"></div>
+    <div class="slide-inner">
+      <div class="eyebrow" style="justify-content:center;"><span class="ew-line"></span>Convite Exclusivo<span class="ew-line"></span></div>
+      <h2 class="slide-title" style="text-align:center;">A <em>Cota Fundador<br>Pioneiro</em></h2>
+      <div class="vagas-pill">
+        <div class="vp-dot"></div>
+        15 vagas · Grupo fechado · Ordem de adesão
+      </div>
+
+      <div class="benefit-list">
+        <div class="benefit-row">
+          <div class="br-icon">🔒</div>
+          <div class="br-title">Preço Travado</div>
+          <div class="br-desc">Valor mensal garantido sem reajuste durante todo o período de fundação. Independente de futuras revisões de tabela.</div>
+          <span class="br-tag">24 MESES SEM REAJUSTE</span>
+        </div>
+        <div class="benefit-row">
+          <div class="br-icon">🏆</div>
+          <div class="br-title">Selo Institucional</div>
+          <div class="br-desc">Certificado de "Fundador Pioneiro" com uso autorizado em todos os canais de comunicação do estabelecimento.</div>
+          <span class="br-tag">RECONHECIMENTO OFICIAL</span>
+        </div>
+        <div class="benefit-row">
+          <div class="br-icon">⚡</div>
+          <div class="br-title">Prioridade Tecnológica</div>
+          <div class="br-desc">Acesso antecipado a todas as novas funcionalidades do ecossistema Labriolag antes de qualquer outro participante.</div>
+          <span class="br-tag">ACESSO PRIORITÁRIO</span>
+        </div>
+      </div>
+
+      <div class="setores-grid">
+        <div class="setor-box">
+          <div class="sb-num">5</div>
+          <div class="sb-sector">Alimentação</div>
+          <div class="sb-lbl">vagas setoriais</div>
+        </div>
+        <div class="setor-box">
+          <div class="sb-num">4</div>
+          <div class="sb-sector">Varejo</div>
+          <div class="sb-lbl">vagas setoriais</div>
+        </div>
+        <div class="setor-box">
+          <div class="sb-num">4</div>
+          <div class="sb-sector">Serviços</div>
+          <div class="sb-lbl">vagas setoriais</div>
+        </div>
+        <div class="setor-box">
+          <div class="sb-num">2</div>
+          <div class="sb-sector">Estratégicas</div>
+          <div class="sb-lbl">vagas livres</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── S5: METODOLOGIA ── -->
+  <div class="slide" id="s5">
+    <div class="gbg"></div>
+    <div class="slide-inner">
+      <div class="eyebrow"><span class="ew-line"></span>Modelo Proprietário</div>
+      <h2 class="slide-title">Inteligência de dados.<br><em>Decisão territorial.</em></h2>
+
+      <div class="metric-card">
+        <div class="mc-head">
+          <span class="mc-name">ISTD — Potencial Digital</span>
+          <span class="mc-badge">Territorial</span>
+        </div>
+        <div class="mc-body">
+          <div class="formula-box">ISTD = (0,30·P) + (0,25·C) + (0,20·R) + (0,10·H) + (0,10·D) – (0,15·K)</div>
+          <div class="var-list">
+            <div class="var-row"><span class="vr-key">P</span>População<span class="vr-w">0,30</span></div>
+            <div class="var-row"><span class="vr-key">C</span>CNPJs ativos<span class="vr-w">0,25</span></div>
+            <div class="var-row"><span class="vr-key">R</span>Renda per capita<span class="vr-w">0,20</span></div>
+            <div class="var-row"><span class="vr-key">H</span>IDH<span class="vr-w">0,10</span></div>
+            <div class="var-row"><span class="vr-key">D</span>Densidade comercial<span class="vr-w">0,10</span></div>
+            <div class="var-row"><span class="vr-key">K</span>Concorrência digital<span class="vr-w">–0,15</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="mc-head">
+          <span class="mc-name">TPC — Penetração Comercial</span>
+          <span class="mc-badge">Domínio</span>
+        </div>
+        <div class="mc-body">
+          <div class="formula-box">TPC = (Clientes Ativos ÷ CNPJs do setor) × 100</div>
+          <div class="tpc-row">
+            <div class="tpc-box">
+              <div class="tpc-n">10%</div>
+              <div class="tpc-l">Início</div>
+              <div class="tpc-s">Presença</div>
+            </div>
+            <div class="tpc-box" style="border-color:var(--cyber-b);">
+              <div class="tpc-n">20%</div>
+              <div class="tpc-l">Parcial</div>
+              <div class="tpc-s">Referência</div>
+            </div>
+            <div class="tpc-box" style="border-color:var(--gold-b);">
+              <div class="tpc-n" style="color:var(--gold);">30%</div>
+              <div class="tpc-l">Domínio</div>
+              <div class="tpc-s" style="color:var(--gold-d);">Expansão</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── S6: EXPANSÃO ── -->
+  <div class="slide" id="s6">
+    <div class="gbg"></div>
+    <div class="slide-inner">
+      <div class="eyebrow"><span class="ew-line"></span>Visão de Longo Prazo</div>
+      <h2 class="slide-title">Pirapora é o início.<br>A região é o <em>destino.</em></h2>
+
+      <div class="exp-list">
+        <div class="exp-card piloto">
+          <div class="ec-score-col">
+            <div class="ec-rank">PILOTO</div>
+            <div class="ec-score">4.9</div>
+          </div>
+          <div class="ec-divider"></div>
+          <div class="ec-info">
+            <div class="ec-city">Pirapora do Bom Jesus</div>
+            <div class="ec-state">Fase Fundadores · Ativa agora</div>
+            <div class="ec-strat">Marco histórico. Domínio rápido. Validação de custo mínimo. Base para toda expansão regional.</div>
+          </div>
+        </div>
+        <div class="exp-card bronze">
+          <div class="ec-score-col">
+            <div class="ec-rank">BRONZE</div>
+            <div class="ec-score">5.6</div>
+          </div>
+          <div class="ec-divider"></div>
+          <div class="ec-info">
+            <div class="ec-city">Araçariguama</div>
+            <div class="ec-state">1º teste de replicação</div>
+            <div class="ec-strat">Score próximo de Pirapora. Esforço comercial equivalente. Modelo validado em campo.</div>
+          </div>
+        </div>
+        <div class="exp-card prata">
+          <div class="ec-score-col">
+            <div class="ec-rank">PRATA</div>
+            <div class="ec-score">7.9</div>
+          </div>
+          <div class="ec-divider"></div>
+          <div class="ec-info">
+            <div class="ec-city">Cajamar</div>
+            <div class="ec-state">100k hab · Alta densidade</div>
+            <div class="ec-strat">Volume SaaS. Jogo de escala. Braço comercial dedicado para absorver a densidade.</div>
+          </div>
+        </div>
+        <div class="exp-card ouro">
+          <div class="ouro-star">★</div>
+          <div class="ec-score-col">
+            <div class="ec-rank">OURO</div>
+            <div class="ec-score">9.1</div>
+          </div>
+          <div class="ec-divider"></div>
+          <div class="ec-info">
+            <div class="ec-city">Santana de Parnaíba</div>
+            <div class="ec-state">154k hab · Renda altíssima</div>
+            <div class="ec-strat">O troféu. Cota Premium. Aqui o selo Labriolag ganha status territorial definitivo.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="exp-note">
+        <div class="en-icon">🧭</div>
+        <div class="en-txt"><b>Regra de expansão:</b> Avançar para nova cidade somente quando Receita ≥ Custo × 3, TPC ≥ 20% e Churn &lt; 10%.</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /deck -->
+
+<!-- Bottom nav -->
+<div class="bottom-nav">
+  <div class="bn-left">
+    <div class="bn-dots" id="dots"></div>
+    <div class="bn-counter" id="counter">01 / 06</div>
+  </div>
+  <div class="bn-arrows">
+    <button class="bn-btn" id="btnPrev" aria-label="Anterior">‹</button>
+    <button class="bn-btn" id="btnNext" aria-label="Próximo">›</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const TOTAL = 6;
+  let cur = 0, animating = false;
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const prog   = document.getElementById('prog');
+  const counter= document.getElementById('counter');
+  const dotsEl = document.getElementById('dots');
+
+  // build dots
+  for(let i=0;i<TOTAL;i++){
+    const d=document.createElement('div');
+    d.className='bn-dot'+(i===0?' active':'');
+    d.addEventListener('click',()=>goTo(i));
+    dotsEl.appendChild(d);
+  }
+
+  function updateUI(){
+    document.querySelectorAll('.bn-dot').forEach((d,i)=>d.classList.toggle('active',i===cur));
+    prog.style.width=((cur+1)/TOTAL*100)+'%';
+    counter.textContent=String(cur+1).padStart(2,'0')+' / '+String(TOTAL).padStart(2,'0');
+  }
+
+  function goTo(n){
+    if(animating||n===cur) return;
+    animating=true;
+    const prev=cur;
+    // going forward or back?
+    const dir = n > prev ? 1 : -1;
+
+    slides[prev].classList.remove('active');
+    slides[prev].classList.add('exit-left');
+    // position new slide off-screen in the right direction
+    slides[n].style.transform = dir>0 ? 'translateX(100%)' : 'translateX(-100%)';
+    slides[n].style.opacity = '0';
+    slides[n].style.pointerEvents = 'none';
+    // scroll new slide to top
+    slides[n].scrollTop=0;
+
+    // force reflow
+    slides[n].getBoundingClientRect();
+
+    slides[n].style.transition='none';
+    slides[n].style.transform = dir>0 ? 'translateX(100%)' : 'translateX(-100%)';
+    slides[n].getBoundingClientRect(); // reflow
+
+    slides[n].style.transition='';
+    slides[n].classList.add('active');
+
+    cur=n;
+    updateUI();
+
+    setTimeout(()=>{
+      slides.forEach(s=>{
+        s.classList.remove('exit-left');
+        s.style.transform='';
+        s.style.opacity='';
+        s.style.pointerEvents='';
+        s.style.transition='';
+      });
+      animating=false;
+    },480);
+  }
+
+  function next(){ goTo((cur+1)%TOTAL); }
+  function prev(){ goTo((cur-1+TOTAL)%TOTAL); }
+
+  document.getElementById('btnNext').addEventListener('click', next);
+  document.getElementById('btnPrev').addEventListener('click', prev);
+
+  // keyboard
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();next();}
+    if(e.key==='ArrowLeft'){e.preventDefault();prev();}
+  });
+
+  // touch swipe (only on deck, not inside scroll)
+  const deck=document.getElementById('deck');
+  let tx=0, ty=0, scrollLocked=null;
+
+  deck.addEventListener('touchstart',e=>{
+    tx=e.touches[0].clientX;
+    ty=e.touches[0].clientY;
+    scrollLocked=null;
+  },{passive:true});
+
+  deck.addEventListener('touchmove',e=>{
+    const dx=e.touches[0].clientX-tx;
+    const dy=e.touches[0].clientY-ty;
+    if(scrollLocked===null){
+      scrollLocked=Math.abs(dy)>Math.abs(dx)?'scroll':'swipe';
+    }
+    // if horizontal swipe, prevent scroll
+    if(scrollLocked==='swipe') e.preventDefault();
+  },{passive:false});
+
+  deck.addEventListener('touchend',e=>{
+    if(scrollLocked!=='swipe') return;
+    const dx=tx-e.changedTouches[0].clientX;
+    if(Math.abs(dx)>52) dx>0?next():prev();
+  },{passive:true});
+
+  // window blink
+  const wins=document.querySelectorAll('.win');
+  const styleEl=document.createElement('style');
+  styleEl.textContent='@keyframes wb{0%,100%{opacity:.18;}40%{opacity:.92;}70%{opacity:.35;}}';
+  document.head.appendChild(styleEl);
+  wins.forEach(w=>{
+    const d=(Math.random()*2.4+1.4).toFixed(2);
+    const dl=(Math.random()*3).toFixed(2);
+    w.style.animation=`wb ${d}s ${dl}s ease infinite`;
+  });
+
+  updateUI();
+})();
+</script>
+</body>
+</html>

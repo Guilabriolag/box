@@ -1,0 +1,1689 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>__HyDrop__ OS — Labriolag Holding</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   DESIGN SYSTEM — LABRIOLAG HOLDING
+   Preto #05070A · Dourado #D4AF37 · Ciano #00E5FF
+   ═══════════════════════════════════════════════ */
+:root {
+  --preto:    #05070A;
+  --preto2:   #0D1117;
+  --preto3:   #161B22;
+  --dourado:  #D4AF37;
+  --dourado2: #F0CC5C;
+  --ciano:    #00E5FF;
+  --ciano2:   #00B8CC;
+  --verde:    #00FF88;
+  --vermelho: #FF3333;
+  --laranja:  #FF8C00;
+  --branco:   #E8F0FE;
+  --cinza:    rgba(255,255,255,0.08);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  height: 100%;
+  background: var(--preto);
+  color: var(--branco);
+  font-family: 'Share Tech Mono', monospace;
+  overflow: hidden;
+}
+
+/* Scanlines */
+body::after {
+  content:'';
+  position:fixed; inset:0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px);
+  pointer-events:none;
+  z-index:9999;
+}
+
+.hidden { display:none !important; }
+
+/* ═══ HEADER ═══ */
+#app-header {
+  background: var(--preto2);
+  border-bottom: 1px solid rgba(212,175,55,0.3);
+  padding: 0 16px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top:0; z-index:100;
+}
+
+.header-logo {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 3px;
+  color: var(--dourado);
+}
+
+.header-logo span { color: var(--ciano); }
+
+#header-user {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--ciano2);
+  text-align: right;
+  line-height: 1.5;
+}
+
+#header-cets {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--dourado);
+}
+
+/* ═══ NAV TABS ═══ */
+#nav-tabs {
+  display: flex;
+  overflow-x: auto;
+  background: var(--preto2);
+  border-bottom: 1px solid rgba(0,229,255,0.1);
+  scrollbar-width: none;
+}
+#nav-tabs::-webkit-scrollbar { display:none; }
+
+.nav-tab {
+  flex-shrink: 0;
+  padding: 10px 14px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.35);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.nav-tab.active {
+  color: var(--ciano);
+  border-bottom-color: var(--ciano);
+}
+
+.nav-tab[data-role="A"].active { color: var(--dourado); border-bottom-color: var(--dourado); }
+
+/* ═══ SCREENS ═══ */
+#main-area {
+  height: calc(100vh - 52px - 40px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,229,255,0.2) transparent;
+}
+
+.screen { display:none; padding:16px; }
+.screen.active { display:block; }
+
+/* ═══ LOGIN ═══ */
+#screen-login {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height: calc(100vh - 52px);
+  padding: 32px 20px;
+}
+
+.login-logo {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 48px;
+  letter-spacing: 6px;
+  color: var(--dourado);
+  text-shadow: 0 0 40px rgba(212,175,55,0.4);
+  margin-bottom: 4px;
+}
+
+.login-sub {
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--ciano2);
+  margin-bottom: 36px;
+}
+
+.login-box {
+  width: 100%;
+  max-width: 340px;
+  background: var(--preto2);
+  border: 1px solid rgba(0,229,255,0.2);
+  border-radius: 6px;
+  padding: 24px;
+}
+
+.login-box h3 {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--ciano2);
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.login-roles {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.role-chip {
+  padding: 4px 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.4);
+}
+
+.role-chip.A { border-color: var(--dourado); color: var(--dourado); }
+.role-chip.B { border-color: var(--vermelho); color: var(--vermelho); }
+.role-chip.C { border-color: var(--laranja); color: var(--laranja); }
+.role-chip.D { border-color: var(--verde); color: var(--verde); }
+.role-chip.E { border-color: var(--ciano); color: var(--ciano); }
+
+/* ═══ INPUTS ═══ */
+.input-field {
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(0,229,255,0.2);
+  border-radius: 4px;
+  color: var(--branco);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  margin-bottom: 10px;
+  transition: border-color 0.2s;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--ciano);
+  background: rgba(0,229,255,0.04);
+}
+
+select.input-field { cursor:pointer; }
+
+/* ═══ BUTTONS ═══ */
+.btn {
+  padding: 11px 18px;
+  border: 1px solid;
+  border-radius: 4px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: rgba(0,229,255,0.1);
+  border-color: var(--ciano);
+  color: var(--ciano);
+  width: 100%;
+}
+.btn-primary:hover { background: rgba(0,229,255,0.18); }
+
+.btn-gold {
+  background: rgba(212,175,55,0.12);
+  border-color: var(--dourado);
+  color: var(--dourado);
+  width: 100%;
+}
+
+.btn-ghost {
+  background: none;
+  border-color: rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.5);
+  width: 100%;
+  margin-top: 6px;
+}
+
+.btn-danger {
+  background: rgba(255,51,51,0.1);
+  border-color: var(--vermelho);
+  color: var(--vermelho);
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 10px;
+  letter-spacing: 1px;
+  width: auto;
+}
+
+/* ═══ CARDS ═══ */
+.card {
+  background: var(--preto2);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 6px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.card-header {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.section-title {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding-bottom: 6px;
+}
+
+/* ═══ TOTEM — MISSÕES ═══ */
+.mission-category-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin-bottom: 14px;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+.mission-category-tabs::-webkit-scrollbar { display:none; }
+
+.cat-tab {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  background: none;
+  font-family: 'Share Tech Mono', monospace;
+  transition: all 0.2s;
+}
+.cat-tab.active { border-color: var(--ciano); color: var(--ciano); background: rgba(0,229,255,0.08); }
+
+/* Missão Card */
+.missao-card {
+  background: var(--preto2);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 6px;
+  padding: 14px;
+  margin-bottom: 10px;
+  transition: border-color 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.missao-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--cor-missao, var(--ciano));
+}
+
+.missao-card:hover { border-color: rgba(0,229,255,0.3); }
+
+.missao-card.aceita { border-color: rgba(0,255,136,0.3); }
+.missao-card.aceita::before { background: var(--verde); }
+.missao-card.concluida { opacity: 0.5; }
+.missao-card.concluida::before { background: rgba(255,255,255,0.2); }
+
+.missao-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+
+.missao-icon-nome {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.missao-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.missao-nome {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+
+.missao-zona {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.35);
+  margin-top: 2px;
+}
+
+.missao-cets {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--dourado);
+  white-space: nowrap;
+}
+
+.missao-cets small {
+  font-size: 9px;
+  color: var(--dourado2);
+  display: block;
+  letter-spacing: 1px;
+  text-align: right;
+}
+
+.missao-desc {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  margin: 6px 0;
+  line-height: 1.6;
+}
+
+.missao-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.tag {
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  border: 1px solid;
+}
+.tag-explorar { border-color: var(--ciano);   color: var(--ciano); }
+.tag-logistica { border-color: var(--laranja); color: var(--laranja); }
+.tag-intel     { border-color: var(--verde);   color: var(--verde); }
+.tag-elite     { border-color: var(--dourado); color: var(--dourado); }
+
+/* ═══ CARRINHO — MISSÕES ATIVAS ═══ */
+#drawer {
+  position: fixed;
+  right: -320px;
+  top: 0; bottom: 0;
+  width: 320px;
+  background: var(--preto2);
+  border-left: 1px solid rgba(0,229,255,0.2);
+  z-index: 500;
+  transition: right 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+#drawer.open { right: 0; }
+
+.drawer-header {
+  background: rgba(0,229,255,0.06);
+  border-bottom: 1px solid rgba(0,229,255,0.15);
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.drawer-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 3px;
+  color: var(--ciano);
+}
+
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.drawer-footer {
+  border-top: 1px solid rgba(0,229,255,0.15);
+  padding: 12px;
+}
+
+.ativa-item {
+  background: rgba(0,255,136,0.05);
+  border: 1px solid rgba(0,255,136,0.2);
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ativa-nome {
+  font-size: 12px;
+  color: var(--branco);
+  flex: 1;
+}
+
+.ativa-cets {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  color: var(--dourado);
+  font-size: 14px;
+  margin-left: 8px;
+  white-space: nowrap;
+}
+
+/* FAB */
+#fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 56px; height: 56px;
+  background: rgba(0,229,255,0.12);
+  border: 2px solid var(--ciano);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 200;
+  font-size: 20px;
+  transition: all 0.2s;
+  box-shadow: 0 0 14px rgba(0,229,255,0.3);
+}
+
+#fab:active { transform: scale(0.93); }
+
+#fab-count {
+  position: absolute;
+  top: -4px; right: -4px;
+  background: var(--dourado);
+  color: var(--preto);
+  border-radius: 50%;
+  width: 18px; height: 18px;
+  font-size: 10px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ═══ DASHBOARD ═══ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  background: var(--preto2);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 6px;
+  padding: 14px;
+  text-align: center;
+}
+
+.stat-value {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 28px;
+  color: var(--dourado);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.3);
+  margin-top: 4px;
+}
+
+.op-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 12px;
+}
+
+.op-agente {
+  color: var(--ciano2);
+  font-size: 11px;
+}
+
+.op-cets {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  color: var(--dourado);
+}
+
+/* ═══ GERENCIADOR MISSIONS ═══ */
+.gm-card {
+  background: var(--preto2);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 6px;
+  padding: 14px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gm-info { flex: 1; }
+.gm-nome { font-size: 13px; color: var(--branco); }
+.gm-meta { font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 2px; letter-spacing: 1px; }
+
+.gm-actions { display: flex; gap: 6px; }
+
+/* ═══ KEYS ═══ */
+.key-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 3px;
+  padding: 6px 10px;
+  font-size: 11px;
+  margin-bottom: 6px;
+  width: 100%;
+  justify-content: space-between;
+}
+
+/* ═══ RANKING ═══ */
+.rank-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.rank-pos {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  width: 28px;
+  text-align: center;
+  color: rgba(255,255,255,0.2);
+}
+.rank-pos.gold { color: var(--dourado); }
+.rank-pos.silver { color: #AAA; }
+.rank-pos.bronze { color: #CD7F32; }
+
+.rank-info { flex: 1; }
+.rank-nome { font-size: 13px; }
+.rank-ops { font-size: 10px; color: rgba(255,255,255,0.35); letter-spacing: 1px; }
+.rank-cets { font-family: 'Rajdhani', sans-serif; font-weight:700; font-size:16px; color:var(--dourado); }
+
+/* ═══ TOAST ═══ */
+#toast {
+  position: fixed;
+  top: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--preto2);
+  border: 1px solid var(--dourado);
+  border-radius: 3px;
+  padding: 8px 18px;
+  font-size: 12px;
+  color: var(--dourado);
+  z-index: 9000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  max-width: 90vw;
+  text-align: center;
+}
+
+/* ═══ MODAL ═══ */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(5,7,10,0.96);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+
+.modal-box {
+  width: 100%; max-width: 420px;
+  background: var(--preto2);
+  border: 1px solid var(--ciano);
+  border-radius: 6px;
+  overflow: hidden;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  background: rgba(0,229,255,0.07);
+  border-bottom: 1px solid rgba(0,229,255,0.2);
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modal-title { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:16px; letter-spacing:3px; color:var(--ciano); }
+.modal-close { background:none; border:1px solid var(--vermelho); color:var(--vermelho); width:28px; height:28px; border-radius:3px; font-size:14px; cursor:pointer; }
+
+.modal-body { padding: 16px; }
+
+/* ═══ SALDO AGENTE ═══ */
+.agente-saldo {
+  text-align: center;
+  padding: 16px;
+  background: rgba(212,175,55,0.06);
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+.agente-saldo-valor {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 40px;
+  color: var(--dourado);
+  line-height: 1;
+}
+.agente-saldo-label { font-size: 9px; letter-spacing: 3px; color: var(--dourado2); margin-top: 4px; }
+
+/* ZONA badges */
+.zona-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  margin-left: 6px;
+  font-family: 'Share Tech Mono', monospace;
+}
+.zona-centro   { background:rgba(0,229,255,0.15); color:var(--ciano); }
+.zona-alphaville { background:rgba(212,175,55,0.15); color:var(--dourado); }
+.zona-interior { background:rgba(0,255,136,0.12); color:var(--verde); }
+.zona-elite    { background:rgba(255,140,0,0.15); color:var(--laranja); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header id="app-header" class="hidden">
+  <div class="header-logo">__<span>HyDrop</span>__</div>
+  <div>
+    <div id="header-user">VISITANTE · E</div>
+    <div id="header-cets">₵ 0 Cet$</div>
+  </div>
+</header>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav id="nav-tabs" class="hidden"></nav>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div id="main-area">
+
+  <!-- LOGIN -->
+  <section id="screen-login" class="screen active">
+    <div class="login-logo">__HyDrop__</div>
+    <div class="login-sub">LABRIOLAG HOLDING · OPERAÇÕES DE CAMPO</div>
+    <div class="login-box">
+      <h3>ACESSO DO AGENTE</h3>
+      <input id="inp-key"  class="input-field" placeholder="Key de Acesso" autocomplete="off">
+      <input id="inp-pass" class="input-field" placeholder="Senha" type="password">
+      <div id="login-error" style="color:var(--vermelho);font-size:11px;margin-bottom:8px;display:none">⚠ Key ou senha inválidos</div>
+      <button class="btn btn-primary" onclick="doLogin()">▶ ENTRAR</button>
+      <button class="btn btn-ghost" onclick="loginVisitante()">ENTRAR COMO VISITANTE</button>
+      <div class="login-roles">
+        <span class="role-chip A">DEVGUI</span>
+        <span class="role-chip B">ADMIN</span>
+        <span class="role-chip C">GERENTE</span>
+        <span class="role-chip D">OPR·CAMPO</span>
+        <span class="role-chip E">RECRUTA</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOTEM — INTERFACE DE CAMPO -->
+  <section id="screen-totem" class="screen">
+    <div class="agente-saldo">
+      <div class="agente-saldo-valor" id="totem-saldo">0</div>
+      <div class="agente-saldo-label">SEU SALDO · CET$</div>
+    </div>
+    <div class="mission-category-tabs" id="cat-tabs"></div>
+    <div id="missoes-grid"></div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="screen-dashboard" class="screen">
+    <div class="section-title">RESUMO DE OPERAÇÕES</div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="dash-total-cets">0</div>
+        <div class="stat-label">CET$ EMITIDOS</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="dash-total-ops">0</div>
+        <div class="stat-label">OPERAÇÕES</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="dash-agentes">0</div>
+        <div class="stat-label">AGENTES ATIVOS</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="dash-pois">0</div>
+        <div class="stat-label">POIs MAPEADOS</div>
+      </div>
+    </div>
+    <div class="section-title">ÚLTIMAS OPERAÇÕES</div>
+    <div id="ops-list"></div>
+  </section>
+
+  <!-- GERENCIADOR DE MISSÕES (antigo: Produtos) -->
+  <section id="screen-missoes" class="screen">
+    <div class="section-title">GERENCIAR MISSÕES</div>
+    <button class="btn btn-primary" style="margin-bottom:14px;" onclick="openModal('modal-nova-missao')">+ NOVA MISSÃO</button>
+    <div id="gm-lista"></div>
+  </section>
+
+  <!-- OPERAÇÕES CONCLUÍDAS (antigo: Pedidos) -->
+  <section id="screen-operacoes" class="screen">
+    <div class="section-title">HISTÓRICO DE OPERAÇÕES</div>
+    <div id="ops-hist-list"></div>
+  </section>
+
+  <!-- AGENTES (antigo: Pessoas) -->
+  <section id="screen-agentes" class="screen">
+    <div class="section-title">GERENCIAR AGENTES</div>
+    <button class="btn btn-primary" style="margin-bottom:14px;" onclick="openModal('modal-novo-agente')">+ CADASTRAR AGENTE</button>
+    <div id="agentes-lista"></div>
+  </section>
+
+  <!-- RANKING -->
+  <section id="screen-ranking" class="screen">
+    <div class="section-title">RANKING · CET$ ACUMULADOS</div>
+    <div id="ranking-list"></div>
+  </section>
+
+  <!-- KEYS -->
+  <section id="screen-keys" class="screen">
+    <div class="section-title">GERENCIAR KEYS DE ACESSO</div>
+    <button class="btn btn-gold" style="margin-bottom:14px;" onclick="openModal('modal-nova-key')">+ NOVA KEY</button>
+    <div id="keys-lista"></div>
+  </section>
+
+  <!-- CUSTOMIZAR -->
+  <section id="screen-custom" class="screen">
+    <div class="section-title">CONFIGURAÇÕES DA HOLDING</div>
+    <div class="card">
+      <div class="card-header" style="color:var(--ciano)">WHATSAPP DO COMANDO</div>
+      <input id="cfg-whats" class="input-field" placeholder="Ex: 5511999990000">
+    </div>
+    <div class="card">
+      <div class="card-header" style="color:var(--dourado)">EXPORTAR / IMPORTAR</div>
+      <button class="btn btn-ghost" onclick="exportarDados()" style="margin-bottom:6px">📤 EXPORTAR JSON</button>
+      <label class="btn btn-ghost" style="display:block;padding:11px 18px;text-align:center;cursor:pointer;">
+        📥 IMPORTAR JSON
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importarDados(event)">
+      </label>
+    </div>
+    <div class="card">
+      <button class="btn btn-danger btn-sm" onclick="limparTudo()">⚠ LIMPAR TODOS OS DADOS</button>
+    </div>
+  </section>
+
+</div><!-- /main-area -->
+
+<!-- ═══════════ DRAWER — MISSÕES ATIVAS ═══════════ -->
+<div id="drawer">
+  <div class="drawer-header">
+    <div class="drawer-title">⚙ MISSÕES ATIVAS</div>
+    <button class="btn btn-ghost btn-sm" onclick="toggleDrawer()">✕</button>
+  </div>
+  <div class="drawer-body" id="drawer-body">
+    <div style="text-align:center;color:rgba(255,255,255,0.2);font-size:11px;padding:30px 0;">Nenhuma missão aceita</div>
+  </div>
+  <div class="drawer-footer">
+    <div style="font-size:11px;letter-spacing:1px;color:var(--ciano2);margin-bottom:8px;">
+      POTENCIAL: ₵ <span id="drawer-total">0</span> Cet$
+    </div>
+    <button class="btn btn-gold" onclick="concluirOperacao()">✔ REGISTRAR OPERAÇÃO</button>
+    <button class="btn btn-ghost" onclick="limparAtivas()">🗑 LIMPAR ATIVAS</button>
+  </div>
+</div>
+
+<!-- FAB -->
+<div id="fab" onclick="toggleDrawer()">
+  ⚙
+  <div id="fab-count">0</div>
+</div>
+
+<!-- ═══════════ TOAST ═══════════ -->
+<div id="toast"></div>
+
+<!-- ═══════════ MODAIS ═══════════ -->
+
+<!-- Modal Nova Missão -->
+<div class="modal-overlay" id="modal-nova-missao">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">NOVA MISSÃO</span>
+      <button class="modal-close" onclick="closeModal('modal-nova-missao')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input id="nm-nome" class="input-field" placeholder="Nome da Missão">
+      <textarea id="nm-desc" class="input-field" rows="2" placeholder="Descrição / Objetivo"></textarea>
+      <input id="nm-cets" class="input-field" type="number" placeholder="Recompensa em Cet$">
+      <select id="nm-tipo" class="input-field">
+        <option value="explorar">🧭 Exploração (Névoa de Guerra)</option>
+        <option value="logistica">📦 Logística (Delivery)</option>
+        <option value="intel">📡 Inteligência (Mapeamento Wi-Fi)</option>
+        <option value="elite">⭐ Elite (Alphaville / Alto Ticket)</option>
+      </select>
+      <select id="nm-zona" class="input-field">
+        <option value="centro">Centro — Pirapora</option>
+        <option value="vila-nova">Vila Nova — Pirapora</option>
+        <option value="jardim-bom-jesus">Jardim Bom Jesus</option>
+        <option value="parque-paiol">Parque Paiol</option>
+        <option value="bandeirantes">Bandeirantes</option>
+        <option value="green-hills">Green Hills</option>
+        <option value="alphaville">Alphaville — Santana de Parnaíba</option>
+        <option value="tambore">Tamboré — Barueri</option>
+        <option value="bethaville">Bethaville — Barueri</option>
+        <option value="aldeia-da-serra">Aldeia da Serra</option>
+        <option value="cabreuva">Cabreúva</option>
+        <option value="jundiai">Jundiaí</option>
+      </select>
+      <input id="nm-poi" class="input-field" placeholder="POI Alvo (ex: Santuário do Bom Jesus)">
+      <input id="nm-icon" class="input-field" placeholder="Ícone (emoji, ex: 🏛️)">
+      <button class="btn btn-primary" onclick="salvarMissao()">SALVAR MISSÃO</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nova Key -->
+<div class="modal-overlay" id="modal-nova-key">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">NOVA KEY</span>
+      <button class="modal-close" onclick="closeModal('modal-nova-key')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input id="nk-key"  class="input-field" placeholder="Key (ex: ISAC·01)">
+      <input id="nk-pass" class="input-field" placeholder="Senha" type="password">
+      <select id="nk-role" class="input-field">
+        <option value="A">A — DEVGUI (Criador)</option>
+        <option value="B">B — ADMIN (Comando)</option>
+        <option value="C">C — GERENTE</option>
+        <option value="D">D — OPERADOR DE CAMPO</option>
+        <option value="E">E — RECRUTA</option>
+      </select>
+      <button class="btn btn-gold" onclick="salvarKey()">EMITIR KEY</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Novo Agente -->
+<div class="modal-overlay" id="modal-novo-agente">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">NOVO AGENTE</span>
+      <button class="modal-close" onclick="closeModal('modal-novo-agente')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input id="na-nome" class="input-field" placeholder="Nome do Agente">
+      <input id="na-tel"  class="input-field" placeholder="WhatsApp (com DDD)">
+      <select id="na-role" class="input-field">
+        <option value="D">D — Operador de Campo (Biker)</option>
+        <option value="E">E — Recruta</option>
+        <option value="C">C — Gerente de Setor</option>
+      </select>
+      <button class="btn btn-primary" onclick="salvarAgente()">CADASTRAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirmar Operação -->
+<div class="modal-overlay" id="modal-concluir">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">REGISTRAR OPERAÇÃO</span>
+      <button class="modal-close" onclick="closeModal('modal-concluir')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="section-title">MISSÕES DESTA OPERAÇÃO</div>
+      <div id="concluir-lista" style="margin-bottom:14px;"></div>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;color:var(--dourado);text-align:center;margin-bottom:14px;">
+        ₵ <span id="concluir-total">0</span> Cet$
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:10px;text-align:center;">Confirme sua identidade para registrar</div>
+      <input id="conc-agente" class="input-field" placeholder="Seu nome / codinome">
+      <button class="btn btn-gold" onclick="confirmarOperacao()">✔ CONFIRMAR E RECEBER Cet$</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║           __HyDrop__ OS — Motor de Missões Labriolag            ║
+// ║   McClone transmutado em RPG de Guerrilha Territorial           ║
+// ║   localStorage · Vanilla JS · Offline-First                     ║
+// ╚══════════════════════════════════════════════════════════════════╝
+
+// ═══════════════════════════════════════════════
+// CHAVES DE ARMAZENAMENTO
+// ═══════════════════════════════════════════════
+const LS = {
+  MISSOES:   'hd_missoes',
+  OPERACOES: 'hd_operacoes',
+  AGENTES:   'hd_agentes',
+  KEYS:      'hd_keys',
+  ATIVAS:    'hd_ativas',
+  CFG:       'hd_cfg',
+};
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let STATE = {
+  user: null,
+  missoes:   ls_get(LS.MISSOES,   missoesPadrao()),
+  operacoes: ls_get(LS.OPERACOES, []),
+  agentes:   ls_get(LS.AGENTES,   []),
+  keys:      ls_get(LS.KEYS,      keysPadrao()),
+  ativas:    ls_get(LS.ATIVAS,    []),
+  cfg:       ls_get(LS.CFG,       { whatsapp: '' }),
+  catAtiva:  'todos',
+};
+
+// ═══════════════════════════════════════════════
+// MISSÕES PADRÃO — Pirapora + Região
+// ═══════════════════════════════════════════════
+function missoesPadrao() {
+  return [
+    // ── ANEL INTERNO / CENTRO ──
+    { id: gid(), nome: 'A Bênção do Sinal', icon: '🛕', desc: 'Valide 3 redes Wi-Fi ao redor do Santuário do Bom Jesus. Marco zero da malha Labriolag.', cets: 80, tipo: 'intel', zona: 'centro', poi: 'Santuário do Senhor Bom Jesus', ativo: true },
+    { id: gid(), nome: 'Praça dos Poderes', icon: '🎯', desc: 'Chegue à Praça dos Poderes e escaneie o QR-Âncora. Ponto central de eventos e fluxo urbano.', cets: 60, tipo: 'explorar', zona: 'centro', poi: 'Praça dos Poderes', ativo: true },
+    { id: gid(), nome: 'Portal de Entrada', icon: '⛩️', desc: 'Registre presença no Portal da Cidade. Ponto de controle de entrada e saída da malha.', cets: 50, tipo: 'explorar', zona: 'centro', poi: 'Portal da Cidade', ativo: true },
+    { id: gid(), nome: 'Torre do Capuava', icon: '📡', desc: 'Suba o Morro do Capuava e ative o repetidor lógico. Revela névoa em raio de 2km ao redor.', cets: 150, tipo: 'explorar', zona: 'centro', poi: 'Morro do Capuava', ativo: true },
+    { id: gid(), nome: 'Missão Barragem', icon: '🌊', desc: 'Alcance a Barragem do Rio Tietê. Missão de longo alcance. +50 Cet$ bônus se completar à noite.', cets: 90, tipo: 'explorar', zona: 'centro', poi: 'Barragem de Pirapora', ativo: true },
+
+    // ── LOGÍSTICA ──
+    { id: gid(), nome: 'Abastecimento Tático', icon: '⛽', desc: 'Chegue no Posto X e escaneie a âncora QR. Sincronize dados do dia. Save Point oficial.', cets: 40, tipo: 'logistica', zona: 'bandeirantes', poi: 'Posto Rodovia Romeiros', ativo: true },
+    { id: gid(), nome: 'Delivery LabMenu', icon: '🛵', desc: 'Realize entrega na Rua Principal e registre o feedback do cliente. +Dados para LabSystem.', cets: 70, tipo: 'logistica', zona: 'centro', poi: 'Rua Principal — Comércios', ativo: true },
+    { id: gid(), nome: 'HQ Vitorelli', icon: '🍕', desc: 'Confirme presença na base de operações. Sinal mais forte do mapa. Ponto de sync de dados.', cets: 30, tipo: 'intel', zona: 'centro', poi: 'Pizzaria Vitorelli — HQ', ativo: true },
+
+    // ── INTELIGÊNCIA ──
+    { id: gid(), nome: 'Hidrop de Toque', icon: '📲', desc: 'Fique 10 minutos em um ponto de ônibus estratégico. Capture comportamento de usuário para LabAds.', cets: 55, tipo: 'intel', zona: 'centro', poi: 'Pontos de Ônibus Estratégicos', ativo: true },
+    { id: gid(), nome: 'Scan de Hospedagem', icon: '🏨', desc: 'Mapeie o Wi-Fi de 2 hotéis ou pousadas. Isola usuários externos (turistas) para LabAds.', cets: 65, tipo: 'intel', zona: 'centro', poi: 'Hotéis e Pousadas de Pirapora', ativo: true },
+
+    // ── CORREDOR DE ALPHAVILLE / ELITE ──
+    { id: gid(), nome: 'Corredor Alpha', icon: '🛣️', desc: 'Percorra a estrada que liga Pirapora a Santana de Parnaíba. Mapeie torres GSM no trajeto.', cets: 180, tipo: 'elite', zona: 'alphaville', poi: 'Rodovia dos Romeiros', ativo: true },
+    { id: gid(), nome: 'Alphaville Premium', icon: '💎', desc: 'Chegue nos residenciais de Alphaville. Público de alto poder para LabMenu e LabAds.', cets: 250, tipo: 'elite', zona: 'alphaville', poi: 'Alphaville — Residenciais', ativo: true },
+    { id: gid(), nome: 'Tamboré Business', icon: '🏢', desc: 'Mapeie concentração de empresas em Tamboré. Clientes potenciais do LabSystem.', cets: 200, tipo: 'elite', zona: 'tambore', poi: 'Tamboré — Barueri', ativo: true },
+    { id: gid(), nome: 'Aldeia Silenciosa', icon: '🌲', desc: 'Aldeia da Serra: GPS oficial falha aqui. Se o LabriGame funcionar, você ganha o monopólio local.', cets: 220, tipo: 'elite', zona: 'aldeia-da-serra', poi: 'Aldeia da Serra — Barueri/Itapevi', ativo: true },
+
+    // ── ZONAS SILENCIOSAS ──
+    { id: gid(), nome: 'Vila Nova Expandida', icon: '🏘️', desc: 'Setor residencial chave. Mapeie o sinal em 5 quadras. GPS oficial fraco aqui.', cets: 75, tipo: 'explorar', zona: 'vila-nova', poi: 'Vila Nova — Pirapora', ativo: true },
+    { id: gid(), nome: 'Green Hills Recon', icon: '🌿', desc: 'Área com ticket médio alto. Prospecção de clientes para LabMenu Premium.', cets: 100, tipo: 'explorar', zona: 'green-hills', poi: 'Green Hills — Pirapora', ativo: true },
+  ];
+}
+
+function keysPadrao() {
+  return [
+    { key: 'DEVGUI',  pass: '###*',      role: 'A', ativo: true },
+    { key: 'LORD',    pass: 'v12w',      role: 'A', ativo: true },
+    { key: 'ISAC',    pass: 'isac01',    role: 'D', ativo: true },
+    { key: 'DEMO',    pass: 'DEMO',      role: 'C', ativo: true },
+    { key: 'VISITANTE', pass: '',        role: 'E', ativo: true },
+  ];
+}
+
+// ═══════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════
+function gid() { return Date.now() + Math.random().toString(36).slice(2); }
+function ls_get(k, def) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch(e) { return def; } }
+function ls_set(k, v)  { localStorage.setItem(k, JSON.stringify(v)); }
+function $ (id) { return document.getElementById(id); }
+
+let _toastT;
+function toast(msg) {
+  const el = $('toast');
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(_toastT);
+  _toastT = setTimeout(() => el.style.opacity = '0', 2800);
+}
+
+function openModal(id)  { $(id).style.display = 'flex'; $(id).classList.add('open'); }
+function closeModal(id) { $(id).style.display = 'none'; $(id).classList.remove('open'); }
+
+function toggleDrawer() { $('drawer').classList.toggle('open'); }
+
+// ═══════════════════════════════════════════════
+// PERMISSÕES POR ROLE
+// ═══════════════════════════════════════════════
+const ROLES = {
+  A: { label: 'DEVGUI',  tabs: ['totem','dashboard','missoes','operacoes','agentes','ranking','keys','custom'] },
+  B: { label: 'ADMIN',   tabs: ['totem','dashboard','missoes','operacoes','agentes','ranking','keys'] },
+  C: { label: 'GERENTE', tabs: ['totem','dashboard','missoes','operacoes','agentes','ranking'] },
+  D: { label: 'OPR·CAMPO', tabs: ['totem','operacoes','ranking'] },
+  E: { label: 'RECRUTA', tabs: ['totem','ranking'] },
+};
+
+const TAB_LABELS = {
+  totem:     '⚙ CAMPO',
+  dashboard: '📊 DASHBOARD',
+  missoes:   '📋 MISSÕES',
+  operacoes: '📦 OPERAÇÕES',
+  agentes:   '👥 AGENTES',
+  ranking:   '🏆 RANKING',
+  keys:      '🔑 KEYS',
+  custom:    '⚙ CONFIG',
+};
+
+// ═══════════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════════
+function doLogin() {
+  const key  = $('inp-key').value.trim();
+  const pass = $('inp-pass').value;
+  const found = STATE.keys.find(k => k.key === key && k.pass === pass && k.ativo);
+  if (!found) { $('login-error').style.display = 'block'; return; }
+  $('login-error').style.display = 'none';
+  entrar(found);
+}
+
+function loginVisitante() {
+  entrar({ key: 'VISITANTE_' + Date.now(), pass: '', role: 'E', ativo: true });
+}
+
+function entrar(keyObj) {
+  STATE.user = keyObj;
+  // Registrar acesso
+  const ops = ls_get(LS.OPERACOES, []);
+  // (log silencioso)
+  
+  $('screen-login').classList.remove('active');
+  $('app-header').classList.remove('hidden');
+  $('nav-tabs').classList.remove('hidden');
+  
+  renderNav();
+  showScreen('totem');
+  updateHeader();
+}
+
+function updateHeader() {
+  const u = STATE.user;
+  const role = ROLES[u.role] || ROLES['E'];
+  $('header-user').textContent = `${u.key} · ${role.label}`;
+  atualizarSaldoHeader();
+}
+
+function atualizarSaldoHeader() {
+  const saldo = calcSaldoAgente(STATE.user?.key);
+  $('header-cets').textContent = `₵ ${saldo} Cet$`;
+}
+
+// ═══════════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════════
+function renderNav() {
+  const role = ROLES[STATE.user?.role] || ROLES['E'];
+  const nav  = $('nav-tabs');
+  nav.innerHTML = '';
+  role.tabs.forEach(tab => {
+    const btn = document.createElement('button');
+    btn.className = 'nav-tab' + (tab === 'totem' ? ' active' : '');
+    btn.dataset.tab = tab;
+    btn.textContent = TAB_LABELS[tab] || tab;
+    btn.onclick = () => showScreen(tab);
+    nav.appendChild(btn);
+  });
+}
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  const scr = $('screen-' + name);
+  if (scr) scr.classList.add('active');
+  const tab = document.querySelector(`.nav-tab[data-tab="${name}"]`);
+  if (tab) tab.classList.add('active');
+
+  // Render conforme a tela
+  if (name === 'totem')     renderTotem();
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'missoes')   renderGerenciador();
+  if (name === 'operacoes') renderOpsHist();
+  if (name === 'agentes')   renderAgentes();
+  if (name === 'ranking')   renderRanking();
+  if (name === 'keys')      renderKeys();
+}
+
+// ═══════════════════════════════════════════════
+// TOTEM — INTERFACE DE CAMPO
+// ═══════════════════════════════════════════════
+const CATEGORIAS = [
+  { id: 'todos',    label: '⚡ TODOS' },
+  { id: 'explorar', label: '🧭 EXPLORAR' },
+  { id: 'logistica',label: '📦 LOGÍSTICA' },
+  { id: 'intel',    label: '📡 INTEL' },
+  { id: 'elite',    label: '⭐ ELITE' },
+];
+
+const ZONA_PESO = {
+  'centro': 1, 'vila-nova': 1, 'jardim-bom-jesus': 1, 'parque-paiol': 1,
+  'bandeirantes': 1.2, 'green-hills': 1.5,
+  'alphaville': 2.5, 'tambore': 2.2, 'bethaville': 2.0, 'aldeia-da-serra': 2.3,
+  'cabreuva': 1.6, 'jundiai': 1.8,
+};
+
+const ZONA_LABEL = {
+  'centro': 'Centro · Pirapora', 'vila-nova': 'Vila Nova · Pirapora',
+  'jardim-bom-jesus': 'Jardim Bom Jesus', 'parque-paiol': 'Parque Paiol',
+  'bandeirantes': 'Bandeirantes', 'green-hills': 'Green Hills',
+  'alphaville': 'Alphaville · Santana de Parnaíba', 'tambore': 'Tamboré · Barueri',
+  'bethaville': 'Bethaville · Barueri', 'aldeia-da-serra': 'Aldeia da Serra',
+  'cabreuva': 'Cabreúva', 'jundiai': 'Jundiaí',
+};
+
+const TIPO_TAG = {
+  explorar:  ['tag-explorar',  '🧭 EXPLORAR'],
+  logistica: ['tag-logistica', '📦 LOGÍSTICA'],
+  intel:     ['tag-intel',     '📡 INTEL'],
+  elite:     ['tag-elite',     '⭐ ELITE'],
+};
+
+const ZONA_CLASSE = {
+  centro: 'zona-centro', alphaville: 'zona-alphaville', tambore: 'zona-alphaville',
+  bethaville: 'zona-alphaville', 'aldeia-da-serra': 'zona-elite',
+  cabreuva: 'zona-interior', jundiai: 'zona-interior',
+};
+
+function renderTotem() {
+  // Saldo
+  const saldo = calcSaldoAgente(STATE.user?.key);
+  $('totem-saldo').textContent = saldo.toLocaleString('pt-BR');
+
+  // Tabs de categoria
+  const catEl = $('cat-tabs');
+  catEl.innerHTML = '';
+  CATEGORIAS.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-tab' + (c.id === STATE.catAtiva ? ' active' : '');
+    btn.textContent = c.label;
+    btn.onclick = () => { STATE.catAtiva = c.id; renderTotem(); };
+    catEl.appendChild(btn);
+  });
+
+  // Missões
+  const grid = $('missoes-grid');
+  grid.innerHTML = '';
+  const missoes = STATE.missoes.filter(m =>
+    m.ativo &&
+    (STATE.catAtiva === 'todos' || m.tipo === STATE.catAtiva)
+  );
+
+  if (!missoes.length) {
+    grid.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.2);padding:40px;font-size:12px;">NENHUMA MISSÃO NESTA CATEGORIA</div>';
+    return;
+  }
+
+  missoes.forEach(m => {
+    const aceita  = STATE.ativas.some(a => a.id === m.id);
+    const tag     = TIPO_TAG[m.tipo]  || ['tag-explorar', '🧭'];
+    const zonaCls = ZONA_CLASSE[m.zona] || 'zona-centro';
+    const zonaLbl = ZONA_LABEL[m.zona] || m.zona;
+    const peso    = ZONA_PESO[m.zona]  || 1;
+    const cetsReal = Math.round(m.cets * peso);
+
+    const card = document.createElement('div');
+    card.className = 'missao-card' + (aceita ? ' aceita' : '');
+    card.style.setProperty('--cor-missao', corTipo(m.tipo));
+
+    card.innerHTML = `
+      <div class="missao-header">
+        <div class="missao-icon-nome">
+          <div class="missao-icon">${m.icon || '📍'}</div>
+          <div>
+            <div class="missao-nome">${m.nome}</div>
+            <div class="missao-zona">
+              ${zonaLbl}
+              <span class="zona-badge ${zonaCls}">×${peso.toFixed(1)}</span>
+            </div>
+          </div>
+        </div>
+        <div class="missao-cets">
+          ${cetsReal.toLocaleString('pt-BR')}
+          <small>CET$</small>
+        </div>
+      </div>
+      <div class="missao-desc">${m.desc}</div>
+      <div class="missao-tags">
+        <span class="tag ${tag[0]}">${tag[1]}</span>
+        ${m.poi ? `<span class="tag" style="border-color:rgba(255,255,255,0.15);color:rgba(255,255,255,0.4)">📍 ${m.poi}</span>` : ''}
+      </div>
+      ${aceita
+        ? `<button class="btn btn-ghost btn-sm" onclick="removerAtiva('${m.id}')">✕ REMOVER DA FILA</button>`
+        : `<button class="btn btn-primary btn-sm" onclick="aceitarMissao('${m.id}')">+ ACEITAR MISSÃO</button>`
+      }
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function corTipo(tipo) {
+  const cores = { explorar:'#00E5FF', logistica:'#FF8C00', intel:'#00FF88', elite:'#D4AF37' };
+  return cores[tipo] || '#00E5FF';
+}
+
+// ═══════════════════════════════════════════════
+// ATIVAS — CARRINHO DE MISSÕES
+// ═══════════════════════════════════════════════
+function aceitarMissao(id) {
+  if (STATE.ativas.some(a => a.id === id)) { toast('Missão já na fila'); return; }
+  const m = STATE.missoes.find(m => m.id === id);
+  if (!m) return;
+  const peso    = ZONA_PESO[m.zona] || 1;
+  const cetsReal = Math.round(m.cets * peso);
+  STATE.ativas.push({ ...m, cetsReal });
+  ls_set(LS.ATIVAS, STATE.ativas);
+  renderAtivas();
+  renderTotem();
+  toast(`✔ "${m.nome}" aceita — ₵ ${cetsReal} Cet$`);
+}
+
+function removerAtiva(id) {
+  STATE.ativas = STATE.ativas.filter(a => a.id !== id);
+  ls_set(LS.ATIVAS, STATE.ativas);
+  renderAtivas();
+  renderTotem();
+}
+
+function limparAtivas() {
+  STATE.ativas = [];
+  ls_set(LS.ATIVAS, STATE.ativas);
+  renderAtivas();
+  renderTotem();
+  toggleDrawer();
+}
+
+function renderAtivas() {
+  const body  = $('drawer-body');
+  const total = STATE.ativas.reduce((s, a) => s + (a.cetsReal || a.cets), 0);
+  $('drawer-total').textContent = total.toLocaleString('pt-BR');
+  $('fab-count').textContent    = STATE.ativas.length;
+
+  if (!STATE.ativas.length) {
+    body.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.2);font-size:11px;padding:30px 0;">Nenhuma missão aceita</div>';
+    return;
+  }
+
+  body.innerHTML = '';
+  STATE.ativas.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'ativa-item';
+    div.innerHTML = `
+      <div class="ativa-nome">${m.icon || '📍'} ${m.nome}</div>
+      <div class="ativa-cets">₵${(m.cetsReal || m.cets).toLocaleString()}</div>
+    `;
+    body.appendChild(div);
+  });
+}
+
+function concluirOperacao() {
+  if (!STATE.ativas.length) { toast('Nenhuma missão ativa'); return; }
+  const total = STATE.ativas.reduce((s, a) => s + (a.cetsReal || a.cets), 0);
+  $('concluir-lista').innerHTML = STATE.ativas.map(a =>
+    `<div class="op-row"><span>${a.icon || '📍'} ${a.nome}</span><span class="op-cets">₵${(a.cetsReal||a.cets).toLocaleString()}</span></div>`
+  ).join('');
+  $('concluir-total').textContent = total.toLocaleString('pt-BR');
+  $('conc-agente').value = STATE.user?.key || '';
+  openModal('modal-concluir');
+}
+
+function confirmarOperacao() {
+  const agente = $('conc-agente').value.trim() || STATE.user?.key || 'AGENTE';
+  const total  = STATE.ativas.reduce((s, a) => s + (a.cetsReal || a.cets), 0);
+  const op = {
+    id: gid(),
+    data: new Date().toLocaleString('pt-BR'),
+    agente,
+    missoes: STATE.ativas.map(a => ({ nome: a.nome, cets: a.cetsReal || a.cets })),
+    total,
+    key: STATE.user?.key,
+  };
+  const ops = ls_get(LS.OPERACOES, []);
+  ops.unshift(op);
+  ls_set(LS.OPERACOES, ops);
+
+  STATE.ativas = [];
+  ls_set(LS.ATIVAS, STATE.ativas);
+
+  closeModal('modal-concluir');
+  renderAtivas();
+  renderTotem();
+  atualizarSaldoHeader();
+  toast(`✅ Operação registrada! +₵ ${total.toLocaleString('pt-BR')} Cet$`);
+}
+
+function calcSaldoAgente(key) {
+  if (!key) return 0;
+  const ops = ls_get(LS.OPERACOES, []);
+  return ops.filter(o => o.key === key).reduce((s, o) => s + o.total, 0);
+}
+
+// ═══════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════
+function renderDashboard() {
+  const ops   = ls_get(LS.OPERACOES, []);
+  const totalCets = ops.reduce((s, o) => s + o.total, 0);
+  const agentesAtivos = [...new Set(ops.map(o => o.key))].length;
+  const totalPois  = ops.reduce((s,o) => s + o.missoes.length, 0);
+
+  $('dash-total-cets').textContent = totalCets.toLocaleString('pt-BR');
+  $('dash-total-ops').textContent  = ops.length;
+  $('dash-agentes').textContent    = agentesAtivos;
+  $('dash-pois').textContent       = totalPois;
+
+  const lista = $('ops-list');
+  lista.innerHTML = '';
+  ops.slice(0, 10).forEach(op => {
+    const div = document.createElement('div');
+    div.className = 'op-row';
+    div.innerHTML = `
+      <div>
+        <div style="font-size:12px;">${op.missoes.map(m=>m.nome).join(', ').slice(0,40)}...</div>
+        <div class="op-agente">${op.agente} · ${op.data}</div>
+      </div>
+      <div class="op-cets">₵ ${op.total.toLocaleString()}</div>
+    `;
+    lista.appendChild(div);
+  });
+  if (!ops.length) lista.innerHTML = '<div style="color:rgba(255,255,255,0.2);font-size:12px;padding:20px 0;text-align:center;">Nenhuma operação registrada</div>';
+}
+
+// ═══════════════════════════════════════════════
+// GERENCIADOR DE MISSÕES
+// ═══════════════════════════════════════════════
+function renderGerenciador() {
+  const el = $('gm-lista');
+  el.innerHTML = '';
+  STATE.missoes.forEach(m => {
+    const peso = ZONA_PESO[m.zona] || 1;
+    const cetsReal = Math.round(m.cets * peso);
+    const div = document.createElement('div');
+    div.className = 'gm-card';
+    div.innerHTML = `
+      <div class="gm-info">
+        <div class="gm-nome">${m.icon || '📍'} ${m.nome}</div>
+        <div class="gm-meta">${ZONA_LABEL[m.zona] || m.zona} · ₵${cetsReal} · ${TIPO_TAG[m.tipo]?.[1] || m.tipo}</div>
+      </div>
+      <div class="gm-actions">
+        <button class="btn btn-ghost btn-sm" onclick="toggleMissao('${m.id}')">${m.ativo ? 'PAUSAR' : 'ATIVAR'}</button>
+        <button class="btn btn-danger btn-sm" onclick="deletarMissao('${m.id}')">✕</button>
+      </div>
+    `;
+    el.appendChild(div);
+  });
+  if (!STATE.missoes.length) el.innerHTML = '<div style="color:rgba(255,255,255,0.2);font-size:12px;padding:20px 0;text-align:center;">Nenhuma missão cadastrada</div>';
+}
+
+function salvarMissao() {
+  const nome = $('nm-nome').value.trim();
+  const desc = $('nm-desc').value.trim();
+  const cets = parseFloat($('nm-cets').value) || 50;
+  const tipo = $('nm-tipo').value;
+  const zona = $('nm-zona').value;
+  const poi  = $('nm-poi').value.trim();
+  const icon = $('nm-icon').value.trim() || '📍';
+
+  if (!nome) { toast('⚠ Nome da missão obrigatório'); return; }
+
+  STATE.missoes.push({ id: gid(), nome, desc, cets, tipo, zona, poi, icon, ativo: true });
+  ls_set(LS.MISSOES, STATE.missoes);
+  closeModal('modal-nova-missao');
+  renderGerenciador();
+  toast('✅ Missão cadastrada!');
+
+  // Limpar campos
+  ['nm-nome','nm-desc','nm-cets','nm-poi','nm-icon'].forEach(id => $(id).value = '');
+}
+
+function toggleMissao(id) {
+  const m = STATE.missoes.find(m => m.id === id);
+  if (m) m.ativo = !m.ativo;
+  ls_set(LS.MISSOES, STATE.missoes);
+  renderGerenciador();
+}
+
+function deletarMissao(id) {
+  STATE.missoes = STATE.missoes.filter(m => m.id !== id);
+  ls_set(LS.MISSOES, STATE.missoes);
+  renderGerenciador();
+  toast('Missão removida');
+}
+
+// ═══════════════════════════════════════════════
+// OPERAÇÕES HISTÓRICAS
+// ═══════════════════════════════════════════════
+function renderOpsHist() {
+  const ops = ls_get(LS.OPERACOES, []);
+  const el  = $('ops-hist-list');
+  el.innerHTML = '';
+  if (!ops.length) { el.innerHTML = '<div style="color:rgba(255,255,255,0.2);font-size:12px;padding:20px 0;text-align:center;">Sem operações registradas</div>'; return; }
+  ops.forEach(op => {
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;">${op.agente}</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-weight:700;color:var(--dourado);">₵ ${op.total.toLocaleString()}</div>
+      </div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:6px;">${op.data}</div>
+      ${op.missoes.map(m => `<div style="font-size:11px;color:rgba(255,255,255,0.5);">· ${m.nome} — ₵${m.cets}</div>`).join('')}
+    `;
+    el.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════════
+// AGENTES
+// ═══════════════════════════════════════════════
+function renderAgentes() {
+  const el = $('agentes-lista');
+  el.innerHTML = '';
+  STATE.agentes.forEach(a => {
+    const saldo = calcSaldoAgente(a.key || a.nome);
+    const div = document.createElement('div');
+    div.className = 'gm-card';
+    div.innerHTML = `
+      <div class="gm-info">
+        <div class="gm-nome">${a.nome}</div>
+        <div class="gm-meta">₵ ${saldo.toLocaleString()} · ${ROLES[a.role]?.label || a.role} · ${a.tel || 'sem tel'}</div>
+      </div>
+      <div class="gm-actions">
+        <button class="btn btn-danger btn-sm" onclick="deletarAgente('${a.id}')">✕</button>
+      </div>
+    `;
+    el.appendChild(div);
+  });
+  if (!STATE.agentes.length) el.innerHTML = '<div style="color:rgba(255,255,255,0.2);font-size:12px;padding:20px 0;text-align:center;">Nenhum agente cadastrado</div>';
+}
+
+function salvarAgente() {
+  const nome = $('na-nome').value.trim();
+  const tel  = $('na-tel').value.trim();
+  const role = $('na-role').value;
+  if (!nome) { toast('⚠ Nome obrigatório'); return; }
+  STATE.agentes.push({ id: gid(), nome, tel, role, data: new Date().toISOString() });
+  ls_set(LS.AGENTES, STATE.agentes);
+  closeModal('modal-novo-agente');
+  renderAgentes();
+  toast('✅ Agente cadastrado!');
+  $('na-nome').value = ''; $('na-tel').value = '';
+}
+
+function deletarAgente(id) {
+  STATE.agentes = STATE.agentes.filter(a => a.id !== id);
+  ls_set(LS.AGENTES, STATE.agentes);
+  renderAgentes();
+}
+
+// ═══════════════════════════════════════════════
+// RANKING
+// ═══════════════════════════════════════════════
+function renderRanking() {
+  const ops = ls_get(LS.OPERACOES, []);
+  const mapa = {};
+  ops.forEach(op => {
+    if (!mapa[op.agente]) mapa[op.agente] = { cets: 0, ops: 0 };
+    mapa[op.agente].cets += op.total;
+    mapa[op.agente].ops  += 1;
+  });
+  const sorted = Object.entries(mapa).sort((a,b) => b[1].cets - a[1].cets);
+  const el = $('ranking-list');
+  el.innerHTML = '';
+  if (!sorted.length) { el.innerHTML = '<div style="color:rgba(255,255,255,0.2);font-size:12px;padding:20px;text-align:center;">Nenhum dado de ranking</div>'; return; }
+  sorted.forEach(([nome, data], i) => {
+    const posCls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    const pos    = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
+    const div = document.createElement('div');
+    div.className = 'rank-row';
+    div.innerHTML = `
+      <div class="rank-pos ${posCls}">${pos}</div>
+      <div class="rank-info">
+        <div class="rank-nome">${nome}</div>
+        <div class="rank-ops">${data.ops} operações</div>
+      </div>
+      <div class="rank-cets">₵ ${data.cets.toLocaleString()}</div>
+    `;
+    el.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════════
+// KEYS
+// ═══════════════════════════════════════════════
+function renderKeys() {
+  const el = $('keys-lista');
+  el.innerHTML = '';
+  STATE.keys.forEach(k => {
+    const div = document.createElement('div');
+    div.className = 'key-chip';
+    div.innerHTML = `
+      <span>
+        <span class="role-chip ${k.role}" style="margin-right:8px;">${ROLES[k.role]?.label || k.role}</span>
+        ${k.key}
+      </span>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" onclick="toggleKey('${k.key}')">${k.ativo ? 'REVOGAR' : 'ATIVAR'}</button>
+      </div>
+    `;
+    el.appendChild(div);
+  });
+}
+
+function salvarKey() {
+  const key  = $('nk-key').value.trim();
+  const pass = $('nk-pass').value;
+  const role = $('nk-role').value;
+  if (!key || !pass) { toast('⚠ Key e senha obrigatórios'); return; }
+  if (STATE.keys.find(k => k.key === key)) { toast('⚠ Key já existe'); return; }
+  STATE.keys.push({ key, pass, role, ativo: true });
+  ls_set(LS.KEYS, STATE.keys);
+  closeModal('modal-nova-key');
+  renderKeys();
+  toast('✅ Key emitida!');
+  $('nk-key').value = ''; $('nk-pass').value = '';
+}
+
+function toggleKey(key) {
+  const k = STATE.keys.find(k => k.key === key);
+  if (k) k.ativo = !k.ativo;
+  ls_set(LS.KEYS, STATE.keys);
+  renderKeys();
+}
+
+// ═══════════════════════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════════════════════
+function exportarDados() {
+  const data = {
+    missoes:   STATE.missoes,
+    operacoes: ls_get(LS.OPERACOES, []),
+    agentes:   STATE.agentes,
+    keys:      STATE.keys,
+    exportado: new Date().toISOString(),
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `hydrop_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('📤 Backup exportado!');
+}
+
+function importarDados(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.missoes)   { STATE.missoes = data.missoes; ls_set(LS.MISSOES, data.missoes); }
+      if (data.operacoes) { ls_set(LS.OPERACOES, data.operacoes); }
+      if (data.agentes)   { STATE.agentes = data.agentes; ls_set(LS.AGENTES, data.agentes); }
+      if (data.keys)      { STATE.keys = data.keys; ls_set(LS.KEYS, data.keys); }
+      toast('📥 Dados importados com sucesso!');
+    } catch(err) {
+      toast('⚠ Erro ao importar JSON');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function limparTudo() {
+  if (!confirm('Limpar TODOS os dados do HyDrop? Isso não pode ser desfeito.')) return;
+  Object.values(LS).forEach(k => localStorage.removeItem(k));
+  location.reload();
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  renderAtivas();
+  // DEVGUI auto-login para demo rápido (remova em produção)
+  // entrar(STATE.keys.find(k => k.key === 'DEVGUI'));
+});
+</script>
+</body>
+</html>

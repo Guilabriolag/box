@@ -1,0 +1,2094 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#05070A">
+<title>QR-Lab · by Labriolag</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════
+   QR-LAB · LABRIOLAG · Design System v1.0
+   Ink × Gold × Cyber — World Class
+═══════════════════════════════════════════ */
+:root {
+  --gold:      #D4AF37;
+  --gold-l:    #E8CC6A;
+  --gold-d:    #A8891E;
+  --gold-p:    rgba(212,175,55,.10);
+  --gold-b:    rgba(212,175,55,.22);
+  --gold-glow: rgba(212,175,55,.35);
+  --cyber:     #00E5FF;
+  --cyber-d:   rgba(0,229,255,.10);
+  --cyber-b:   rgba(0,229,255,.22);
+  --ink:       #05070A;
+  --ink2:      #0A0D14;
+  --ink3:      #111520;
+  --ink4:      #181C2A;
+  --white:     #F4F2EC;
+  --off:       #A8A5A0;
+  --muted:     #52504C;
+  --line:      rgba(255,255,255,.07);
+  --line2:     rgba(255,255,255,.13);
+  --green:     #00E096;
+  --red:       #FF4D6D;
+  --r:         8px;
+  --rl:        14px;
+  --sidebar-w: 240px;
+  --topbar-h:  58px;
+}
+
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html { scroll-behavior:smooth; }
+body {
+  font-family:'DM Sans',sans-serif;
+  background:var(--ink);
+  color:var(--white);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+a { color:inherit; text-decoration:none; }
+img { max-width:100%; display:block; }
+input,select,button,textarea { font-family:inherit; }
+
+/* NOISE OVERLAY */
+body::after {
+  content:'';
+  position:fixed; inset:0; z-index:9998; pointer-events:none; opacity:.025;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:160px;
+}
+
+/* GRID BG */
+.grid-bg {
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:
+    linear-gradient(var(--line) 1px,transparent 1px),
+    linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:52px 52px;
+  mask-image:radial-gradient(ellipse 90% 80% at 50% 30%,black,transparent);
+}
+
+/* ═══════ TOPBAR ═══════ */
+.topbar {
+  position:fixed; top:0; left:0; right:0; z-index:800;
+  height:var(--topbar-h);
+  background:rgba(5,7,10,.94);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--line);
+  display:flex; align-items:center;
+  padding:0 20px 0 0;
+  gap:0;
+}
+
+.topbar-logo {
+  width:var(--sidebar-w);
+  display:flex; align-items:center; gap:10px;
+  padding:0 20px;
+  border-right:1px solid var(--line);
+  height:100%;
+  flex-shrink:0;
+}
+
+.logo-buildings {
+  width:38px; height:32px;
+  flex-shrink:0;
+}
+
+.logo-text {
+  display:flex; flex-direction:column; line-height:1;
+}
+.logo-text strong {
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.1rem; font-weight:700;
+  color:var(--gold); letter-spacing:2px;
+}
+.logo-text small {
+  font-family:'Space Mono',monospace;
+  font-size:.5rem; letter-spacing:2px;
+  color:var(--muted); text-transform:uppercase;
+  margin-top:2px;
+}
+
+.topbar-center {
+  flex:1;
+  display:flex; align-items:center;
+  padding:0 20px;
+  gap:16px;
+}
+
+.topbar-badge {
+  display:flex; align-items:center; gap:6px;
+  padding:5px 12px;
+  background:var(--gold-p);
+  border:1px solid var(--gold-b);
+  border-radius:20px;
+  font-size:.65rem; font-weight:700;
+  color:var(--gold); letter-spacing:1px;
+  text-transform:uppercase;
+}
+.tb-dot {
+  width:6px; height:6px; border-radius:50%;
+  background:var(--gold);
+  animation:blink 2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.2} }
+
+.trial-pill {
+  display:flex; align-items:center; gap:6px;
+  padding:5px 12px;
+  background:rgba(255,77,109,.08);
+  border:1px solid rgba(255,77,109,.22);
+  border-radius:20px;
+  font-size:.65rem; font-weight:700;
+  color:#FF4D6D; letter-spacing:1px;
+  margin-left:auto;
+}
+
+.topbar-actions {
+  display:flex; align-items:center; gap:8px;
+  padding:0 0 0 16px;
+}
+
+.ta-btn {
+  width:34px; height:34px;
+  border-radius:var(--r);
+  background:var(--ink3);
+  border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.9rem; cursor:pointer;
+  transition:background .2s,border-color .2s;
+}
+.ta-btn:hover { background:var(--ink4); border-color:var(--line2); }
+
+.ta-avatar {
+  width:34px; height:34px;
+  border-radius:50%;
+  background:var(--gold-p);
+  border:1px solid var(--gold-b);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.75rem; font-weight:700;
+  color:var(--gold); cursor:pointer;
+  font-family:'Cormorant Garamond',serif;
+}
+
+/* ═══════ LAYOUT ═══════ */
+.app-layout {
+  display:flex;
+  padding-top:var(--topbar-h);
+  min-height:100vh;
+  position:relative; z-index:1;
+}
+
+/* ═══════ SIDEBAR ═══════ */
+.sidebar {
+  width:var(--sidebar-w);
+  min-height:calc(100vh - var(--topbar-h));
+  background:rgba(10,13,20,.6);
+  border-right:1px solid var(--line);
+  position:fixed; top:var(--topbar-h); left:0;
+  display:flex; flex-direction:column;
+  padding:20px 0 80px;
+  overflow-y:auto;
+  scrollbar-width:none;
+}
+.sidebar::-webkit-scrollbar { display:none; }
+
+.nav-section {
+  font-size:.55rem; letter-spacing:2.5px;
+  text-transform:uppercase; color:var(--muted);
+  font-weight:700; padding:16px 20px 6px;
+}
+
+.nav-item {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 20px;
+  cursor:pointer;
+  transition:background .15s, color .15s;
+  position:relative;
+  font-size:.82rem; font-weight:500;
+  color:var(--off);
+  border-left:2px solid transparent;
+}
+.nav-item:hover { background:var(--gold-p); color:var(--white); }
+.nav-item.active {
+  background:var(--gold-p);
+  border-left-color:var(--gold);
+  color:var(--gold);
+}
+.nav-item .ni-icon { font-size:.95rem; width:20px; text-align:center; }
+.nav-item .ni-badge {
+  margin-left:auto;
+  font-size:.55rem; font-weight:700; letter-spacing:.5px;
+  padding:2px 7px; border-radius:10px;
+}
+.nb-new { background:var(--gold-p); border:1px solid var(--gold-b); color:var(--gold); }
+.nb-lock { background:rgba(255,77,109,.1); border:1px solid rgba(255,77,109,.2); color:#FF4D6D; }
+.nb-pro { background:var(--cyber-d); border:1px solid var(--cyber-b); color:var(--cyber); }
+
+.sidebar-footer {
+  margin-top:auto;
+  padding:20px;
+  border-top:1px solid var(--line);
+}
+.plan-card {
+  background:var(--gold-p);
+  border:1px solid var(--gold-b);
+  border-radius:var(--rl);
+  padding:14px;
+}
+.plan-name {
+  font-family:'Cormorant Garamond',serif;
+  font-size:1rem; font-weight:700;
+  color:var(--gold); margin-bottom:4px;
+}
+.plan-desc {
+  font-size:.7rem; color:var(--off);
+  line-height:1.5; margin-bottom:10px;
+}
+.plan-btn {
+  width:100%; padding:8px;
+  background:var(--gold);
+  color:var(--ink); font-size:.72rem;
+  font-weight:700; border:none;
+  border-radius:var(--r); cursor:pointer;
+  letter-spacing:.5px;
+  transition:background .2s;
+}
+.plan-btn:hover { background:var(--gold-l); }
+
+/* ═══════ MAIN CONTENT ═══════ */
+.main-content {
+  margin-left:var(--sidebar-w);
+  flex:1;
+  padding:28px 28px 60px;
+  min-height:calc(100vh - var(--topbar-h));
+}
+
+.page { display:none; }
+.page.active { display:block; animation:fadeUp .4s ease both; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+/* ═══════ PAGE HEADER ═══════ */
+.page-header {
+  margin-bottom:24px;
+}
+.eyebrow {
+  display:flex; align-items:center; gap:8px;
+  font-size:.58rem; letter-spacing:3px;
+  text-transform:uppercase; color:var(--gold);
+  font-weight:700; margin-bottom:8px;
+}
+.eyebrow::before { content:''; width:14px; height:1px; background:var(--gold); }
+.page-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.9rem; font-weight:700;
+  color:var(--white); line-height:1.2;
+}
+.page-title em { color:var(--gold); font-style:italic; }
+.page-desc { font-size:.82rem; color:var(--off); margin-top:6px; line-height:1.6; }
+
+/* ═══════ CARD ═══════ */
+.card {
+  background:var(--ink3);
+  border:1px solid var(--line);
+  border-radius:var(--rl);
+  transition:border-color .2s;
+}
+.card:hover { border-color:var(--line2); }
+.card-gold { border-color:var(--gold-b); }
+.card-cyber { border-color:var(--cyber-b); }
+
+.card-head {
+  display:flex; align-items:center; gap:10px;
+  padding:14px 18px;
+  border-bottom:1px solid var(--line);
+}
+.ch-icon { font-size:1rem; }
+.ch-title {
+  font-size:.78rem; font-weight:700;
+  letter-spacing:.5px; color:var(--white);
+}
+.ch-sub { font-size:.68rem; color:var(--muted); margin-left:auto; }
+
+.card-body { padding:18px; }
+
+/* ═══════ CREATOR LAYOUT ═══════ */
+.creator-grid {
+  display:grid;
+  grid-template-columns:1fr 320px;
+  gap:20px;
+  align-items:start;
+}
+
+/* TYPE SELECTOR */
+.type-grid {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin-bottom:20px;
+}
+
+.type-item {
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:6px;
+  padding:12px 8px;
+  background:var(--ink2);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  cursor:pointer;
+  transition:all .2s;
+  text-align:center;
+}
+.type-item:hover {
+  border-color:var(--gold-b);
+  background:var(--gold-p);
+}
+.type-item.selected {
+  border-color:var(--gold);
+  background:var(--gold-p);
+  box-shadow:0 0 0 1px var(--gold);
+}
+.type-item.premium {
+  opacity:.7;
+}
+.type-item.premium:hover {
+  border-color:var(--cyber-b);
+  background:var(--cyber-d);
+}
+.type-icon { font-size:1.3rem; }
+.type-label {
+  font-size:.64rem; font-weight:700;
+  letter-spacing:.3px; color:var(--off);
+  line-height:1.2;
+}
+.type-item.selected .type-label { color:var(--gold); }
+.type-lock {
+  font-size:.5rem; padding:1px 5px;
+  background:rgba(255,77,109,.1);
+  border:1px solid rgba(255,77,109,.2);
+  color:#FF4D6D;
+  border-radius:4px; margin-top:2px;
+}
+
+/* FORM */
+.form-group { margin-bottom:16px; }
+.form-label {
+  display:block;
+  font-size:.65rem; font-weight:700;
+  letter-spacing:1.2px; text-transform:uppercase;
+  color:var(--off); margin-bottom:7px;
+}
+.form-input,.form-select,.form-textarea {
+  width:100%;
+  padding:11px 14px;
+  background:var(--ink2);
+  border:1px solid var(--line2);
+  border-radius:var(--r);
+  color:var(--white);
+  font-size:.85rem; outline:none;
+  transition:border-color .2s,box-shadow .2s;
+  appearance:none;
+}
+.form-input::placeholder { color:var(--muted); }
+.form-input:focus,.form-select:focus,.form-textarea:focus {
+  border-color:var(--gold-b);
+  box-shadow:0 0 0 3px rgba(212,175,55,.08);
+}
+.form-select {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23A8891E' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 14px center;
+  padding-right:36px; cursor:pointer;
+}
+.form-select option { background:var(--ink2); }
+.form-textarea { resize:vertical; min-height:80px; line-height:1.5; }
+
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+.color-row { display:flex; gap:10px; align-items:center; }
+.color-picker {
+  width:40px; height:38px;
+  border-radius:var(--r);
+  border:1px solid var(--line2);
+  background:none; cursor:pointer; padding:2px;
+}
+.color-hex { flex:1; }
+
+/* SEQUENCE BTNS */
+.seq-btns {
+  display:flex; gap:6px; flex-wrap:wrap;
+  margin-bottom:16px;
+}
+.seq-btn {
+  padding:7px 14px;
+  background:var(--ink2);
+  border:1px solid var(--line2);
+  border-radius:20px;
+  font-size:.7rem; font-weight:700;
+  color:var(--off); cursor:pointer;
+  transition:all .2s;
+  letter-spacing:.5px;
+}
+.seq-btn:hover { border-color:var(--gold-b); color:var(--gold); }
+.seq-btn.active {
+  background:var(--gold-p);
+  border-color:var(--gold);
+  color:var(--gold);
+}
+
+/* BUTTONS */
+.btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  gap:8px; padding:11px 20px;
+  border-radius:var(--r);
+  font-size:.8rem; font-weight:700;
+  letter-spacing:.3px; border:none;
+  cursor:pointer; transition:all .2s;
+  text-decoration:none; user-select:none;
+}
+.btn-full { width:100%; }
+.btn-gold { background:var(--gold); color:var(--ink); }
+.btn-gold:hover { background:var(--gold-l); transform:translateY(-1px); box-shadow:0 6px 20px rgba(212,175,55,.25); }
+.btn-outline { background:transparent; color:var(--gold); border:1px solid var(--gold-b); }
+.btn-outline:hover { background:var(--gold-p); }
+.btn-ghost { background:rgba(255,255,255,.04); color:var(--off); border:1px solid var(--line); }
+.btn-ghost:hover { background:rgba(255,255,255,.08); color:var(--white); }
+.btn-cyber { background:var(--cyber); color:var(--ink); }
+.btn-cyber:hover { filter:brightness(1.1); transform:translateY(-1px); }
+.btn-sm { padding:7px 14px; font-size:.74rem; }
+.btn-lg { padding:14px 24px; font-size:.88rem; }
+
+/* ═══════ PREVIEW PANEL ═══════ */
+.preview-panel {
+  position:sticky;
+  top:calc(var(--topbar-h) + 20px);
+}
+
+.qr-preview-wrap {
+  padding:24px;
+  display:flex; flex-direction:column;
+  align-items:center; gap:16px;
+}
+
+#qr-canvas {
+  background:#fff;
+  border-radius:10px;
+  padding:12px;
+  width:200px; height:200px;
+  display:flex; align-items:center; justify-content:center;
+  position:relative;
+}
+#qr-canvas img, #qr-canvas canvas {
+  border-radius:4px;
+}
+
+.qr-placeholder {
+  display:flex; flex-direction:column;
+  align-items:center; gap:8px;
+  color:var(--muted);
+}
+.qr-placeholder-icon {
+  width:60px; height:60px;
+  opacity:.15;
+}
+
+.qr-url-display {
+  width:100%;
+  background:var(--ink2);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  padding:8px 12px;
+  font-family:'Space Mono',monospace;
+  font-size:.62rem; color:var(--cyber);
+  word-break:break-all;
+  line-height:1.5;
+  min-height:36px;
+}
+
+.qr-actions {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:8px; width:100%;
+}
+
+.qr-stats {
+  width:100%;
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:6px;
+}
+.qr-stat {
+  background:var(--ink2);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  padding:8px;
+  text-align:center;
+}
+.qrs-val {
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.2rem; font-weight:700;
+  color:var(--gold);
+}
+.qrs-label {
+  font-size:.56rem; letter-spacing:1px;
+  text-transform:uppercase; color:var(--muted);
+  margin-top:2px;
+}
+
+/* MATERIALIZAÇÃO */
+.materialize-grid {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+.mat-item {
+  background:var(--ink2);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  padding:12px 8px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .2s;
+}
+.mat-item:hover {
+  border-color:var(--gold-b);
+  background:var(--gold-p);
+}
+.mat-icon { font-size:1.4rem; margin-bottom:6px; }
+.mat-name { font-size:.65rem; font-weight:700; color:var(--off); line-height:1.3; }
+.mat-price { font-size:.58rem; color:var(--gold); margin-top:3px; }
+
+/* BADGE */
+.badge {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:3px 9px; border-radius:20px;
+  font-size:.58rem; font-weight:700;
+  letter-spacing:.8px; text-transform:uppercase;
+}
+.badge-gold { background:var(--gold-p); border:1px solid var(--gold-b); color:var(--gold); }
+.badge-cyber { background:var(--cyber-d); border:1px solid var(--cyber-b); color:var(--cyber); }
+.badge-green { background:rgba(0,224,150,.08); border:1px solid rgba(0,224,150,.2); color:var(--green); }
+.badge-red { background:rgba(255,77,109,.08); border:1px solid rgba(255,77,109,.2); color:var(--red); }
+
+/* DIVIDER */
+.divider { height:1px; background:var(--line); margin:20px 0; }
+
+/* ═══════ MEUS QRs PAGE ═══════ */
+.qr-library {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:16px;
+  margin-top:20px;
+}
+.qr-lib-item {
+  background:var(--ink3);
+  border:1px solid var(--line);
+  border-radius:var(--rl);
+  overflow:hidden;
+  transition:all .2s;
+  cursor:pointer;
+}
+.qr-lib-item:hover {
+  border-color:var(--gold-b);
+  transform:translateY(-2px);
+  box-shadow:0 8px 24px rgba(0,0,0,.4);
+}
+.qli-preview {
+  background:#fff;
+  height:140px;
+  display:flex; align-items:center; justify-content:center;
+  position:relative;
+}
+.qli-type-badge {
+  position:absolute; top:8px; left:8px;
+  background:rgba(5,7,10,.8);
+  border:1px solid var(--gold-b);
+  border-radius:6px;
+  padding:2px 7px;
+  font-size:.55rem; font-weight:700;
+  color:var(--gold); letter-spacing:.5px;
+}
+.qli-body { padding:12px; }
+.qli-name { font-size:.82rem; font-weight:700; color:var(--white); margin-bottom:4px; }
+.qli-url { font-size:.68rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.qli-footer {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 12px;
+  border-top:1px solid var(--line);
+}
+.qli-scans { font-size:.65rem; color:var(--cyber); }
+.qli-date { font-size:.62rem; color:var(--muted); }
+
+/* ═══════ ANÁLISE PAGE ═══════ */
+.analytics-grid {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:16px;
+  margin-bottom:24px;
+}
+.analytics-card {
+  background:var(--ink3);
+  border:1px solid var(--line);
+  border-radius:var(--rl);
+  padding:18px;
+}
+.ac-label { font-size:.62rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+.ac-value {
+  font-family:'Cormorant Garamond',serif;
+  font-size:2rem; font-weight:700; color:var(--gold);
+  line-height:1;
+}
+.ac-sub { font-size:.68rem; color:var(--off); margin-top:6px; }
+.ac-trend { color:var(--green); font-weight:600; }
+
+/* ═══════ MODAL ═══════ */
+.modal-overlay {
+  position:fixed; inset:0; z-index:2000;
+  background:rgba(5,7,10,.88);
+  backdrop-filter:blur(12px);
+  display:none; align-items:center; justify-content:center;
+  padding:20px;
+}
+.modal-overlay.open { display:flex; }
+.modal-box {
+  background:var(--ink3);
+  border:1px solid var(--line2);
+  border-radius:var(--rl);
+  max-width:420px; width:100%;
+  animation:mpop .38s cubic-bezier(.34,1.56,.64,1) both;
+  position:relative;
+}
+@keyframes mpop {
+  from{opacity:0;transform:scale(.88) translateY(16px)}
+  to{opacity:1;transform:scale(1) translateY(0)}
+}
+.modal-premium { border-color:var(--gold-b); }
+.modal-head {
+  padding:24px 24px 0;
+  text-align:center;
+}
+.modal-icon { font-size:2.8rem; margin-bottom:12px; }
+.modal-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.7rem; font-weight:700;
+  color:var(--gold);
+}
+.modal-body {
+  padding:16px 24px;
+  font-size:.83rem; color:var(--off);
+  line-height:1.7;
+}
+.modal-foot {
+  padding:0 24px 24px;
+  display:flex; gap:8px;
+}
+.modal-close {
+  position:absolute; top:14px; right:14px;
+  width:28px; height:28px; border-radius:50%;
+  background:var(--line); border:none;
+  color:var(--muted); font-size:13px;
+  cursor:pointer; display:flex;
+  align-items:center; justify-content:center;
+  transition:background .2s,color .2s;
+}
+.modal-close:hover { background:var(--red); color:#fff; }
+
+.premium-features {
+  display:flex; flex-direction:column; gap:6px;
+  margin:14px 0;
+}
+.pf-item {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px;
+  background:var(--ink2);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  font-size:.78rem;
+}
+.pf-icon { font-size:.9rem; }
+
+/* ═══════ NOTICE ═══════ */
+.notice {
+  display:flex; align-items:flex-start; gap:10px;
+  padding:12px 14px;
+  border-radius:var(--r);
+  font-size:.78rem; line-height:1.55;
+  margin-bottom:14px;
+}
+.notice-icon { flex-shrink:0; font-size:.9rem; }
+.notice-gold { background:var(--gold-p); border:1px solid var(--gold-b); color:var(--gold-l); }
+.notice-cyber { background:var(--cyber-d); border:1px solid var(--cyber-b); color:var(--cyber); }
+.notice-red { background:rgba(255,77,109,.08); border:1px solid rgba(255,77,109,.22); color:#FF4D6D; }
+
+/* ═══════ TOAST ═══════ */
+#toasts {
+  position:fixed; bottom:24px; left:50%;
+  transform:translateX(-50%);
+  z-index:9990;
+  display:flex; flex-direction:column;
+  gap:8px; align-items:center;
+  pointer-events:none;
+}
+.toast {
+  padding:10px 20px; border-radius:var(--r);
+  font-size:.78rem; font-weight:600;
+  white-space:nowrap; pointer-events:all;
+  animation:tin .3s ease both, tout .3s 2.5s ease forwards;
+  backdrop-filter:blur(16px);
+}
+.t-gold { background:var(--gold-p); border:1px solid var(--gold-b); color:var(--gold); }
+.t-cyber { background:var(--cyber-d); border:1px solid var(--cyber-b); color:var(--cyber); }
+.t-error { background:rgba(255,77,109,.15); border:1px solid rgba(255,77,109,.3); color:var(--red); }
+.t-green { background:rgba(0,224,150,.1); border:1px solid rgba(0,224,150,.25); color:var(--green); }
+@keyframes tin { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+@keyframes tout { to{opacity:0;transform:translateY(-8px)} }
+
+/* ═══════ RESPONSIVE ═══════ */
+@media(max-width:900px) {
+  .creator-grid { grid-template-columns:1fr; }
+  .preview-panel { position:static; }
+  .type-grid { grid-template-columns:repeat(4,1fr); }
+  .analytics-grid { grid-template-columns:repeat(2,1fr); }
+}
+@media(max-width:680px) {
+  :root { --sidebar-w:0px; }
+  .sidebar { transform:translateX(-100%); transition:transform .3s; width:260px; z-index:900; }
+  .sidebar.open { transform:translateX(0); --sidebar-w:260px; }
+  .topbar-logo { width:auto; border-right:none; }
+  .main-content { margin-left:0; padding:20px 16px 60px; }
+  .type-grid { grid-template-columns:repeat(3,1fr); }
+  .analytics-grid { grid-template-columns:1fr 1fr; }
+  .materialize-grid { grid-template-columns:repeat(3,1fr); }
+}
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div id="toasts"></div>
+
+<!-- ═══════════════════════════════════════
+     TOPBAR
+═══════════════════════════════════════ -->
+<header class="topbar">
+  <div class="topbar-logo">
+    <!-- Buildings mini logo -->
+    <svg class="logo-buildings" viewBox="0 0 38 32" fill="none">
+      <path d="M19,30 L32,23 L19,16 L6,23 Z" fill="rgba(0,229,255,.04)" stroke="rgba(0,229,255,.1)" stroke-width="0.3"/>
+      <!-- b1 -->
+      <rect x="7" y="18" width="4" height="10" rx=".5" fill="#0A0D14" stroke="#D4AF37" stroke-width=".5"/>
+      <!-- b2 -->
+      <rect x="13" y="14" width="4" height="14" rx=".5" fill="#111520" stroke="#D4AF37" stroke-width=".5"/>
+      <!-- b3 main -->
+      <rect x="19" y="10" width="5" height="18" rx=".5" fill="#111520" stroke="#D4AF37" stroke-width=".6"/>
+      <!-- b4 -->
+      <rect x="26" y="15" width="4" height="13" rx=".5" fill="#0A0D14" stroke="#D4AF37" stroke-width=".5"/>
+      <!-- windows b3 -->
+      <rect class="w" x="20" y="12" width="1.5" height="2" fill="#00E5FF" opacity=".5"/>
+      <rect class="w" x="22.5" y="12" width="1.5" height="2" fill="#D4AF37" opacity=".5"/>
+      <rect class="w" x="20" y="16" width="1.5" height="2" fill="#00E5FF" opacity=".4"/>
+      <rect class="w" x="22.5" y="16" width="1.5" height="2" fill="#00E5FF" opacity=".4"/>
+      <rect class="w" x="20" y="20" width="1.5" height="2" fill="#D4AF37" opacity=".5"/>
+      <rect class="w" x="22.5" y="20" width="1.5" height="2" fill="#00E5FF" opacity=".3"/>
+      <!-- windows b2 -->
+      <rect class="w" x="14" y="16" width="1.5" height="2" fill="#00E5FF" opacity=".4"/>
+      <rect class="w" x="16" y="16" width="1.5" height="2" fill="#D4AF37" opacity=".4"/>
+      <!-- antenna -->
+      <line x1="21.5" y1="10" x2="21.5" y2="7" stroke="#D4AF37" stroke-width=".6" opacity=".7"/>
+      <circle cx="21.5" cy="6.5" r=".8" fill="#D4AF37" opacity=".9"/>
+      <circle cx="21.5" cy="6.5" r="1.5" fill="none" stroke="#D4AF37" stroke-width=".3" opacity=".3">
+        <animate attributeName="r" values="1.5;3;1.5" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values=".3;0;.3" dur="2s" repeatCount="indefinite"/>
+      </circle>
+    </svg>
+    <div class="logo-text">
+      <strong>QR-Lab</strong>
+      <small>by Labriolag</small>
+    </div>
+  </div>
+
+  <div class="topbar-center">
+    <div class="topbar-badge">
+      <span class="tb-dot"></span>
+      Sistema Ativo
+    </div>
+    <div class="trial-pill">⏱ Faltam 9 dias</div>
+  </div>
+
+  <div class="topbar-actions">
+    <div class="ta-btn" title="Notificações">🔔</div>
+    <div class="ta-btn" title="Ajuda">❓</div>
+    <div class="ta-avatar" title="Minha Conta">L</div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════
+     APP LAYOUT
+═══════════════════════════════════════ -->
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="nav-section">Principal</div>
+    <div class="nav-item active" onclick="showPage('criar')">
+      <span class="ni-icon">⚡</span>
+      Criar QR Code
+      <span class="ni-badge nb-new">NOVO</span>
+    </div>
+    <div class="nav-item" onclick="showPage('meus')">
+      <span class="ni-icon">🗂️</span>
+      Meus QR Codes
+    </div>
+
+    <div class="nav-section">Inteligência</div>
+    <div class="nav-item" onclick="showPage('analise')">
+      <span class="ni-icon">📊</span>
+      Análise
+      <span class="ni-badge nb-pro">PRO</span>
+    </div>
+
+    <div class="nav-section">Conta</div>
+    <div class="nav-item" onclick="showPage('conta')">
+      <span class="ni-icon">👤</span>
+      Minha Conta
+    </div>
+    <div class="nav-item" onclick="showPage('cobranca')">
+      <span class="ni-icon">💳</span>
+      Cobrança de Faturas
+    </div>
+    <div class="nav-item" onclick="showPage('contato')">
+      <span class="ni-icon">💬</span>
+      Entre em Contato
+    </div>
+    <div class="nav-item" onclick="showPage('faq')">
+      <span class="ni-icon">❓</span>
+      Perguntas Frequentes
+    </div>
+
+    <div class="nav-section">Ecossistema</div>
+    <div class="nav-item" onclick="openPremiumModal('labchain')">
+      <span class="ni-icon">🔐</span>
+      LabChain
+      <span class="ni-badge nb-lock">LABS</span>
+    </div>
+    <div class="nav-item" onclick="openPremiumModal('labads')">
+      <span class="ni-icon">📢</span>
+      LabAds
+      <span class="ni-badge nb-lock">LABS</span>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="plan-card">
+        <div class="plan-name">Plano Fundador</div>
+        <div class="plan-desc">Acesse todo o ecossistema Labriolag com 1 Sat de entrada.</div>
+        <button class="plan-btn" onclick="openPremiumModal('fundador')">⚡ Ativar Agora</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+
+    <!-- ══════════════════════
+         PÁGINA: CRIAR QR
+    ══════════════════════ -->
+    <div class="page active" id="page-criar">
+      <div class="page-header">
+        <div class="eyebrow">Gerador</div>
+        <h1 class="page-title">Criar <em>QR Code</em></h1>
+        <p class="page-desc">Escolha o tipo, configure o conteúdo e gere seu QR em segundos.</p>
+      </div>
+
+      <div class="creator-grid">
+
+        <!-- COLUNA ESQUERDA: CONFIG -->
+        <div>
+
+          <!-- STEP 1: TIPO -->
+          <div class="card" style="margin-bottom:20px;">
+            <div class="card-head">
+              <span class="ch-icon">1</span>
+              <span class="ch-title">Selecione o tipo de QR Code</span>
+            </div>
+            <div class="card-body">
+              <div class="type-grid" id="typeGrid">
+                <!-- rendered by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 2: CONTEÚDO -->
+          <div class="card" style="margin-bottom:20px;" id="contentCard">
+            <div class="card-head">
+              <span class="ch-icon">2</span>
+              <span class="ch-title">Configure o conteúdo</span>
+              <span class="ch-sub" id="contentTypeLabel">Site / URL</span>
+            </div>
+            <div class="card-body" id="contentForm">
+              <!-- rendered by JS -->
+            </div>
+          </div>
+
+          <!-- STEP 3: SEQUÊNCIA -->
+          <div class="card" style="margin-bottom:20px;">
+            <div class="card-head">
+              <span class="ch-icon">3</span>
+              <span class="ch-title">Modo de Sequência</span>
+              <span class="ch-sub">Telemetria · <code style="color:var(--cyber);font-size:.65rem;">?src=</code></span>
+            </div>
+            <div class="card-body">
+              <div class="seq-btns">
+                <button class="seq-btn active" onclick="selectSeq(this,'manual')">Manual</button>
+                <button class="seq-btn" onclick="selectSeq(this,'numerado')">01, 02, 03...</button>
+                <button class="seq-btn" onclick="selectSeq(this,'letras')">A, B, C...</button>
+                <button class="seq-btn" onclick="selectSeq(this,'nome')">Nome Personalizado</button>
+                <button class="seq-btn" onclick="selectSeq(this,'aleatorio')">🎲 Aleatório</button>
+              </div>
+
+              <div id="seqManual">
+                <div class="form-group">
+                  <label class="form-label">URL Base</label>
+                  <input class="form-input" type="url" id="srcBase" value="https://labriolag.shop/"
+                    placeholder="https://labriolag.shop/">
+                </div>
+              </div>
+
+              <div id="seqNumerado" style="display:none;">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Início</label>
+                    <input class="form-input" type="number" id="seqStart" value="1" min="1">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Quantidade</label>
+                    <input class="form-input" type="number" id="seqQty" value="5" min="1" max="50">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">URL Base</label>
+                  <input class="form-input" type="url" id="seqBaseNum" value="https://labriolag.shop/?src=">
+                </div>
+              </div>
+
+              <div id="seqLetras" style="display:none;">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Letra Inicial</label>
+                    <select class="form-select" id="seqLetraStart">
+                      <option>A</option><option>B</option><option>C</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Letra Final</label>
+                    <select class="form-select" id="seqLetraEnd">
+                      <option>E</option><option>F</option><option>G</option><option>H</option>
+                      <option>I</option><option>J</option><option>K</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">URL Base</label>
+                  <input class="form-input" type="url" id="seqBaseLetra" value="https://labriolag.shop/?src=">
+                </div>
+              </div>
+
+              <div id="seqNome" style="display:none;">
+                <div class="form-group">
+                  <label class="form-label">Nome do identificador</label>
+                  <input class="form-input" type="text" id="seqNomeVal" placeholder="Ex: LabSystem, Promo2026">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">URL Base</label>
+                  <input class="form-input" type="url" id="seqBaseNome" value="https://labriolag.shop/?src=">
+                </div>
+              </div>
+
+              <div id="seqAleatorio" style="display:none;">
+                <div class="notice notice-cyber">
+                  <span class="notice-icon">🎲</span>
+                  <span>Será gerado um identificador aleatório de 6 caracteres. Ex: <strong>XYZ123</strong></span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">URL Base</label>
+                  <input class="form-input" type="url" id="seqBaseAleatorio" value="https://labriolag.shop/?src=">
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- STEP 4: VISUAL -->
+          <div class="card" style="margin-bottom:20px;">
+            <div class="card-head">
+              <span class="ch-icon">4</span>
+              <span class="ch-title">Customização Visual</span>
+            </div>
+            <div class="card-body">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Cor dos Pixels</label>
+                  <div class="color-row">
+                    <input type="color" class="color-picker" id="colorFg" value="#05070A">
+                    <input type="text" class="form-input color-hex" id="colorFgHex" value="#05070A">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Cor de Fundo</label>
+                  <div class="color-row">
+                    <input type="color" class="color-picker" id="colorBg" value="#FFFFFF">
+                    <input type="text" class="form-input color-hex" id="colorBgHex" value="#FFFFFF">
+                  </div>
+                </div>
+              </div>
+              <div class="form-row" style="margin-top:4px;">
+                <div class="form-group">
+                  <label class="form-label">Tamanho (px)</label>
+                  <select class="form-select" id="qrSize">
+                    <option value="200">200×200 (Web)</option>
+                    <option value="300" selected>300×300 (Padrão)</option>
+                    <option value="500">500×500 (Alta Res)</option>
+                    <option value="800">800×800 (Impressão)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Margem</label>
+                  <select class="form-select" id="qrMargin">
+                    <option value="1">Mínima</option>
+                    <option value="2" selected>Normal</option>
+                    <option value="4">Ampla</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Logo Central (URL)</label>
+                <input class="form-input" type="url" id="logoUrl"
+                  placeholder="https://... (PNG/SVG com fundo transparente)">
+              </div>
+
+              <!-- Presets rápidos -->
+              <div style="margin-top:4px;">
+                <div class="form-label" style="margin-bottom:8px;">Presets de Cor</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                  <div class="preset-chip" style="--c:#05070A;--b:#ffffff" onclick="applyPreset('#05070A','#ffffff')">Clássico</div>
+                  <div class="preset-chip" style="--c:#D4AF37;--b:#05070A" onclick="applyPreset('#D4AF37','#05070A')">Gold</div>
+                  <div class="preset-chip" style="--c:#00E5FF;--b:#05070A" onclick="applyPreset('#00E5FF','#05070A')">Cyber</div>
+                  <div class="preset-chip" style="--c:#ffffff;--b:#05070A" onclick="applyPreset('#ffffff','#05070A')">Dark</div>
+                  <div class="preset-chip" style="--c:#D4AF37;--b:#111520" onclick="applyPreset('#D4AF37','#111520')">Lab</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div><!-- /col esquerda -->
+
+        <!-- COLUNA DIREITA: PREVIEW -->
+        <div class="preview-panel">
+
+          <div class="card card-gold" style="margin-bottom:16px;">
+            <div class="card-head">
+              <span class="ch-icon">👁</span>
+              <span class="ch-title">Visualização</span>
+              <span class="badge badge-gold" style="margin-left:auto" id="previewTypeBadge">Site</span>
+            </div>
+            <div class="qr-preview-wrap">
+              <div id="qr-canvas">
+                <div class="qr-placeholder">
+                  <svg class="qr-placeholder-icon" viewBox="0 0 64 64" fill="none">
+                    <rect x="4" y="4" width="22" height="22" rx="2" stroke="#D4AF37" stroke-width="2"/>
+                    <rect x="9" y="9" width="12" height="12" rx="1" fill="#D4AF37" opacity=".3"/>
+                    <rect x="38" y="4" width="22" height="22" rx="2" stroke="#D4AF37" stroke-width="2"/>
+                    <rect x="43" y="9" width="12" height="12" rx="1" fill="#D4AF37" opacity=".3"/>
+                    <rect x="4" y="38" width="22" height="22" rx="2" stroke="#D4AF37" stroke-width="2"/>
+                    <rect x="9" y="43" width="12" height="12" rx="1" fill="#D4AF37" opacity=".3"/>
+                    <rect x="38" y="38" width="6" height="6" rx="1" fill="#D4AF37" opacity=".5"/>
+                    <rect x="48" y="38" width="6" height="6" rx="1" fill="#D4AF37" opacity=".3"/>
+                    <rect x="38" y="48" width="6" height="6" rx="1" fill="#D4AF37" opacity=".3"/>
+                    <rect x="48" y="48" width="6" height="6" rx="1" fill="#D4AF37" opacity=".5"/>
+                  </svg>
+                  <span style="font-size:.7rem;color:var(--muted)">Configure e gere</span>
+                </div>
+              </div>
+
+              <div class="qr-url-display" id="qrUrlDisplay">—</div>
+
+              <div class="qr-actions">
+                <button class="btn btn-gold" id="btnGenerate" onclick="gerarQR()">⚡ Gerar</button>
+                <button class="btn btn-outline" onclick="downloadQR()">⬇ PNG</button>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%">
+                <button class="btn btn-ghost btn-sm" onclick="copiarURL()">📋 Copiar URL</button>
+                <button class="btn btn-ghost btn-sm" onclick="compartilhar()">📤 Compartilhar</button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- STATS -->
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-head">
+              <span class="ch-icon">📊</span>
+              <span class="ch-title">Estatísticas</span>
+            </div>
+            <div style="padding:12px;">
+              <div class="qr-stats">
+                <div class="qr-stat">
+                  <div class="qrs-val" id="statTotal">0</div>
+                  <div class="qrs-label">Criados</div>
+                </div>
+                <div class="qr-stat">
+                  <div class="qrs-val" style="color:var(--cyber)" id="statScans">—</div>
+                  <div class="qrs-label">Scans</div>
+                </div>
+                <div class="qr-stat">
+                  <div class="qrs-val" style="color:var(--green)" id="statSaved">0</div>
+                  <div class="qrs-label">Salvos</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MATERIALIZAR -->
+          <div class="card">
+            <div class="card-head">
+              <span class="ch-icon">🏭</span>
+              <span class="ch-title">Lab-Studio · Materializar</span>
+            </div>
+            <div class="card-body">
+              <p style="font-size:.74rem;color:var(--off);margin-bottom:14px;line-height:1.5;">
+                Transforme seu QR Code em produto físico. Entregamos em até 48h.
+              </p>
+              <div class="materialize-grid">
+                <div class="mat-item" onclick="pedirMaterial('chaveiro')">
+                  <div class="mat-icon">🔑</div>
+                  <div class="mat-name">Chaveiro QR</div>
+                  <div class="mat-price">R$ 12,90</div>
+                </div>
+                <div class="mat-item" onclick="pedirMaterial('ima')">
+                  <div class="mat-icon">🧲</div>
+                  <div class="mat-name">Imã Inteligente</div>
+                  <div class="mat-price">R$ 8,90</div>
+                </div>
+                <div class="mat-item" onclick="pedirMaterial('etiqueta')">
+                  <div class="mat-icon">🏷️</div>
+                  <div class="mat-name">Etiqueta Rastreio</div>
+                  <div class="mat-price">R$ 4,90</div>
+                </div>
+                <div class="mat-item" onclick="pedirMaterial('banner')">
+                  <div class="mat-icon">🖼️</div>
+                  <div class="mat-name">Banner A3</div>
+                  <div class="mat-price">R$ 29,90</div>
+                </div>
+                <div class="mat-item" onclick="pedirMaterial('acrilico')">
+                  <div class="mat-icon">💎</div>
+                  <div class="mat-name">Placa Acrílico</div>
+                  <div class="mat-price">R$ 49,90</div>
+                </div>
+                <div class="mat-item" onclick="pedirMaterial('totem')">
+                  <div class="mat-icon">🖥️</div>
+                  <div class="mat-name">Totem Digital</div>
+                  <div class="mat-price">Consultar</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /preview panel -->
+      </div><!-- /creator-grid -->
+    </div><!-- /page-criar -->
+
+    <!-- ══════════════════════
+         PÁGINA: MEUS QRs
+    ══════════════════════ -->
+    <div class="page" id="page-meus">
+      <div class="page-header">
+        <div class="eyebrow">Biblioteca</div>
+        <h1 class="page-title">Meus <em>QR Codes</em></h1>
+        <p class="page-desc">Todos os QR Codes criados nesta sessão.</p>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+        <input class="form-input" type="search" placeholder="🔍 Buscar..." style="max-width:260px;">
+        <select class="form-select" style="max-width:160px;">
+          <option>Todos os tipos</option>
+          <option>Site</option><option>WhatsApp</option><option>Cardápio</option>
+        </select>
+        <button class="btn btn-gold btn-sm" onclick="showPage('criar')" style="margin-left:auto">+ Novo QR Code</button>
+      </div>
+
+      <div class="qr-library" id="qrLibrary">
+        <div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--muted);">
+          <div style="font-size:2rem;margin-bottom:8px;opacity:.3">🗂️</div>
+          <div style="font-size:.85rem;">Nenhum QR Code criado ainda.</div>
+          <button class="btn btn-gold btn-sm" onclick="showPage('criar')" style="margin-top:16px">⚡ Criar meu primeiro QR</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════
+         PÁGINA: ANÁLISE
+    ══════════════════════ -->
+    <div class="page" id="page-analise">
+      <div class="page-header">
+        <div class="eyebrow">Inteligência</div>
+        <h1 class="page-title">Análise <em>& Telemetria</em></h1>
+      </div>
+
+      <div class="notice notice-gold" style="margin-bottom:20px;">
+        <span class="notice-icon">🔐</span>
+        <div>
+          <strong>Recurso LabSystem.</strong> Análise avançada pertence ao ecossistema Labriolag.
+          <a href="#" onclick="openPremiumModal('labsystem');return false" style="color:var(--gold);text-decoration:underline;margin-left:4px;">Ativar com Plano Fundador →</a>
+        </div>
+      </div>
+
+      <div class="analytics-grid" style="opacity:.4;pointer-events:none;filter:blur(2px);">
+        <div class="analytics-card">
+          <div class="ac-label">Total de Scans</div>
+          <div class="ac-value">1.247</div>
+          <div class="ac-sub"><span class="ac-trend">↑ 23%</span> este mês</div>
+        </div>
+        <div class="analytics-card">
+          <div class="ac-label">QRs Ativos</div>
+          <div class="ac-value" style="color:var(--cyber)">38</div>
+          <div class="ac-sub">em circulação</div>
+        </div>
+        <div class="analytics-card">
+          <div class="ac-label">Conversão</div>
+          <div class="ac-value" style="color:var(--green)">12.4%</div>
+          <div class="ac-sub"><span class="ac-trend">↑ 4.1%</span> vs mês ant.</div>
+        </div>
+        <div class="analytics-card">
+          <div class="ac-label">Sats Gerados</div>
+          <div class="ac-value" style="color:var(--gold)">847</div>
+          <div class="ac-sub">via LabChain</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════
+         PÁGINA: CONTA
+    ══════════════════════ -->
+    <div class="page" id="page-conta">
+      <div class="page-header">
+        <div class="eyebrow">Perfil</div>
+        <h1 class="page-title">Minha <em>Conta</em></h1>
+      </div>
+      <div class="card" style="max-width:480px;">
+        <div class="card-head"><span class="ch-icon">👤</span><span class="ch-title">Dados do Perfil</span></div>
+        <div class="card-body">
+          <div class="form-group"><label class="form-label">Nome</label><input class="form-input" placeholder="Seu nome completo"></div>
+          <div class="form-group"><label class="form-label">E-mail</label><input class="form-input" type="email" placeholder="seu@email.com"></div>
+          <div class="form-group"><label class="form-label">WhatsApp</label><input class="form-input" placeholder="5511999999999"></div>
+          <div class="form-group"><label class="form-label">Cidade</label>
+            <select class="form-select">
+              <option>🏙️ Pirapora do Bom Jesus</option>
+              <option>🏙️ Araçariguama</option>
+              <option>🏙️ Cajamar</option>
+              <option>🏙️ Santana de Parnaíba</option>
+              <option>🏙️ Barueri / Alphaville</option>
+            </select>
+          </div>
+          <button class="btn btn-gold" onclick="toast('Perfil salvo!','gold')">💾 Salvar Alterações</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════
+         PÁGINA: COBRANÇA
+    ══════════════════════ -->
+    <div class="page" id="page-cobranca">
+      <div class="page-header">
+        <div class="eyebrow">Planos</div>
+        <h1 class="page-title">Cobrança de <em>Faturas</em></h1>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;max-width:900px;">
+        <!-- Plano Free -->
+        <div class="card">
+          <div class="card-body" style="text-align:center;">
+            <div style="font-size:1.8rem;margin-bottom:8px">🆓</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--off);">Gratuito</div>
+            <div style="font-size:.7rem;color:var(--muted);margin:4px 0 16px;">Trial 14 dias</div>
+            <div style="font-size:2rem;font-weight:700;color:var(--white);font-family:'Cormorant Garamond',serif;">R$ 0</div>
+            <div class="divider"></div>
+            <div style="text-align:left;font-size:.78rem;color:var(--off);display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+              <div>✓ 10 QR Codes</div><div>✓ Tipos básicos (Site, WhatsApp)</div>
+              <div>✓ PNG download</div><div>✗ Análise de scans</div>
+              <div>✗ Personalização avançada</div>
+            </div>
+            <button class="btn btn-ghost btn-full">Plano Atual</button>
+          </div>
+        </div>
+
+        <!-- Plano Fundador -->
+        <div class="card card-gold">
+          <div style="padding:8px;text-align:center;background:var(--gold);border-radius:var(--rl) var(--rl) 0 0;">
+            <span style="font-size:.7rem;font-weight:700;color:var(--ink);letter-spacing:1px;">⭐ MAIS POPULAR</span>
+          </div>
+          <div class="card-body" style="text-align:center;">
+            <div style="font-size:1.8rem;margin-bottom:8px">🏛️</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--gold);">Fundador</div>
+            <div style="font-size:.7rem;color:var(--gold-l);margin:4px 0 16px;">Pioneiro Labriolag</div>
+            <div style="font-size:2rem;font-weight:700;color:var(--gold);font-family:'Cormorant Garamond',serif;">
+              1 Sat<br><span style="font-size:1rem;font-weight:400;color:var(--off)">de entrada</span>
+            </div>
+            <div class="divider"></div>
+            <div style="text-align:left;font-size:.78rem;color:var(--off);display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+              <div>✓ QR Codes ilimitados</div><div>✓ Todos os 16 tipos</div>
+              <div>✓ Análise completa + Geofencing</div><div>✓ LabChain incluído</div>
+              <div>✓ Lab-Studio (materialização)</div><div>✓ Suporte prioritário</div>
+            </div>
+            <button class="btn btn-gold btn-full" onclick="openPremiumModal('fundador')">⚡ Ativar com 1 Sat</button>
+          </div>
+        </div>
+
+        <!-- Plano Pro -->
+        <div class="card card-cyber">
+          <div class="card-body" style="text-align:center;">
+            <div style="font-size:1.8rem;margin-bottom:8px">🚀</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--cyber);">LabSystem Pro</div>
+            <div style="font-size:.7rem;color:var(--muted);margin:4px 0 16px;">Para Holding Completa</div>
+            <div style="font-size:2rem;font-weight:700;color:var(--cyber);font-family:'Cormorant Garamond',serif;">Sob consulta</div>
+            <div class="divider"></div>
+            <div style="text-align:left;font-size:.78rem;color:var(--off);display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+              <div>✓ Tudo do Fundador</div><div>✓ LabAds (Ad-Server)</div>
+              <div>✓ War Room + Sniper</div><div>✓ LabTotem / Telas</div>
+              <div>✓ API completa</div><div>✓ Multi-território</div>
+            </div>
+            <button class="btn btn-cyber btn-full" onclick="toast('Entre em contato via WhatsApp.','cyber')">💬 Falar com Equipe</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════
+         PÁGINA: CONTATO
+    ══════════════════════ -->
+    <div class="page" id="page-contato">
+      <div class="page-header">
+        <div class="eyebrow">Suporte</div>
+        <h1 class="page-title">Entre em <em>Contato</em></h1>
+      </div>
+      <div class="card" style="max-width:520px;">
+        <div class="card-body">
+          <div class="form-group"><label class="form-label">Assunto</label>
+            <select class="form-select">
+              <option>💡 Sugestão de melhoria</option>
+              <option>🐛 Reportar problema</option>
+              <option>💳 Dúvida sobre planos</option>
+              <option>🤝 Parceria / Expansão</option>
+              <option>🏙️ Programa Cidades Digitais</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Mensagem</label><textarea class="form-textarea" rows="4" placeholder="Descreva sua dúvida ou sugestão..."></textarea></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-gold" onclick="toast('Mensagem enviada! ✓','gold')">📤 Enviar Mensagem</button>
+            <a class="btn btn-ghost" href="https://wa.me/5511000000000" target="_blank">📲 WhatsApp Direto</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════
+         PÁGINA: FAQ
+    ══════════════════════ -->
+    <div class="page" id="page-faq">
+      <div class="page-header">
+        <div class="eyebrow">Ajuda</div>
+        <h1 class="page-title">Perguntas <em>Frequentes</em></h1>
+      </div>
+      <div id="faqList" style="max-width:680px;display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+  </main><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<!-- ═══════════════════════════════════════
+     MODAL PREMIUM / LABSYSTEM
+═══════════════════════════════════════ -->
+<div class="modal-overlay" id="modalPremium">
+  <div class="modal-box modal-premium">
+    <button class="modal-close" onclick="closeModal('modalPremium')">✕</button>
+    <div class="modal-head">
+      <div class="modal-icon" id="premiumIcon">🏛️</div>
+      <div class="modal-title" id="premiumTitle">Plano Fundador</div>
+    </div>
+    <div class="modal-body" id="premiumBody">
+      <!-- rendered by JS -->
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modalPremium')">Fechar</button>
+      <button class="btn btn-gold btn-full" id="premiumCTA" onclick="ativarPremium()">⚡ Ativar com 1 Sat</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MATERIALIZAR -->
+<div class="modal-overlay" id="modalMaterial">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modalMaterial')">✕</button>
+    <div class="modal-head">
+      <div class="modal-icon" id="matIcon">🔑</div>
+      <div class="modal-title" id="matTitle">Chaveiro QR</div>
+    </div>
+    <div class="modal-body" id="matBody"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modalMaterial')">Cancelar</button>
+      <button class="btn btn-gold btn-full" onclick="confirmarPedido()">📦 Fazer Pedido</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.preset-chip {
+  padding:5px 12px; border-radius:20px; cursor:pointer;
+  background:var(--ink2); border:1px solid var(--line2);
+  font-size:.68rem; font-weight:700; color:var(--off);
+  transition:all .2s; display:inline-flex; align-items:center; gap:5px;
+}
+.preset-chip::before {
+  content:''; width:10px; height:10px; border-radius:50%;
+  background:var(--c); border:1px solid rgba(255,255,255,.15);
+}
+.preset-chip:hover { border-color:var(--gold-b); color:var(--gold); }
+
+.faq-item {
+  background:var(--ink3); border:1px solid var(--line);
+  border-radius:var(--r); overflow:hidden;
+}
+.faq-q {
+  padding:14px 18px; cursor:pointer;
+  display:flex; align-items:center; justify-content:space-between;
+  font-size:.83rem; font-weight:600; color:var(--white);
+  transition:background .2s;
+}
+.faq-q:hover { background:var(--gold-p); color:var(--gold); }
+.faq-a {
+  display:none; padding:0 18px 14px;
+  font-size:.8rem; color:var(--off); line-height:1.7;
+}
+.faq-item.open .faq-a { display:block; }
+.faq-item.open .faq-q { color:var(--gold); }
+.faq-arrow { transition:transform .2s; }
+.faq-item.open .faq-arrow { transform:rotate(180deg); }
+</style>
+
+<script>
+/* ═══════════════════════════════════════
+   QR-LAB · APP ENGINE
+═══════════════════════════════════════ */
+
+// ── STATE ──
+const STATE = {
+  currentType: 'site',
+  currentSeq: 'manual',
+  library: JSON.parse(localStorage.getItem('qrlab_library') || '[]'),
+  totalCreated: parseInt(localStorage.getItem('qrlab_total') || '0'),
+};
+
+// ── TYPES CONFIG ──
+const TYPES = [
+  { id:'site',      label:'Site',         icon:'🌐', desc:'Link para qualquer URL de site',    premium:false },
+  { id:'whatsapp',  label:'WhatsApp',      icon:'💬', desc:'Receba mensagens no WhatsApp',      premium:false },
+  { id:'wifi',      label:'Wi-Fi',         icon:'📶', desc:'Conectar a uma rede Wi-Fi',          premium:false },
+  { id:'vcard',     label:'vCard',         icon:'👤', desc:'Cartão de visita digital',           premium:false },
+  { id:'pdf',       label:'PDF',           icon:'📄', desc:'Mostrar um PDF',                     premium:false },
+  { id:'imagens',   label:'Imagens',       icon:'🖼️', desc:'Compartilhar várias imagens',       premium:false },
+  { id:'video',     label:'Vídeo',         icon:'▶️', desc:'Exibir um vídeo',                   premium:false },
+  { id:'mp3',       label:'MP3',           icon:'🎵', desc:'Compartilhar um áudio',              premium:false },
+  { id:'cardapio',  label:'Cardápio',      icon:'🍽️', desc:'Cardápio digital do restaurante',  premium:true  },
+  { id:'negocios',  label:'Negócios',      icon:'🏢', desc:'Informações da empresa',            premium:true  },
+  { id:'apps',      label:'Aplicativos',   icon:'📱', desc:'Redirecionar para loja de apps',    premium:true  },
+  { id:'links',     label:'Lista Links',   icon:'🔗', desc:'Compartilhar vários links',         premium:true  },
+  { id:'cupom',     label:'Cupom',         icon:'🏷️', desc:'Compartilhar um cupom',            premium:true  },
+  { id:'facebook',  label:'Facebook',      icon:'👍', desc:'Página do Facebook',                premium:false },
+  { id:'instagram', label:'Instagram',     icon:'📸', desc:'Perfil do Instagram',               premium:false },
+  { id:'social',    label:'Mídias Sociais',icon:'🌐', desc:'Todos os canais sociais',           premium:true  },
+];
+
+// ── FORMS PER TYPE ──
+const FORMS = {
+  site: `
+    <div class="form-group">
+      <label class="form-label">URL do Site</label>
+      <input class="form-input" type="url" id="f-url" placeholder="https://seusite.com.br" value="https://labriolag.shop/">
+    </div>`,
+  whatsapp: `
+    <div class="form-group">
+      <label class="form-label">Número WhatsApp (com DDI)</label>
+      <input class="form-input" type="tel" id="f-wa-num" placeholder="5511999999999">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Mensagem Padrão (opcional)</label>
+      <textarea class="form-textarea" id="f-wa-msg" rows="2" placeholder="Olá! Vim pelo QR Code..."></textarea>
+    </div>`,
+  wifi: `
+    <div class="form-group">
+      <label class="form-label">Nome da Rede (SSID)</label>
+      <input class="form-input" id="f-wifi-ssid" placeholder="Minha Rede">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input class="form-input" type="password" id="f-wifi-pass" placeholder="••••••••">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Segurança</label>
+        <select class="form-select" id="f-wifi-sec">
+          <option value="WPA">WPA/WPA2</option>
+          <option value="WEP">WEP</option>
+          <option value="">Sem senha</option>
+        </select>
+      </div>
+    </div>`,
+  vcard: `
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nome</label><input class="form-input" id="f-vc-nome" placeholder="João Silva"></div>
+      <div class="form-group"><label class="form-label">Cargo</label><input class="form-input" id="f-vc-cargo" placeholder="Fundador"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Empresa</label><input class="form-input" id="f-vc-empresa" placeholder="Labriolag Holding"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Telefone</label><input class="form-input" id="f-vc-tel" placeholder="+55 11 9 9999-0000"></div>
+      <div class="form-group"><label class="form-label">E-mail</label><input class="form-input" id="f-vc-email" placeholder="contato@lab.com"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Website</label><input class="form-input" type="url" id="f-vc-site" placeholder="https://labriolag.shop"></div>`,
+  pdf: `
+    <div class="form-group">
+      <label class="form-label">URL do PDF</label>
+      <input class="form-input" type="url" id="f-pdf-url" placeholder="https://seusite.com/arquivo.pdf">
+    </div>`,
+  imagens: `
+    <div class="form-group">
+      <label class="form-label">URL da Galeria / Pasta</label>
+      <input class="form-input" type="url" id="f-img-url" placeholder="https://photos.google.com/...">
+    </div>`,
+  video: `
+    <div class="form-group">
+      <label class="form-label">URL do Vídeo (YouTube, Vimeo...)</label>
+      <input class="form-input" type="url" id="f-vid-url" placeholder="https://youtube.com/watch?v=...">
+    </div>`,
+  mp3: `
+    <div class="form-group">
+      <label class="form-label">URL do Arquivo MP3 / Podcast</label>
+      <input class="form-input" type="url" id="f-mp3-url" placeholder="https://seusite.com/audio.mp3">
+    </div>`,
+  facebook: `
+    <div class="form-group">
+      <label class="form-label">URL da Página no Facebook</label>
+      <input class="form-input" type="url" id="f-fb-url" placeholder="https://facebook.com/suapagina">
+    </div>`,
+  instagram: `
+    <div class="form-group">
+      <label class="form-label">Usuário do Instagram</label>
+      <input class="form-input" id="f-ig-user" placeholder="@suamarca">
+    </div>`,
+  cardapio: 'PREMIUM',
+  negocios: 'PREMIUM',
+  apps: 'PREMIUM',
+  links: 'PREMIUM',
+  cupom: 'PREMIUM',
+  social: 'PREMIUM',
+};
+
+// ── RENDER TYPE GRID ──
+function renderTypeGrid() {
+  const grid = document.getElementById('typeGrid');
+  grid.innerHTML = TYPES.map(t => `
+    <div class="type-item ${t.id === STATE.currentType ? 'selected' : ''} ${t.premium ? 'premium' : ''}"
+      onclick="selectType('${t.id}')" title="${t.desc}">
+      <div class="type-icon">${t.icon}</div>
+      <div class="type-label">${t.label}</div>
+      ${t.premium ? '<div class="type-lock">PRO</div>' : ''}
+    </div>
+  `).join('');
+}
+
+function selectType(id) {
+  const t = TYPES.find(x => x.id === id);
+  if (!t) return;
+  if (t.premium) { openPremiumModal('tipo_' + id); return; }
+  STATE.currentType = id;
+  renderTypeGrid();
+  document.getElementById('contentTypeLabel').textContent = t.label;
+  document.getElementById('previewTypeBadge').textContent = t.label;
+  renderContentForm(id);
+}
+
+function renderContentForm(id) {
+  const form = document.getElementById('contentForm');
+  const html = FORMS[id];
+  if (!html || html === 'PREMIUM') {
+    form.innerHTML = `<div class="notice notice-red"><span class="notice-icon">🔐</span><span>Este tipo requer Plano Fundador.</span></div>`;
+    return;
+  }
+  form.innerHTML = html;
+}
+
+// ── SEQUENCE ──
+function selectSeq(btn, mode) {
+  document.querySelectorAll('.seq-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  STATE.currentSeq = mode;
+  ['seqManual','seqNumerado','seqLetras','seqNome','seqAleatorio'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  const map = { manual:'seqManual', numerado:'seqNumerado', letras:'seqLetras', nome:'seqNome', aleatorio:'seqAleatorio' };
+  const show = document.getElementById(map[mode]);
+  if (show) show.style.display = 'block';
+}
+
+// ── BUILD QR DATA ──
+function buildQRData() {
+  const type = STATE.currentType;
+  const seq = STATE.currentSeq;
+  let data = '';
+
+  // Content
+  if (type === 'site') data = (document.getElementById('f-url')?.value || '').trim();
+  else if (type === 'whatsapp') {
+    const num = document.getElementById('f-wa-num')?.value.trim() || '';
+    const msg = encodeURIComponent(document.getElementById('f-wa-msg')?.value.trim() || '');
+    data = `https://wa.me/${num}${msg ? '?text=' + msg : ''}`;
+  }
+  else if (type === 'wifi') {
+    const ssid = document.getElementById('f-wifi-ssid')?.value.trim() || '';
+    const pass = document.getElementById('f-wifi-pass')?.value.trim() || '';
+    const sec = document.getElementById('f-wifi-sec')?.value || 'WPA';
+    data = `WIFI:T:${sec};S:${ssid};P:${pass};;`;
+  }
+  else if (type === 'vcard') {
+    const nome = document.getElementById('f-vc-nome')?.value.trim() || '';
+    const cargo = document.getElementById('f-vc-cargo')?.value.trim() || '';
+    const emp = document.getElementById('f-vc-empresa')?.value.trim() || '';
+    const tel = document.getElementById('f-vc-tel')?.value.trim() || '';
+    const email = document.getElementById('f-vc-email')?.value.trim() || '';
+    const site = document.getElementById('f-vc-site')?.value.trim() || '';
+    data = `BEGIN:VCARD\nVERSION:3.0\nFN:${nome}\nTITLE:${cargo}\nORG:${emp}\nTEL:${tel}\nEMAIL:${email}\nURL:${site}\nEND:VCARD`;
+  }
+  else if (type === 'instagram') {
+    const user = (document.getElementById('f-ig-user')?.value.trim() || '').replace('@','');
+    data = `https://instagram.com/${user}`;
+  }
+  else if (type === 'facebook') data = document.getElementById('f-fb-url')?.value.trim() || '';
+  else if (type === 'pdf') data = document.getElementById('f-pdf-url')?.value.trim() || '';
+  else if (type === 'video') data = document.getElementById('f-vid-url')?.value.trim() || '';
+  else if (type === 'mp3') data = document.getElementById('f-mp3-url')?.value.trim() || '';
+  else if (type === 'imagens') data = document.getElementById('f-img-url')?.value.trim() || '';
+  else data = 'https://labriolag.shop/';
+
+  // Apply sequence
+  if (seq === 'manual') {
+    const base = document.getElementById('srcBase')?.value.trim() || '';
+    if (base && base !== 'https://labriolag.shop/' && data === 'https://labriolag.shop/') data = base;
+    // no-op: use data as is
+  } else if (seq === 'numerado') {
+    const base = document.getElementById('seqBaseNum')?.value.trim() || 'https://labriolag.shop/?src=';
+    const start = parseInt(document.getElementById('seqStart')?.value || '1');
+    data = base + String(start).padStart(2,'0');
+  } else if (seq === 'letras') {
+    const base = document.getElementById('seqBaseLetra')?.value.trim() || 'https://labriolag.shop/?src=';
+    const letra = document.getElementById('seqLetraStart')?.value || 'A';
+    data = base + letra;
+  } else if (seq === 'nome') {
+    const base = document.getElementById('seqBaseNome')?.value.trim() || 'https://labriolag.shop/?src=';
+    const nome = document.getElementById('seqNomeVal')?.value.trim() || 'Lab';
+    data = base + encodeURIComponent(nome);
+  } else if (seq === 'aleatorio') {
+    const base = document.getElementById('seqBaseAleatorio')?.value.trim() || 'https://labriolag.shop/?src=';
+    const rand = Math.random().toString(36).substring(2,8).toUpperCase();
+    data = base + rand;
+  }
+
+  return data || 'https://labriolag.shop/';
+}
+
+// ── GENERATE QR ──
+let lastQRData = '';
+
+function gerarQR() {
+  const data = buildQRData();
+  const fg = document.getElementById('colorFg').value;
+  const bg = document.getElementById('colorBg').value;
+  const size = parseInt(document.getElementById('qrSize').value);
+
+  if (!data) { toast('Preencha o conteúdo!', 'error'); return; }
+
+  lastQRData = data;
+  document.getElementById('qrUrlDisplay').textContent = data;
+
+  // Clear and render
+  const wrap = document.getElementById('qr-canvas');
+  wrap.innerHTML = '';
+
+  try {
+    new QRCode(wrap, {
+      text: data,
+      width: 200,
+      height: 200,
+      colorDark: fg,
+      colorLight: bg,
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e) {
+    // Fallback to API
+    const encoded = encodeURIComponent(data);
+    wrap.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encoded}&color=${fg.replace('#','')}&bgcolor=${bg.replace('#','')}" style="border-radius:4px;width:176px;height:176px;">`;
+  }
+
+  // Update stats
+  STATE.totalCreated++;
+  localStorage.setItem('qrlab_total', STATE.totalCreated);
+  document.getElementById('statTotal').textContent = STATE.totalCreated;
+
+  // Save to library
+  const t = TYPES.find(x => x.id === STATE.currentType);
+  const entry = {
+    id: Date.now(),
+    type: STATE.currentType,
+    typeLabel: t?.label || STATE.currentType,
+    typeIcon: t?.icon || '⚡',
+    data,
+    fg, bg,
+    createdAt: new Date().toLocaleDateString('pt-BR'),
+  };
+  STATE.library.unshift(entry);
+  if (STATE.library.length > 50) STATE.library.pop();
+  localStorage.setItem('qrlab_library', JSON.stringify(STATE.library));
+  document.getElementById('statSaved').textContent = STATE.library.length;
+
+  renderLibrary();
+  toast('QR Code gerado com sucesso! ⚡', 'gold');
+}
+
+// ── DOWNLOAD ──
+function downloadQR() {
+  const wrap = document.getElementById('qr-canvas');
+  const canvas = wrap.querySelector('canvas');
+  const img = wrap.querySelector('img');
+
+  if (canvas) {
+    const a = document.createElement('a');
+    a.download = `labriolag-qr-${Date.now()}.png`;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+    toast('Download iniciado!', 'cyber');
+  } else if (img) {
+    const a = document.createElement('a');
+    a.download = `labriolag-qr-${Date.now()}.png`;
+    a.href = img.src; a.target = '_blank'; a.click();
+    toast('Abrindo imagem...', 'cyber');
+  } else {
+    toast('Gere o QR primeiro!', 'error');
+  }
+}
+
+function copiarURL() {
+  if (!lastQRData) { toast('Gere o QR primeiro!', 'error'); return; }
+  navigator.clipboard?.writeText(lastQRData);
+  toast('URL copiada!', 'cyber');
+}
+
+function compartilhar() {
+  if (!lastQRData) { toast('Gere o QR primeiro!', 'error'); return; }
+  if (navigator.share) {
+    navigator.share({ title: 'QR Code — Labriolag', url: lastQRData });
+  } else {
+    navigator.clipboard?.writeText(lastQRData);
+    toast('URL copiada para compartilhar!', 'cyber');
+  }
+}
+
+// ── COLOR SYNC ──
+document.addEventListener('DOMContentLoaded', () => {
+  const pairs = [
+    ['colorFg','colorFgHex'],
+    ['colorBg','colorBgHex'],
+  ];
+  pairs.forEach(([pickerId, hexId]) => {
+    const picker = document.getElementById(pickerId);
+    const hex = document.getElementById(hexId);
+    if (!picker || !hex) return;
+    picker.addEventListener('input', () => { hex.value = picker.value; });
+    hex.addEventListener('input', () => {
+      if (/^#[0-9A-Fa-f]{6}$/.test(hex.value)) picker.value = hex.value;
+    });
+  });
+});
+
+function applyPreset(fg, bg) {
+  document.getElementById('colorFg').value = fg;
+  document.getElementById('colorFgHex').value = fg;
+  document.getElementById('colorBg').value = bg;
+  document.getElementById('colorBgHex').value = bg;
+  toast('Preset aplicado!', 'cyber');
+}
+
+// ── LIBRARY RENDER ──
+function renderLibrary() {
+  const lib = document.getElementById('qrLibrary');
+  if (!lib) return;
+  if (!STATE.library.length) {
+    lib.innerHTML = `<div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--muted);">
+      <div style="font-size:2rem;margin-bottom:8px;opacity:.3">🗂️</div>
+      <div style="font-size:.85rem;">Nenhum QR Code criado ainda.</div>
+      <button class="btn btn-gold btn-sm" onclick="showPage('criar')" style="margin-top:16px">⚡ Criar meu primeiro QR</button>
+    </div>`;
+    return;
+  }
+  lib.innerHTML = STATE.library.map(item => {
+    const encoded = encodeURIComponent(item.data);
+    const fg = (item.fg||'#000000').replace('#','');
+    const bg = (item.bg||'#ffffff').replace('#','');
+    return `
+    <div class="qr-lib-item">
+      <div class="qli-preview">
+        <div class="qli-type-badge">${item.typeIcon} ${item.typeLabel}</div>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encoded}&color=${fg}&bgcolor=${bg}"
+          width="110" height="110" style="border-radius:4px;" loading="lazy">
+      </div>
+      <div class="qli-body">
+        <div class="qli-name">${item.typeLabel} #${item.id.toString().slice(-4)}</div>
+        <div class="qli-url">${item.data}</div>
+      </div>
+      <div class="qli-footer">
+        <div class="qli-scans">—</div>
+        <div class="qli-date">${item.createdAt}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── NAVIGATION ──
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const page = document.getElementById('page-' + name);
+  if (page) page.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.textContent.toLowerCase().includes(name.replace('-',' '))) n.classList.add('active');
+  });
+  if (name === 'meus') renderLibrary();
+  // close sidebar on mobile
+  if (window.innerWidth < 680) document.getElementById('sidebar').classList.remove('open');
+}
+
+// ── MODALS ──
+const PREMIUM_CONTENT = {
+  fundador: {
+    icon: '🏛️',
+    title: 'Plano Fundador',
+    body: `<p>Seja um dos <strong style="color:var(--gold)">15 Pioneiros de Pirapora</strong> e tenha acesso completo ao ecossistema Labriolag com apenas <strong style="color:var(--gold)">1 Sat de entrada</strong>.</p>
+    <div class="premium-features">
+      <div class="pf-item"><span class="pf-icon">⚡</span> QR Codes ilimitados de todos os tipos</div>
+      <div class="pf-item"><span class="pf-icon">📊</span> Análise completa + Geofencing</div>
+      <div class="pf-item"><span class="pf-icon">🔐</span> LabChain — Cartório Digital</div>
+      <div class="pf-item"><span class="pf-icon">🏭</span> Lab-Studio — Materialização Física</div>
+      <div class="pf-item"><span class="pf-icon">🎮</span> LabGame — Fidelização Gamificada</div>
+      <div class="pf-item"><span class="pf-icon">📢</span> LabAds — Servidor de Anúncios Próprio</div>
+    </div>
+    <div class="notice notice-gold"><span class="notice-icon">⚡</span><span>1 Sat enviado para o <strong>Fundo LabSocial · Pirapora</strong> gera prova imutável na blockchain Bitcoin.</span></div>`,
+    cta: '⚡ Ativar com 1 Sat'
+  },
+  labchain: {
+    icon: '🔐',
+    title: 'LabChain · Cartório Digital',
+    body: `<p>O <strong style="color:var(--gold)">LabChain</strong> assina seus documentos e contratos com <strong>peso jurídico igual ao cartório</strong>, usando hashes registradas na rede Bitcoin.</p>
+    <div class="premium-features">
+      <div class="pf-item"><span class="pf-icon">📜</span> Contratos de Adesão com Hash SHA-256</div>
+      <div class="pf-item"><span class="pf-icon">🔗</span> Registro imutável via 1 Sat na blockchain</div>
+      <div class="pf-item"><span class="pf-icon">✅</span> QR Code de Certificado de Autenticidade</div>
+      <div class="pf-item"><span class="pf-icon">🌍</span> Verificável por qualquer pessoa no mundo</div>
+    </div>`,
+    cta: '🔐 Ativar LabChain'
+  },
+  labads: {
+    icon: '📢',
+    title: 'LabAds · Servidor de Anúncios',
+    body: `<p>Transforme seus QR Codes em uma <strong style="color:var(--gold)">rede de publicidade proprietária</strong>. Cada scan vira uma oportunidade de conversão.</p>
+    <div class="premium-features">
+      <div class="pf-item"><span class="pf-icon">📱</span> Intersticial de 3s antes do redirecionamento</div>
+      <div class="pf-item"><span class="pf-icon">🎯</span> Segmentação por horário, local e dispositivo</div>
+      <div class="pf-item"><span class="pf-icon">📊</span> CTR e conversões em tempo real</div>
+      <div class="pf-item"><span class="pf-icon">💰</span> Monetize espaço para parceiros</div>
+    </div>`,
+    cta: '📢 Ativar LabAds'
+  },
+  labsystem: {
+    icon: '🚀',
+    title: 'LabSystem · ERP Completo',
+    body: `<p>O <strong style="color:var(--gold)">LabSystem</strong> é o cockpit completo do seu estabelecimento. Gerencie vendas, estoque, clientes e marketing em um único lugar.</p>
+    <div class="premium-features">
+      <div class="pf-item"><span class="pf-icon">📊</span> Dashboard mobile em tempo real</div>
+      <div class="pf-item"><span class="pf-icon">🛒</span> LabMenu + LabPDV integrados</div>
+      <div class="pf-item"><span class="pf-icon">🎯</span> War Room com telemetria Sniper</div>
+      <div class="pf-item"><span class="pf-icon">🔐</span> LabChain + LabAds incluídos</div>
+    </div>`,
+    cta: '🚀 Ativar LabSystem'
+  },
+};
+
+function openPremiumModal(key) {
+  const content = PREMIUM_CONTENT[key] || PREMIUM_CONTENT['fundador'];
+  document.getElementById('premiumIcon').textContent = content.icon;
+  document.getElementById('premiumTitle').textContent = content.title;
+  document.getElementById('premiumBody').innerHTML = content.body;
+  document.getElementById('premiumCTA').textContent = content.cta;
+  document.getElementById('modalPremium').classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id)?.classList.remove('open');
+}
+
+function ativarPremium() {
+  closeModal('modalPremium');
+  toast('Redirecionando para ativação com 1 Sat... ⚡', 'gold');
+}
+
+// MATERIAL MODAL
+const MATERIALS = {
+  chaveiro: { icon:'🔑', name:'Chaveiro QR', price:'R$ 12,90', desc:'Chaveiro de aço inox ou acrílico com seu QR Code gravado. Ideal para bares, restaurantes e comércio local.' },
+  ima: { icon:'🧲', name:'Imã de Geladeira Inteligente', price:'R$ 8,90', desc:'Imã A6 plastificado com QR Code e LabChain. O cliente guarda na geladeira e escaneia quando quiser pedir.' },
+  etiqueta: { icon:'🏷️', name:'Etiqueta de Rastreio', price:'R$ 4,90 (pack 10)', desc:'Etiquetas adesivas resistentes com QR único por unidade. Perfeito para rastrear produtos e equipamentos.' },
+  banner: { icon:'🖼️', name:'Banner A3', price:'R$ 29,90', desc:'Banner lona A3 com seu QR Code em alta resolução e identidade Labriolag. Com suporte de mesa.' },
+  acrilico: { icon:'💎', name:'Placa Acrílico', price:'R$ 49,90', desc:'Placa de acrílico 15×15cm com corte CNC. Alta durabilidade, visual premium para balcão ou parede.' },
+  totem: { icon:'🖥️', name:'Totem Digital', price:'Sob consulta', desc:'Totem touchscreen Android sincronizado com LabSystem. LabMenu + LabPDV + LabAds em um só equipamento.' },
+};
+
+function pedirMaterial(id) {
+  const m = MATERIALS[id];
+  document.getElementById('matIcon').textContent = m.icon;
+  document.getElementById('matTitle').textContent = m.name;
+  document.getElementById('matBody').innerHTML = `
+    <p style="margin-bottom:12px;">${m.desc}</p>
+    <div class="notice notice-gold">
+      <span class="notice-icon">💰</span>
+      <span>Valor: <strong>${m.price}</strong> · Entrega 48h em cidades Labriolag</span>
+    </div>
+    <div class="form-group" style="margin-top:12px;">
+      <label class="form-label">Quantidade</label>
+      <input class="form-input" type="number" id="matQty" value="1" min="1" max="100">
+    </div>`;
+  document.getElementById('modalMaterial').classList.add('open');
+}
+
+function confirmarPedido() {
+  closeModal('modalMaterial');
+  toast('Pedido registrado! Entre em contato via WhatsApp. 📲', 'gold');
+}
+
+// ── TOAST ──
+function toast(msg, type = 'gold') {
+  const el = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = `toast t-${type}`;
+  t.textContent = msg;
+  el.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// ── FAQ ──
+const FAQ_DATA = [
+  { q:'O QR Code gerado tem validade?', a:'O QR Code em si não expira — é apenas uma imagem. O link para o qual ele aponta pode ter validade configurável no LabSystem. No Plano Fundador, você controla a expiração via LabChain.' },
+  { q:'Posso usar logo da minha empresa no centro do QR?', a:'Sim! No campo "Logo Central" você insere a URL de uma imagem PNG ou SVG com fundo transparente. Recomendamos logos quadrados de até 80×80px para melhor leitura.' },
+  { q:'O que é o modo de sequência numerada?', a:'Gera QR Codes com identificadores únicos automáticos (01, 02, 03...). Cada código tem um parâmetro ?src= diferente para você rastrear de onde vieram os scans na telemetria do LabSystem.' },
+  { q:'O que é o LabChain?', a:'O LabChain é o "Cartório Digital" da Labriolag. Ao assinar um contrato, geramos um hash SHA-256 do documento + assinatura, e registramos esse hash na rede Bitcoin enviando 1 Sat. Isso cria uma prova imutável e pública do documento.' },
+  { q:'Posso usar o QR-Lab offline?', a:'A geração de QR Codes funciona localmente no seu navegador via JavaScript, sem precisar de internet. Para salvar histórico na nuvem e ver análises, é necessária conexão.' },
+  { q:'Como funciona o Plano Fundador?', a:'Você paga 1 Sat (a menor unidade do Bitcoin) como sinal de entrada. Esse valor é convertido em doação para o Fundo LabSocial da cidade-piloto (Pirapora do Bom Jesus). Em troca, você recebe acesso completo vitalício ao ecossistema Labriolag nessa cidade.' },
+  { q:'Quais cidades estão disponíveis?', a:'2025: Pirapora do Bom Jesus (piloto, 15 cotas). 2026: Araçariguama e Cajamar. 2027: Santana de Parnaíba. 2028: Barueri e Alphaville.' },
+  { q:'Como baixar o QR Code em alta resolução?', a:'Configure o tamanho para 800×800px na etapa de customização, gere o QR e clique em "⬇ PNG". Para impressão de banners, recomendamos SVG (disponível no Plano Fundador).' },
+];
+
+function renderFAQ() {
+  const list = document.getElementById('faqList');
+  if (!list) return;
+  list.innerHTML = FAQ_DATA.map((f,i) => `
+    <div class="faq-item" id="faq-${i}">
+      <div class="faq-q" onclick="toggleFAQ(${i})">
+        <span>${f.q}</span>
+        <span class="faq-arrow">▾</span>
+      </div>
+      <div class="faq-a">${f.a}</div>
+    </div>
+  `).join('');
+}
+
+function toggleFAQ(i) {
+  document.getElementById('faq-'+i)?.classList.toggle('open');
+}
+
+// ── BUILDINGS WINDOW ANIMATION ──
+function animateBuildings() {
+  document.querySelectorAll('.w').forEach(w => {
+    const dur = (Math.random()*2.4+1.8).toFixed(2)+'s';
+    const delay = (Math.random()*2.5).toFixed(2)+'s';
+    w.style.setProperty('--dur', dur);
+    w.style.setProperty('--delay', delay);
+    setTimeout(() => w.classList.add('blink'), 50 + Math.random()*300);
+  });
+  setInterval(() => {
+    const wins = document.querySelectorAll('.w');
+    const w = wins[Math.floor(Math.random()*wins.length)];
+    if (!w) return;
+    w.style.transition = 'opacity 220ms ease';
+    w.style.opacity = '1';
+    setTimeout(() => { w.style.opacity = ''; w.style.transition = ''; }, 420);
+  }, 900);
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  renderTypeGrid();
+  renderContentForm('site');
+  renderLibrary();
+  renderFAQ();
+  animateBuildings();
+  document.getElementById('statTotal').textContent = STATE.totalCreated;
+  document.getElementById('statSaved').textContent = STATE.library.length;
+
+  // Close modal on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+  });
+});
+</script>
+
+<style>
+/* window blink for logo */
+.w {
+  fill:#00E5FF; opacity:.4;
+}
+.w.blink {
+  animation-name:winBlink;
+  animation-timing-function:cubic-bezier(.4,0,.2,1);
+  animation-iteration-count:infinite;
+  animation-duration:var(--dur,2.6s);
+  animation-delay:var(--delay,0s);
+}
+@keyframes winBlink {
+  0%{opacity:.18;} 30%{opacity:.95;} 60%{opacity:.45;} 100%{opacity:.18;}
+}
+</style>
+
+</body>
+</html>
+<html>
+<head>
+  <meta http-equiv="CONTENT-TYPE" content="text/html; charset=UTF-8">
+  <title>Hello, World!</title>
+</head>
+<body>
+  <h1>
+    Hello, World!
+  </h1>
+</body>
+</html>
