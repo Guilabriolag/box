@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Seminário / Museu São Norberto — Reinterpretação Arquitetônica 3D</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; overflow: hidden; background: #0b0f19; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #info { position: absolute; top: 15px; width: 100%; text-align: center; color: #fff; pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); z-index: 10; }
+        #info h1 { margin: 0 0 5px 0; font-size: 21px; color: #e0a458; }
+        #info p { margin: 0; font-size: 13px; color: #e2e8f0; }
+        #panel { position: absolute; top: 70px; right: 20px; width: 280px; background: rgba(15,23,42,0.9); border: 1px solid rgba(224,164,88,0.5); border-radius: 10px; padding: 16px; color: #f1f5f9; z-index: 20; display: none; backdrop-filter: blur(6px); }
+        #panel h3 { margin: 0 0 6px 0; color: #e0a458; font-size: 16px; }
+        #panel p { margin: 0 0 4px 0; font-size: 13px; line-height: 1.5; color: #cbd5e1; }
+        #panel .tag { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 8px; display: block; }
+        #panel .flow { font-size: 11px; color: #86efac; margin-top: 8px; font-family: monospace; }
+        #panel .close { position: absolute; top: 8px; right: 10px; cursor: pointer; color: #94a3b8; font-size: 14px; }
+        #toolbar { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 20; flex-wrap: wrap; justify-content: center; max-width: 90vw; }
+        .btn { padding: 9px 14px; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; background: rgba(15,23,42,0.75); color: #f1f5f9; font-size: 12px; font-weight: 600; cursor: pointer; backdrop-filter: blur(4px); }
+        .btn:hover { background: rgba(30,41,59,0.9); }
+        .btn.active { background: #e0a458; color: #1e1208; }
+        #hint { position: absolute; bottom: 68px; left: 50%; transform: translateX(-50%); color: #94a3b8; font-size: 11px; z-index: 15; pointer-events: none; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <h1>Seminário / Museu São Norberto — Camadas de Arquitetura</h1>
+        <p>Arraste para rotacionar · Scroll para zoom · Clique para ver a sequência espacial de cada ambiente</p>
+    </div>
+    <div id="hint">Massa → Repetição → Transição → Pátio → Topografia → Materialidade → Objeto</div>
+    <div id="panel">
+        <span class="close" onclick="closePanel()">✕</span>
+        <span class="tag" id="p-tag">Camada</span>
+        <h3 id="p-title">—</h3>
+        <p id="p-desc">—</p>
+        <p class="flow" id="p-flow"></p>
+    </div>
+    <div id="toolbar">
+        <button class="btn" id="btn-night" onclick="toggleNight()">🌙 Noite</button>
+        <button class="btn" id="btn-labels" onclick="toggleLabels()">🏷️ Legendas</button>
+        <button class="btn" id="btn-tour" onclick="startTour()">🎥 Sequência Espacial</button>
+    </div>
+
+    <script type="importmap">
+        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x9cc7e0);
+        scene.fog = new THREE.FogExp2(0x9cc7e0, 0.0022);
+
+        const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 2000);
+        camera.position.set(85, 42, 115);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(innerWidth, innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; controls.dampingFactor = 0.06;
+        controls.maxPolarAngle = Math.PI / 2 - 0.02;
+        controls.minDistance = 8; controls.maxDistance = 260;
+        controls.target.set(0, 10, -10);
+
+        const hemi = new THREE.HemisphereLight(0xbcd8ee, 0x4b3a2a, 0.55);
+        scene.add(hemi);
+        const sun = new THREE.DirectionalLight(0xfff2d6, 1.4);
+        sun.position.set(70, 100, 45);
+        sun.castShadow = true;
+        sun.shadow.mapSize.set(2048, 2048);
+        sun.shadow.camera.left = -110; sun.shadow.camera.right = 110;
+        sun.shadow.camera.top = 110; sun.shadow.camera.bottom = -110;
+        scene.add(sun);
+        const ambient = new THREE.AmbientLight(0xffffff, 0.3);
+        scene.add(ambient);
+
+        // ==========================================================
+        // CAMADA 6 — MATERIALIDADE: texturas procedurais (tijolo, reboco, telha, pedra)
+        // ==========================================================
+        function canvasTex(draw, w, h, repX, repY) {
+            const c = document.createElement('canvas'); c.width = w; c.height = h;
+            draw(c.getContext('2d'), w, h);
+            const t = new THREE.CanvasTexture(c);
+            t.wrapS = t.wrapT = THREE.RepeatWrapping;
+            t.repeat.set(repX, repY);
+            t.anisotropy = 4;
+            return t;
+        }
+        const brickTex = canvasTex((ctx, w, h) => {
+            ctx.fillStyle = '#c9a06a'; ctx.fillRect(0, 0, w, h); // argamassa clara
+            const rowH = 16, brickW = 48;
+            for (let y = 0, row = 0; y < h; y += rowH, row++) {
+                const offset = (row % 2) * (brickW / 2);
+                for (let x = -brickW; x < w + brickW; x += brickW) {
+                    const shade = 0.85 + Math.random() * 0.3;
+                    const r = Math.floor(168 * shade), g = Math.floor(74 * shade), b = Math.floor(48 * shade);
+                    ctx.fillStyle = `rgb(${r},${g},${b})`;
+                    ctx.fillRect(x + offset, y, brickW - 3, rowH - 3);
+                }
+            }
+        }, 256, 256, 6, 3);
+        const stuccoTex = canvasTex((ctx, w, h) => {
+            ctx.fillStyle = '#ecdfba'; ctx.fillRect(0, 0, w, h);
+            for (let i = 0; i < 3000; i++) {
+                const v = 220 + Math.random() * 25;
+                ctx.fillStyle = `rgba(${v},${v - 10},${v - 40},0.05)`;
+                ctx.fillRect(Math.random() * w, Math.random() * h, 2, 2);
+            }
+        }, 256, 256, 3, 3);
+        const tileTex = canvasTex((ctx, w, h) => {
+            ctx.fillStyle = '#a8431f'; ctx.fillRect(0, 0, w, h);
+            for (let y = 0; y < h; y += 14) {
+                for (let x = 0; x < w; x += 22) {
+                    const shade = 0.85 + Math.random() * 0.3;
+                    ctx.fillStyle = `rgba(0,0,0,${0.15 * (1 - shade + 0.3)})`;
+                    ctx.beginPath(); ctx.ellipse(x + 11, y + 7, 9, 6, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = 'rgba(60,20,10,0.4)'; ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.ellipse(x + 11, y + 7, 9, 6, 0, 0, Math.PI * 2); ctx.stroke();
+                }
+            }
+        }, 128, 128, 10, 10);
+        const stoneTex = canvasTex((ctx, w, h) => {
+            ctx.fillStyle = '#d8cba4'; ctx.fillRect(0, 0, w, h);
+            for (let i = 0; i < 2000; i++) {
+                const v = 190 + Math.random() * 40;
+                ctx.fillStyle = `rgba(${v},${v - 8},${v - 40},0.06)`;
+                ctx.fillRect(Math.random() * w, Math.random() * h, 3, 3);
+            }
+        }, 256, 256, 2, 2);
+        const pathTex = canvasTex((ctx, w, h) => {
+            ctx.fillStyle = '#cbbfa0'; ctx.fillRect(0, 0, w, h);
+            for (let y = 0; y < h; y += 20) for (let x = 0; x < w; x += 20) {
+                ctx.strokeStyle = 'rgba(90,75,50,0.35)'; ctx.strokeRect(x + (Math.random() * 2), y + (Math.random() * 2), 18, 18);
+            }
+        }, 160, 160, 8, 8);
+
+        const M = {
+            brick: new THREE.MeshStandardMaterial({ map: brickTex, roughness: 0.85 }),
+            stucco: new THREE.MeshStandardMaterial({ map: stuccoTex, roughness: 0.6 }),
+            stuccoDark: new THREE.MeshStandardMaterial({ map: stuccoTex, color: 0xd0c194, roughness: 0.6 }),
+            trim: new THREE.MeshStandardMaterial({ color: 0xf3ecd6, roughness: 0.4 }),
+            quoinLight: new THREE.MeshStandardMaterial({ color: 0xf0e6c8, roughness: 0.5 }),
+            quoinDark: new THREE.MeshStandardMaterial({ map: brickTex, color: 0xb98a53, roughness: 0.7 }),
+            roof: new THREE.MeshStandardMaterial({ map: tileTex, roughness: 0.85 }),
+            stone: new THREE.MeshStandardMaterial({ map: stoneTex, roughness: 0.6 }),
+            path: new THREE.MeshStandardMaterial({ map: pathTex, roughness: 0.85 }),
+            grass: new THREE.MeshStandardMaterial({ color: 0x4c7a3d, roughness: 0.95 }),
+            hedge: new THREE.MeshStandardMaterial({ color: 0x2f6b34, roughness: 0.85 }),
+            hill: new THREE.MeshStandardMaterial({ color: 0x5c8a44, roughness: 1 }),
+            trunk: new THREE.MeshStandardMaterial({ color: 0x5a3b22, roughness: 0.9 }),
+            leaf: new THREE.MeshStandardMaterial({ color: 0x2f6b34, roughness: 0.8 }),
+            leafLight: new THREE.MeshStandardMaterial({ color: 0x4b8a3f, roughness: 0.8 }),
+            window: new THREE.MeshStandardMaterial({ color: 0x141c28, roughness: 0.2, emissive: 0x000000 }),
+            windowLit: new THREE.MeshStandardMaterial({ color: 0x3a3018, roughness: 0.3, emissive: 0xf4c96a, emissiveIntensity: 1 }),
+            spire: new THREE.MeshStandardMaterial({ color: 0x7d6a4a, roughness: 0.5, metalness: 0.2 }),
+            cross: new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.4 }),
+            bronze: new THREE.MeshStandardMaterial({ color: 0x8a6a3a, roughness: 0.4, metalness: 0.6 }),
+            water: new THREE.MeshStandardMaterial({ color: 0x3f7ea6, roughness: 0.1, transparent: true, opacity: 0.85 }),
+            wood: new THREE.MeshStandardMaterial({ color: 0x4a2f1a, roughness: 0.8 }),
+        };
+
+        const litWindows = [];
+        const interactive = [];
+        const labelSprites = [];
+        const root = new THREE.Group();
+        scene.add(root);
+
+        function reg(mesh, tag, title, desc, flow) { mesh.userData = { tag, title, desc, flow }; interactive.push(mesh); }
+        function label(text, x, y, z) {
+            const c = document.createElement('canvas'); c.width = 280; c.height = 58;
+            const ctx = c.getContext('2d');
+            ctx.fillStyle = 'rgba(15,23,42,0.78)'; ctx.fillRect(0, 0, 280, 58);
+            ctx.fillStyle = '#e0a458'; ctx.font = 'bold 22px Segoe UI'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(text, 140, 29);
+            const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true }));
+            sp.scale.set(14, 3, 1); sp.position.set(x, y, z); sp.visible = false;
+            root.add(sp); labelSprites.push(sp);
+        }
+
+        // ==========================================================
+        // CAMADA 5 — TOPOGRAFIA: terreno em platôs, morro, escadaria
+        // ==========================================================
+        const lowerGround = new THREE.Mesh(new THREE.BoxGeometry(300, 1, 300), M.grass);
+        lowerGround.position.y = -3.5; lowerGround.receiveShadow = true; root.add(lowerGround);
+
+        const plateau = new THREE.Mesh(new THREE.BoxGeometry(150, 3, 150), M.stone);
+        plateau.position.y = -1.5; plateau.receiveShadow = true; root.add(plateau);
+        reg(plateau, 'TOPOGRAFIA', 'Platô Elevado', 'O complexo se assenta sobre um platô acima do nível da cidade — a subida em si já é parte da experiência de chegada.', 'CIDADE → SUBIDA → ESCADARIA → PLATÔ');
+
+        function buildGrandStaircase(x, z, steps, width) {
+            const g = new THREE.Group();
+            for (let i = 0; i < steps; i++) {
+                const stepW = width - i * 0.35;
+                const step = new THREE.Mesh(new THREE.BoxGeometry(stepW, 0.35, 1.1), M.stone);
+                step.position.set(0, -3.5 + i * 0.35 + 0.17, i * 1.1);
+                step.receiveShadow = true; step.castShadow = true;
+                g.add(step);
+            }
+            // corrimãos
+            [-width / 2 - 0.3, width / 2 + 0.3].forEach(rx => {
+                const rail = new THREE.Mesh(new THREE.BoxGeometry(0.25, 1, steps * 1.1), M.stone);
+                rail.position.set(rx * 0.4, -3.5 + (steps * 0.35) / 2, (steps * 1.1) / 2);
+                rail.rotation.x = -Math.atan((steps * 0.35) / (steps * 1.1));
+                g.add(rail);
+            });
+            g.position.set(x, 0, z);
+            reg(g.children[0], 'ACESSO', 'Escadaria de Acesso', 'Escadaria monumental que vence o desnível entre a cidade e o platô do complexo — narrativa espacial de chegada, não apenas circulação.', 'CIDADE → ESCADARIA → PORTAL → PÁTIO');
+            return g;
+        }
+        root.add(buildGrandStaircase(0, 38, 12, 10));
+
+        // Colina ao fundo com cruzes
+        const hill = new THREE.Mesh(new THREE.ConeGeometry(85, 50, 5, 1, false), M.hill);
+        hill.position.set(8, 12, -150); hill.rotation.y = 0.4; hill.receiveShadow = true; root.add(hill);
+        function hillCross(x, y, z, s) {
+            const g = new THREE.Group();
+            const v = new THREE.Mesh(new THREE.BoxGeometry(0.35 * s, 3 * s, 0.35 * s), M.cross); v.position.y = 1.5 * s;
+            const h2 = new THREE.Mesh(new THREE.BoxGeometry(1.6 * s, 0.35 * s, 0.35 * s), M.cross); h2.position.y = 2.3 * s;
+            g.add(v, h2); g.position.set(x, y, z); root.add(g);
+        }
+        hillCross(4, 34, -148, 1.3); hillCross(-12, 27, -132, 0.9);
+
+        function createTree(x, z, scale = 1) {
+            const g = new THREE.Group();
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.28 * scale, 0.4 * scale, 3 * scale, 7), M.trunk);
+            trunk.position.y = 1.5 * scale; trunk.castShadow = true; g.add(trunk);
+            const lm = Math.random() > 0.5 ? M.leaf : M.leafLight;
+            for (let i = 0; i < 3; i++) {
+                const leaf = new THREE.Mesh(new THREE.DodecahedronGeometry(1.5 * scale, 0), lm);
+                leaf.position.set((Math.random() - 0.5) * 1.3 * scale, 3.3 * scale + i * 0.7 * scale, (Math.random() - 0.5) * 1.3 * scale);
+                leaf.castShadow = true; g.add(leaf);
+            }
+            g.position.set(x, -1.5, z); root.add(g);
+        }
+        for (let i = 0; i < 36; i++) {
+            const a = Math.random() * Math.PI * 2, r = 85 + Math.random() * 70;
+            createTree(Math.cos(a) * r, Math.sin(a) * r - 60, 0.8 + Math.random());
+        }
+
+        // ==========================================================
+        // FUNÇÕES MODULARES DE FACHADA
+        // ==========================================================
+
+        // Janela em arco pleno, com moldura em friso e recuo (profundidade real, não decalque)
+        function roundArchWindow(w = 1.4, h = 2.6, lit = false) {
+            const g = new THREE.Group();
+            const reveal = new THREE.Mesh(new THREE.BoxGeometry(w + 0.35, h + 0.35, 0.35), M.trim);
+            reveal.position.z = -0.05; g.add(reveal);
+            const glass = new THREE.Mesh(new THREE.BoxGeometry(w, h * 0.72, 0.1), lit ? M.windowLit : M.window);
+            glass.position.set(0, -h * 0.14, 0.12); g.add(glass);
+            litWindows.push(glass);
+            const arch = new THREE.Mesh(new THREE.CylinderGeometry(w / 2, w / 2, 0.15, 16, 1, false, 0, Math.PI), M.trim);
+            arch.rotation.z = Math.PI / 2; arch.position.set(0, h * 0.36, 0.12); g.add(arch);
+            const sill = new THREE.Mesh(new THREE.BoxGeometry(w + 0.5, 0.12, 0.4), M.stone);
+            sill.position.set(0, -h / 2 - 0.1, 0.15); g.add(sill);
+            return g;
+        }
+
+        // Janela ogival (arco em bico) — construída com ExtrudeGeometry de uma Shape apontada
+        function ogivalWindow(w = 1.5, h = 3.2, lit = false) {
+            const g = new THREE.Group();
+            const shape = new THREE.Shape();
+            const hw = w / 2, wallH = h * 0.68;
+            shape.moveTo(-hw, -h / 2);
+            shape.lineTo(-hw, -h / 2 + wallH);
+            shape.quadraticCurveTo(-hw, h / 2, 0, h / 2);
+            shape.quadraticCurveTo(hw, h / 2, hw, -h / 2 + wallH);
+            shape.lineTo(hw, -h / 2);
+            shape.lineTo(-hw, -h / 2);
+            const frameGeo = new THREE.ExtrudeGeometry(shape, { depth: 0.3, bevelEnabled: false });
+            const frame = new THREE.Mesh(frameGeo, M.trim);
+            frame.position.z = -0.15; g.add(frame);
+
+            const innerShape = new THREE.Shape();
+            const iw = hw - 0.22, ih2 = h / 2 - 0.22, iwallH = wallH - 0.1;
+            innerShape.moveTo(-iw, -ih2);
+            innerShape.lineTo(-iw, -ih2 + iwallH);
+            innerShape.quadraticCurveTo(-iw, ih2, 0, ih2);
+            innerShape.quadraticCurveTo(iw, ih2, iw, -ih2 + iwallH);
+            innerShape.lineTo(iw, -ih2);
+            innerShape.lineTo(-iw, -ih2);
+            const glassGeo = new THREE.ShapeGeometry(innerShape);
+            const glass = new THREE.Mesh(glassGeo, lit ? M.windowLit : M.window);
+            glass.position.z = 0.12; g.add(glass);
+            litWindows.push(glass);
+            return g;
+        }
+
+        // Bloco de alvenaria com cunhais (quoins) alternados nos cantos — dá ritmo/textura ao volume
+        function quoinedCorners(g, width, depth, height) {
+            const size = 0.9;
+            [[-width / 2 + size / 2, -depth / 2 + size / 2], [width / 2 - size / 2, -depth / 2 + size / 2],
+             [-width / 2 + size / 2, depth / 2 - size / 2], [width / 2 - size / 2, depth / 2 - size / 2]].forEach(pos => {
+                for (let y = size / 2; y < height; y += size * 1.05) {
+                    const mat = (Math.floor(y / (size * 1.05)) % 2 === 0) ? M.quoinLight : M.quoinDark;
+                    const block = new THREE.Mesh(new THREE.BoxGeometry(size, size, size), mat);
+                    block.position.set(pos[0], y, pos[1]);
+                    block.castShadow = true;
+                    g.add(block);
+                }
+            });
+        }
+
+        // Telhado de duas águas com beiral (overhang) e cumeeira (ridge cap) — não mais prisma único
+        function gableRoof(width, depth, height, ridgeHeight, y) {
+            const g = new THREE.Group();
+            const overhang = 1.0;
+            const slopeLen = Math.sqrt(Math.pow(depth / 2 + overhang, 2) + Math.pow(ridgeHeight, 2));
+            const angle = Math.atan2(ridgeHeight, depth / 2 + overhang);
+
+            const planeGeo = new THREE.BoxGeometry(width + overhang * 2, 0.25, slopeLen);
+            const left = new THREE.Mesh(planeGeo, M.roof);
+            left.position.set(0, y + ridgeHeight / 2, -(depth / 4));
+            left.rotation.x = -(Math.PI / 2 - angle);
+            left.castShadow = true; left.receiveShadow = true; g.add(left);
+
+            const right = left.clone();
+            right.position.z = depth / 4;
+            right.rotation.x = (Math.PI / 2 - angle);
+            g.add(right);
+
+            const ridge = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, width + overhang * 2, 8), M.roof);
+            ridge.rotation.z = Math.PI / 2; ridge.position.set(0, y + ridgeHeight, 0); ridge.castShadow = true; g.add(ridge);
+
+            // beiral / fascia
+            const fascia = new THREE.Mesh(new THREE.BoxGeometry(width + overhang * 2 + 0.1, 0.35, 0.15), M.trim);
+            fascia.position.set(0, y - 0.1, depth / 2 + overhang); g.add(fascia);
+            const fascia2 = fascia.clone(); fascia2.position.z = -(depth / 2 + overhang); g.add(fascia2);
+
+            return g;
+        }
+
+        // ==========================================================
+        // ALA — corredor longo com arcada repetida, cunhais e telhado
+        // ==========================================================
+        function buildWing(x, z, rotY, length, depth, floors, floorH) {
+            const g = new THREE.Group();
+            const height = floors * floorH;
+            const body = new THREE.Mesh(new THREE.BoxGeometry(length, height, depth), M.brick);
+            body.position.y = height / 2; body.castShadow = true; body.receiveShadow = true; g.add(body);
+
+            for (let f = 1; f < floors; f++) {
+                const band = new THREE.Mesh(new THREE.BoxGeometry(length + 0.2, 0.4, depth + 0.2), M.trim);
+                band.position.y = f * floorH; g.add(band);
+            }
+            const cornice = new THREE.Mesh(new THREE.BoxGeometry(length + 0.6, 0.3, depth + 0.6), M.trim);
+            cornice.position.y = height; g.add(cornice);
+
+            quoinedCorners(g, length, depth, height);
+
+            const winCount = Math.max(3, Math.floor(length / 4.6));
+            const spacing = length / winCount;
+            for (let f = 0; f < floors; f++) {
+                for (let i = 0; i < winCount; i++) {
+                    const wx = -length / 2 + spacing * (i + 0.5);
+                    const wy = f * floorH + floorH * 0.55;
+                    const win1 = roundArchWindow(1.3, floorH * 0.62);
+                    win1.position.set(wx, wy, depth / 2 + 0.02); g.add(win1);
+                    const win2 = roundArchWindow(1.3, floorH * 0.62);
+                    win2.position.set(wx, wy, -depth / 2 - 0.02); win2.rotation.y = Math.PI; g.add(win2);
+                }
+            }
+
+            const roof = gableRoof(length, depth, height, depth * 0.42, height);
+            g.add(roof);
+
+            g.position.set(x, 0, z); g.rotation.y = rotY;
+            reg(body, 'SEMINARIO', 'Ala do Seminário', 'Corredor longo em tijolo aparente (reforma de 1953), arcada contínua de janelas e cunhais nos cantos — a repetição do vão é o que dá ritmo à fachada.', 'PÁTIO → CORREDOR → SALAS → CAPELA');
+            return g;
+        }
+
+        // ==========================================================
+        // EDIFÍCIO FRONTAL — dois pavimentos, frontão, torreão de canto
+        // ==========================================================
+        function buildFrontBlock(x, z) {
+            const g = new THREE.Group();
+            const width = 34, depth = 13, floors = 2, floorH = 4.2;
+            const height = floors * floorH;
+
+            const body = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), M.brick);
+            body.position.y = height / 2; body.castShadow = true; body.receiveShadow = true; g.add(body);
+            const band = new THREE.Mesh(new THREE.BoxGeometry(width + 0.2, 0.4, depth + 0.2), M.trim);
+            band.position.y = floorH; g.add(band);
+            const cornice = new THREE.Mesh(new THREE.BoxGeometry(width + 0.7, 0.35, depth + 0.7), M.trim);
+            cornice.position.y = height; g.add(cornice);
+            quoinedCorners(g, width, depth, height);
+
+            // Frontão triangular sobre a porta central
+            const pediment = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 4.5, 2.4, 3), M.trim);
+            pediment.rotation.z = Math.PI; pediment.rotation.y = Math.PI / 2;
+            pediment.position.set(0, height + 1.2, depth / 2 + 0.3);
+            pediment.castShadow = true; g.add(pediment);
+
+            // Portal de entrada em arco, com escadaria curta
+            const portalArch = roundArchWindow(2.6, 4.2);
+            portalArch.position.set(0, 2.1, depth / 2 + 0.05); g.add(portalArch);
+            const door = new THREE.Mesh(new THREE.BoxGeometry(2, 3.2, 0.15), M.wood);
+            door.position.set(0, 1.6, depth / 2 + 0.3); g.add(door);
+
+            // Janelas em duas fileiras
+            const winCount = 6, spacing = width / winCount;
+            for (let f = 0; f < floors; f++) {
+                for (let i = 0; i < winCount; i++) {
+                    const wx = -width / 2 + spacing * (i + 0.5);
+                    if (f === 0 && Math.abs(wx) < 2) continue; // vão central reservado ao portal
+                    const win = roundArchWindow(1.3, floorH * 0.6);
+                    win.position.set(wx, f * floorH + floorH * 0.55, depth / 2 + 0.02); g.add(win);
+                }
+            }
+
+            const roof = gableRoof(width, depth, height, depth * 0.4, height);
+            g.add(roof);
+
+            g.position.set(x, 0, z);
+            reg(body, 'MUSEU', 'Edifício Frontal — Museu', 'Bloco de dois pavimentos com fachada simétrica, frontão triangular sobre o portal e cunhais nos cantos — hoje abriga as coleções do Museu (numismática, arte sacra, memória local).', 'ESCADARIA → PORTAL → SALAS → COLEÇÕES');
+            return g;
+        }
+
+        // ==========================================================
+        // TORREÃO DE CANTO (ameias)
+        // ==========================================================
+        function buildTurret(x, z, height = 12, radius = 3.2) {
+            const g = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius * 1.05, height, 16), M.brick);
+            body.position.y = height / 2; body.castShadow = true; g.add(body);
+            const band = new THREE.Mesh(new THREE.CylinderGeometry(radius + 0.1, radius + 0.1, 0.5, 16), M.trim);
+            band.position.y = height * 0.85; g.add(band);
+            for (let i = 0; i < 10; i++) {
+                const a = (i / 10) * Math.PI * 2;
+                const merlon = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.1, 0.5), M.stuccoDark);
+                merlon.position.set(Math.cos(a) * radius, height + 0.55, Math.sin(a) * radius);
+                merlon.lookAt(0, height + 0.55, 0); g.add(merlon);
+            }
+            for (let i = 0; i < 4; i++) {
+                const win = roundArchWindow(0.7, 1.4);
+                const a = i * 1.5;
+                win.position.set(Math.cos(a) * (radius + 0.02), 2.5 + i * 2.3, Math.sin(a) * (radius + 0.02));
+                win.rotation.y = a + Math.PI / 2; g.add(win);
+            }
+            g.position.set(x, 0, z);
+            reg(body, 'TORREAO', 'Torreão de Canto', 'Torre cilíndrica de ameias marcando o encontro entre o edifício frontal e a ala lateral — motivo fortificado típico do ecletismo do período.', 'PÁTIO → TORREÃO → (elemento de marco visual)');
+            return g;
+        }
+
+        // ==========================================================
+        // CAPELA NEOGÓTICA — nave, arcos ogivais, rosácea com tracery, torre-sineira
+        // ==========================================================
+        function buildChapel(x, z) {
+            const g = new THREE.Group();
+
+            const nave = new THREE.Mesh(new THREE.BoxGeometry(18, 12, 40), M.stucco);
+            nave.position.set(0, 6, -10); nave.castShadow = true; nave.receiveShadow = true; g.add(nave);
+            const naveRoof = gableRoof(18, 40, 12, 8, 12);
+            naveRoof.position.set(0, 0, -10); g.add(naveRoof);
+
+            for (let i = 0; i < 6; i++) {
+                const wz = -1 - i * 5.5;
+                [9.05, -9.05].forEach((wx) => {
+                    const win = ogivalWindow(1.5, 3.4);
+                    win.position.set(wx, 7.5, wz); win.rotation.y = wx > 0 ? Math.PI / 2 : -Math.PI / 2;
+                    g.add(win);
+                });
+            }
+
+            // Fachada frontal com rosácea + portal ogival
+            const facade = new THREE.Mesh(new THREE.BoxGeometry(18.3, 15, 1.6), M.stucco);
+            facade.position.set(0, 7.5, 10); facade.castShadow = true; g.add(facade);
+            quoinedCorners(g, 18.3, 1.6, 15);
+
+            const portal = ogivalWindow(3, 5.5);
+            portal.position.set(0, 2.75, 10.85); g.add(portal);
+
+            // Rosácea com tracery radial
+            const roseRing = new THREE.Mesh(new THREE.TorusGeometry(2.3, 0.3, 8, 24), M.trim);
+            roseRing.position.set(0, 10.5, 10.85); g.add(roseRing);
+            const roseGlass = new THREE.Mesh(new THREE.CircleGeometry(2.1, 24), M.windowLit);
+            roseGlass.position.set(0, 10.5, 10.8); g.add(roseGlass);
+            litWindows.push(roseGlass);
+            for (let i = 0; i < 8; i++) {
+                const a = (i / 8) * Math.PI * 2;
+                const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.1, 0.12), M.trim);
+                spoke.position.set(0, 10.5, 10.9); spoke.rotation.z = a; g.add(spoke);
+            }
+
+            // Torres gêmeas ladeando a fachada, com pináculos
+            [-8.5, 8.5].forEach(tx => {
+                const twin = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.8, 16, 8), M.stucco);
+                twin.position.set(tx, 8, 10); twin.castShadow = true; g.add(twin);
+                const pinnacle = new THREE.Mesh(new THREE.ConeGeometry(1.8, 4, 8), M.spire);
+                pinnacle.position.set(tx, 16 + 2, 10); pinnacle.castShadow = true; g.add(pinnacle);
+            });
+
+            // Torre-sineira central com flecha
+            const belfry = new THREE.Mesh(new THREE.BoxGeometry(5.5, 11, 5.5), M.stucco);
+            belfry.position.set(0, 12 + 5.5, -4); belfry.castShadow = true; g.add(belfry);
+            for (let i = 0; i < 4; i++) {
+                const a = i * Math.PI / 2;
+                const opening = ogivalWindow(1.6, 3.2, false);
+                opening.position.set(Math.sin(a) * 2.76, 12 + 6.5, -4 + Math.cos(a) * 2.76);
+                opening.rotation.y = a; g.add(opening);
+            }
+            const spireBase = new THREE.Mesh(new THREE.CylinderGeometry(3.8, 3.8, 2.5, 8), M.roof);
+            spireBase.position.set(0, 12 + 11 + 1.25, -4); g.add(spireBase);
+            const spire = new THREE.Mesh(new THREE.ConeGeometry(3.6, 13, 8), M.spire);
+            spire.position.set(0, 12 + 11 + 2.5 + 6.5, -4); spire.castShadow = true; g.add(spire);
+            const spireCross = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.8, 0.3), M.cross);
+            spireCross.position.set(0, 12 + 11 + 2.5 + 13 + 0.9, -4); g.add(spireCross);
+
+            g.position.set(x, 0, z);
+            reg(nave, 'CAPELA', 'Capela — Nave', 'Nave da capela neogótica (1926–1928), com janelas de arco ogival em série e telhado alto — linguagem contínua do exterior ao interior.', 'CORREDOR → NAVE → ALTAR → VITRAIS');
+            reg(facade, 'CAPELA', 'Fachada e Rosácea', 'Fachada com rosácea de tracery radial e portal ogival — luz colorida como conteúdo narrativo, não apenas ornamento.', 'PÁTIO → PORTAL OGIVAL → NAVE');
+            reg(spire, 'TORRE', 'Torre-Sineira e Mirante', 'Torre central com flecha sobre o campanário — o ponto mais alto do complexo, com vista sobre Pirapora do Bom Jesus.', 'NAVE → TORRE → CAMPANÁRIO → MIRANTE');
+            return g;
+        }
+
+        // ==========================================================
+        // PÁTIO / JARDIM INTERNO — caminho em cruz, fonte/escultura em bronze
+        // ==========================================================
+        function buildCourtyardGarden(x, z) {
+            const g = new THREE.Group();
+            const pathH = new THREE.Mesh(new THREE.BoxGeometry(46, 0.15, 4), M.path);
+            pathH.position.set(0, 0.08, 0); g.add(pathH);
+            const pathV = new THREE.Mesh(new THREE.BoxGeometry(4, 0.15, 34), M.path);
+            pathV.position.set(0, 0.08, -8); g.add(pathV);
+
+            [[-13, 8, 18, 6], [13, 8, 18, 6], [-13, -18, 18, 12], [13, -18, 18, 12]].forEach(b => {
+                const bed = new THREE.Mesh(new THREE.BoxGeometry(b[2], 0.35, b[3]), M.hedge);
+                bed.position.set(b[0], 0.17, b[1]); bed.receiveShadow = true; g.add(bed);
+            });
+
+            // Escultura/painel em bronze (referência ao irmão José Withofs)
+            const pedestal = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.4, 1.6), M.stone);
+            pedestal.position.set(0, 0.9, -8); pedestal.castShadow = true; g.add(pedestal);
+            const bronzeFigure = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.45, 2.2, 10), M.bronze);
+            bronzeFigure.position.set(0, 2.7, -8); bronzeFigure.castShadow = true; g.add(bronzeFigure);
+            const bronzeHead = new THREE.Mesh(new THREE.SphereGeometry(0.4, 12, 12), M.bronze);
+            bronzeHead.position.set(0, 3.9, -8); g.add(bronzeHead);
+            reg(pedestal, 'JARDIM', 'Escultura em Bronze', 'Peça escultórica no eixo do pátio, referência ao trabalho artesanal do Irmão José Withofs — o jardim como percurso de contemplação, não apenas praça.', 'PÁTIO → CAMINHO → ESCULTURA → CORREDOR');
+
+            for (let i = 0; i < 6; i++) createTreeInline(g, -20 + i * 8, 8, 0.7);
+            function createTreeInline(parent, tx, tz, s) {
+                const tg = new THREE.Group();
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18 * s, 0.25 * s, 2 * s, 6), M.trunk);
+                trunk.position.y = s; tg.add(trunk);
+                const leaf = new THREE.Mesh(new THREE.DodecahedronGeometry(1 * s, 0), M.leafLight);
+                leaf.position.y = 2.3 * s; tg.add(leaf);
+                tg.position.set(tx, 0, tz); parent.add(tg);
+            }
+
+            g.position.set(x, 0, z);
+            reg(pathH, 'PATIO', 'Pátio Interno', 'Vazio central ajardinado, emoldurado pelas alas — o pátio revela a construção e a construção revela o pátio.', 'ESCADARIA → PORTAL → PÁTIO → (SEMINÁRIO | CAPELA)');
+            return g;
+        }
+
+        // ==========================================================
+        // MONTAGEM
+        // ==========================================================
+        root.add(buildFrontBlock(0, 42));
+        root.add(buildTurret(24, 47, 12, 3.2));
+        root.add(buildWing(30, 3, Math.PI / 2, 78, 9, 1, 4.6));
+        root.add(buildWing(-30, 3, Math.PI / 2, 78, 9, 1, 4.6));
+        root.add(buildChapel(0, -40));
+        root.add(buildCourtyardGarden(0, 10));
+
+        label('Edifício Frontal / Museu', 0, 12, 42);
+        label('Torreão', 24, 16, 47);
+        label('Ala Leste', 30, 8, 3);
+        label('Ala Oeste', -30, 8, 3);
+        label('Capela Neogótica', 0, 26, -30);
+        label('Pátio / Jardim', 0, 6, 8);
+
+        // ==========================================================
+        // INTERAÇÃO
+        // ==========================================================
+        const ray = new THREE.Raycaster(), pointer = new THREE.Vector2();
+        renderer.domElement.addEventListener('click', (e) => {
+            pointer.x = (e.clientX / innerWidth) * 2 - 1;
+            pointer.y = -(e.clientY / innerHeight) * 2 + 1;
+            ray.setFromCamera(pointer, camera);
+            const hit = ray.intersectObjects(interactive, false)[0];
+            if (hit) {
+                const d = hit.object.userData;
+                document.getElementById('p-tag').textContent = d.tag;
+                document.getElementById('p-title').textContent = d.title;
+                document.getElementById('p-desc').textContent = d.desc;
+                document.getElementById('p-flow').textContent = d.flow || '';
+                document.getElementById('panel').style.display = 'block';
+            }
+        });
+        window.closePanel = () => document.getElementById('panel').style.display = 'none';
+
+        let night = false;
+        window.toggleNight = function () {
+            night = !night;
+            const btn = document.getElementById('btn-night');
+            scene.background = new THREE.Color(night ? 0x080b14 : 0x9cc7e0);
+            scene.fog.color = new THREE.Color(night ? 0x080b14 : 0x9cc7e0);
+            sun.intensity = night ? 0.1 : 1.4; ambient.intensity = night ? 0.08 : 0.3; hemi.intensity = night ? 0.1 : 0.55;
+            litWindows.forEach(w => w.material = night ? M.windowLit : M.window);
+            btn.textContent = night ? '☀️ Dia' : '🌙 Noite'; btn.classList.toggle('active', night);
+        };
+        let labelsOn = false;
+        window.toggleLabels = function () {
+            labelsOn = !labelsOn;
+            labelSprites.forEach(s => s.visible = labelsOn);
+            document.getElementById('btn-labels').classList.toggle('active', labelsOn);
+        };
+
+        const tourStops = [
+            { pos: [85, 42, 115], target: [0, 10, -10] },
+            { pos: [0, 8, 62], target: [0, 5, 42] },
+            { pos: [0, 10, 20], target: [0, 6, 8] },
+            { pos: [22, 14, 6], target: [24, 8, 47] },
+            { pos: [0, 20, -10], target: [0, 15, -30] },
+            { pos: [85, 42, 115], target: [0, 10, -10] }
+        ];
+        let touring = false, tourT = 0, tourIndex = 0;
+        window.startTour = function () {
+            touring = true; tourT = 0; tourIndex = 0; controls.enabled = false;
+            document.getElementById('btn-tour').classList.add('active');
+        };
+        function updateTour(delta) {
+            if (!touring) return;
+            tourT += delta * 0.2;
+            if (tourT >= 1) {
+                tourT = 0; tourIndex++;
+                if (tourIndex >= tourStops.length - 1) {
+                    touring = false; controls.enabled = true;
+                    document.getElementById('btn-tour').classList.remove('active'); return;
+                }
+            }
+            const a = tourStops[tourIndex], b = tourStops[tourIndex + 1];
+            camera.position.set(THREE.MathUtils.lerp(a.pos[0], b.pos[0], tourT), THREE.MathUtils.lerp(a.pos[1], b.pos[1], tourT), THREE.MathUtils.lerp(a.pos[2], b.pos[2], tourT));
+            controls.target.set(THREE.MathUtils.lerp(a.target[0], b.target[0], tourT), THREE.MathUtils.lerp(a.target[1], b.target[1], tourT), THREE.MathUtils.lerp(a.target[2], b.target[2], tourT));
+        }
+
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            updateTour(clock.getDelta());
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+        window.addEventListener('resize', () => {
+            camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+            renderer.setSize(innerWidth, innerHeight);
+        });
+    </script>
+</body>
+</html>

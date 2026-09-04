@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ZYRO Engine - Demo Cidade</title>
+<style>
+  * { box-sizing: border-box; margin:0; padding:0; touch-action:none; user-select:none; -webkit-user-select:none; font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; }
+  body,html { width:100%; height:100%; overflow:hidden; background:#0b0c10; color:#fff; }
+  #gameCanvas { width:100vw; height:100vh; display:block; }
+  #top-bar { position:absolute; top:0; left:0; width:100%; padding:10px 20px; background:rgba(15,15,26,0.95); z-index:10; border-bottom:2px solid #1f2833; font-size:14px; font-weight:bold; color:#66fcf1; display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px; }
+  #hint { position:absolute; top:64px; left:0; width:100%; text-align:center; color:#ffcc00; font-size:13px; font-weight:bold; z-index:10; pointer-events:none; text-shadow:0 1px 3px #000; opacity:0; transition:opacity .2s; }
+  #controls-container { position:absolute; bottom:30px; left:20px; z-index:10; }
+  #joystick-zone { width:150px; height:150px; background:rgba(255,255,255,0.08); border:3px solid rgba(102,252,241,0.4); border-radius:50%; position:relative; backdrop-filter:blur(4px); }
+  #joystick-stick { width:60px; height:60px; background:#66fcf1; border-radius:50%; position:absolute; top:45px; left:45px; box-shadow:0 0 15px rgba(102,252,241,.8); pointer-events:none; }
+  #action-container { position:absolute; bottom:30px; right:20px; z-index:10; display:flex; gap:15px; align-items:flex-end; }
+  .btn-action { width:65px; height:65px; border-radius:50%; border:none; font-size:20px; font-weight:bold; color:#0b0c10; background:#66fcf1; box-shadow:0 0 15px rgba(102,252,241,.5); display:flex; justify-content:center; align-items:center; cursor:pointer; transition:transform .1s,background .1s; }
+  .btn-action:active { transform:scale(0.92); background:#45a29e; }
+  .btn-b { background:#ffcc00; box-shadow:0 0 15px rgba(255,204,0,.5); }
+</style>
+</head>
+<body>
+
+<div id="top-bar">
+  <div>⚡ ZYRO ENGINE — DEMO</div>
+  <div>📍 <span id="coordsDisplay">0.0, 0.0</span> | 🏙️ <span id="sceneDisplay">Cidade</span></div>
+</div>
+<div id="hint">A</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<div id="controls-container">
+  <div id="joystick-zone"><div id="joystick-stick"></div></div>
+</div>
+<div id="action-container">
+  <button class="btn-action btn-b" id="btnB">B</button>
+  <button class="btn-action" id="btnA">A</button>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+function resizeCanvas(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+addEventListener('resize', resizeCanvas); resizeCanvas();
+
+let ZOOM = 1.6;
+const MIN_ZOOM = 0.8, MAX_ZOOM = 3.0;
+const TILE_W = 100, TILE_H = 50;
+
+const player = { worldX:0, worldY:-4, radius:0.35, speed:0.06, dirIndex:0, isMoving:false, animFrame:0 };
+
+// --- ESTADO DE CENA ---
+let scene = 'city'; // 'city' | 'interior'
+let savedCityPos = { x:0, y:-4 };
+let activeInterior = null;
+
+// --- AVENIDA / CRUZAMENTO ---
+const ROAD_HALF = 1.2; // metade da largura da rua (banda em torno de x=0 e y=0)
+
+function tileType(x, y) {
+  const onVertical   = Math.abs(x + 0.5) <= ROAD_HALF;
+  const onHorizontal  = Math.abs(y + 0.5) <= ROAD_HALF;
+  if (onVertical || onHorizontal) return 'rua';
+  const nearV = Math.abs(x + 0.5) <= ROAD_HALF + 0.6;
+  const nearH = Math.abs(y + 0.5) <= ROAD_HALF + 0.6;
+  if (nearV || nearH) return 'calcada';
+  return 'grama';
+}
+
+// --- PRÉDIOS (array genérico) ---
+function makeBuilding(cfg){ return Object.assign({ isOpen:false }, cfg); }
+
+const buildings = [
+  makeBuilding({ id:'padaria', x:-6, y:-6.5, w:3.2, h:2.6, roofColor:'#ffcc00', wallColor:'#0077b6', wallColor2:'#023e8a',
+    doorX:-4.4, doorY:-3.6, label:'Padaria' }),
+  makeBuilding({ id:'mercado', x:2.8, y:-6.5, w:3.4, h:2.6, roofColor:'#e63946', wallColor:'#2a9d8f', wallColor2:'#1b6b62',
+    doorX:4.5, doorY:-3.6, label:'Mercado' }),
+  makeBuilding({ id:'oficina', x:-6, y:3.9, w:3.2, h:2.6, roofColor:'#8d99ae', wallColor:'#5a3e2b', wallColor2:'#3d2a1c',
+    doorX:-4.4, doorY:3.7, label:'Oficina' }),
+  makeBuilding({ id:'lanchonete', x:2.8, y:3.9, w:3.4, h:2.6, roofColor:'#ffb703', wallColor:'#023047', wallColor2:'#012a38',
+    doorX:4.5, doorY:3.7, label:'Lanchonete' }),
+];
+
+function buildingSVG(b){
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="260" viewBox="0 0 320 260">
+    <polygon points="160,235 300,165 160,95 20,165" fill="rgba(0,0,0,.35)"/>
+    <polygon points="20,165 160,235 160,115 20,45" fill="${b.wallColor}" stroke="#00131f" stroke-width="3"/>
+    <polygon points="160,235 300,165 300,45 160,115" fill="${b.wallColor2}" stroke="#00131f" stroke-width="3"/>
+    <polygon points="20,45 160,115 300,45 160,-25" fill="${b.roofColor}" stroke="#7a5c00" stroke-width="3"/>
+    <rect x="55" y="90" width="34" height="34" rx="3" fill="#66fcf1" opacity="0.8" transform="skewY(-15)"/>
+    <rect x="220" y="70" width="34" height="34" rx="3" fill="#66fcf1" opacity="0.8" transform="skewY(15)"/>
+    <text x="70" y="150" font-family="sans-serif" font-weight="bold" font-size="18" fill="#fff" transform="rotate(26,70,150)">${b.label.toUpperCase()}</text>
+  </svg>`;
+}
+buildings.forEach(b => {
+  b.img = new Image();
+  b.img.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(buildingSVG(b));
+  b.doorImgClosed = doorSVG('#3a2212');
+  b.doorImgOpen = doorSVG('#1b7a3d');
+});
+function doorSVG(color){
+  const img = new Image();
+  img.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="50" viewBox="0 0 40 50">
+      <rect x="6" y="4" width="28" height="42" rx="3" fill="${color}" stroke="#000" stroke-width="2"/>
+      <circle cx="28" cy="25" r="2.5" fill="#ffdd00"/>
+    </svg>`);
+  return img;
+}
+
+// --- INTERIOR (sala vazia genérica) ---
+const INTERIOR_W = 6, INTERIOR_H = 5;
+function enterBuilding(b){
+  savedCityPos = { x: player.worldX, y: player.worldY };
+  activeInterior = b;
+  scene = 'interior';
+  player.worldX = 0; player.worldY = INTERIOR_H/2 - 0.6;
+  document.getElementById('sceneDisplay').innerText = 'Interior: ' + b.label;
+}
+function exitBuilding(){
+  scene = 'city';
+  player.worldX = savedCityPos.x; player.worldY = savedCityPos.y;
+  document.getElementById('sceneDisplay').innerText = 'Cidade';
+  activeInterior = null;
+}
+
+// --- PROJEÇÃO ---
+function worldToScreen(wx, wy){
+  const relX = wx - player.worldX, relY = wy - player.worldY;
+  const tw = TILE_W * ZOOM/1.6, th = TILE_H * ZOOM/1.6;
+  return { x: canvas.width/2 + (relX-relY)*(tw/2), y: canvas.height/2 + (relX+relY)*(th/2) };
+}
+
+// --- PERSONAGEM SIMPLIFICADO (8 direções) ---
+const DIR_VECTORS = [
+  [0,1],[1,1],[1,0],[1,-1],[0,-1],[-1,-1],[-1,0],[-1,1]
+]; // 8 direções, index 0 = baixo (sul)
+
+function drawPlayer(){
+  if (player.isMoving) player.animFrame = (player.animFrame + 0.15) % (Math.PI*2);
+  else player.animFrame = 0;
+  const bob = Math.abs(Math.sin(player.animFrame)) * 4 * ZOOM;
+  const legShift = Math.sin(player.animFrame) * 6 * ZOOM;
+
+  const c = { x: canvas.width/2, y: canvas.height/2 };
+  const s = ZOOM;
+
+  ctx.save();
+  ctx.translate(c.x, c.y - bob);
+
+  // sombra
+  ctx.beginPath();
+  ctx.ellipse(0, 34*s, 16*s, 6*s, 0, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.fill();
+
+  // pernas
+  ctx.fillStyle = '#1b2a38';
+  ctx.fillRect(-8*s + legShift*0.3, 12*s, 6*s, 22*s);
+  ctx.fillStyle = '#233548';
+  ctx.fillRect(2*s - legShift*0.3, 12*s, 6*s, 22*s);
+
+  // corpo
+  ctx.fillStyle = '#2b3a4a';
+  ctx.strokeStyle = '#151d26';
+  ctx.lineWidth = 2;
+  roundRect(-14*s, -14*s, 28*s, 30*s, 5*s);
+  ctx.fill(); ctx.stroke();
+
+  // cabeça
+  ctx.beginPath();
+  ctx.arc(0, -22*s, 10*s, 0, Math.PI*2);
+  ctx.fillStyle = '#e0ac69';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(0, -27*s, 9*s, Math.PI, 0);
+  ctx.fillStyle = '#3a2212';
+  ctx.fill();
+
+  // indicador de direção (seta)
+  const [dx,dy] = DIR_VECTORS[player.dirIndex];
+  const ang = Math.atan2((dx-dy)*(TILE_H/TILE_W), (dx+dy));
+  ctx.save();
+  ctx.rotate(ang);
+  ctx.beginPath();
+  ctx.moveTo(14*s, 0);
+  ctx.lineTo(6*s, -5*s);
+  ctx.lineTo(6*s, 5*s);
+  ctx.closePath();
+  ctx.fillStyle = '#66fcf1';
+  ctx.fill();
+  ctx.restore();
+
+  ctx.restore();
+}
+function roundRect(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+// --- DESENHO DE PRÉDIO + PORTA ---
+function drawBuilding(b){
+  const pos = worldToScreen(b.x + b.w/2, b.y + b.h/2);
+  const dw = 320 * ZOOM/1.6, dh = 260 * ZOOM/1.6;
+  if (b.img.complete) ctx.drawImage(b.img, pos.x-dw/2, pos.y-dh*0.72, dw, dh);
+
+  const dpos = worldToScreen(b.doorX, b.doorY);
+  const doorImg = b.isOpen ? b.doorImgOpen : b.doorImgClosed;
+  const ddw = 26*ZOOM, ddh = 32*ZOOM;
+  if (doorImg.complete) ctx.drawImage(doorImg, dpos.x-ddw/2, dpos.y-ddh*0.8, ddw, ddh);
+}
+
+// --- RENDER MUNDO CIDADE ---
+function renderCity(){
+  const half = 9;
+  const tw = TILE_W*ZOOM/1.6, th = TILE_H*ZOOM/1.6;
+  for (let x=-half; x<half; x++){
+    for (let y=-half; y<half; y++){
+      const pos = worldToScreen(x,y);
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+      ctx.lineTo(pos.x+tw/2, pos.y+th/2);
+      ctx.lineTo(pos.x, pos.y+th);
+      ctx.lineTo(pos.x-tw/2, pos.y+th/2);
+      ctx.closePath();
+      const t = tileType(x,y);
+      ctx.fillStyle = t==='rua' ? (( (x+y)%2===0) ? '#25272b' : '#2c2e33')
+                     : t==='calcada' ? (((x+y)%2===0) ? '#3a3f47' : '#41464f')
+                     : (((x+y)%2===0) ? '#182418' : '#1e2c1e');
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(102,252,241,0.05)';
+      ctx.stroke();
+    }
+  }
+  const list = [{y:player.worldY, draw:drawPlayer}];
+  buildings.forEach(b => list.push({ y: b.y + b.h, draw: () => drawBuilding(b) }));
+  list.sort((a,b)=>a.y-b.y).forEach(i=>i.draw());
+}
+
+// --- RENDER INTERIOR ---
+function renderInterior(){
+  const tw = TILE_W*ZOOM/1.6, th = TILE_H*ZOOM/1.6;
+  for (let x=0; x<INTERIOR_W; x++){
+    for (let y=0; y<INTERIOR_H; y++){
+      const pos = worldToScreen(x - INTERIOR_W/2 + 0.5, y - 0.5);
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+      ctx.lineTo(pos.x+tw/2, pos.y+th/2);
+      ctx.lineTo(pos.x, pos.y+th);
+      ctx.lineTo(pos.x-tw/2, pos.y+th/2);
+      ctx.closePath();
+      ctx.fillStyle = ((x+y)%2===0) ? '#3a2e1f' : '#42351f';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,204,0,0.08)';
+      ctx.stroke();
+    }
+  }
+  // marcador de saída
+  const exitPos = worldToScreen(0, INTERIOR_H/2 - 0.5);
+  ctx.beginPath();
+  ctx.arc(exitPos.x, exitPos.y, 10*ZOOM, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(102,252,241,0.5)';
+  ctx.fill();
+  drawPlayer();
+}
+
+// --- HINT (mostra "A"/"B" quando perto de algo interagível) ---
+function updateHint(){
+  const hint = document.getElementById('hint');
+  if (scene === 'city'){
+    const near = buildings.find(b => Math.hypot(player.worldX-b.doorX, player.worldY-b.doorY) < 1.0);
+    if (near){ hint.style.opacity = 1; hint.innerText = near.isOpen ? `A: Entrar (${near.label})` : `A: Abrir porta (${near.label})`; }
+    else hint.style.opacity = 0;
+  } else {
+    const distExit = Math.hypot(player.worldX-0, player.worldY-(INTERIOR_H/2-0.5));
+    hint.style.opacity = distExit < 1.2 ? 1 : 0;
+    hint.innerText = 'B: Sair';
+  }
+}
+
+function render(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if (scene === 'city') renderCity(); else renderInterior();
+  document.getElementById('coordsDisplay').innerText = `${player.worldX.toFixed(1)}, ${player.worldY.toFixed(1)} | Zoom: ${ZOOM.toFixed(1)}x`;
+  updateHint();
+  requestAnimationFrame(render);
+}
+
+// --- ZOOM ---
+addEventListener('wheel', e => { ZOOM = e.deltaY<0 ? Math.min(MAX_ZOOM,ZOOM+0.15) : Math.max(MIN_ZOOM,ZOOM-0.15); }, {passive:true});
+let touchStartDist=0;
+addEventListener('touchstart', e => { if(e.touches.length===2) touchStartDist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); }, {passive:true});
+addEventListener('touchmove', e => {
+  if(e.touches.length===2){
+    const d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+    ZOOM = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, ZOOM + (d-touchStartDist)*0.005));
+    touchStartDist = d;
+  }
+}, {passive:true});
+
+// --- JOYSTICK ---
+const joyZone = document.getElementById('joystick-zone');
+const joyStick = document.getElementById('joystick-stick');
+let isDragging=false, joyVector={x:0,y:0};
+function handleMove(cx,cy){
+  const rect = joyZone.getBoundingClientRect();
+  const centerX = rect.left+rect.width/2, centerY = rect.top+rect.height/2;
+  let dX=cx-centerX, dY=cy-centerY;
+  const maxR=55;
+  const dist = Math.min(Math.hypot(dX,dY), maxR);
+  const angle = Math.atan2(dY,dX);
+  const mX = Math.cos(angle)*dist, mY = Math.sin(angle)*dist;
+  joyStick.style.transform = `translate(${mX}px,${mY}px)`;
+  if (dist>3){
+    joyVector = { x: mX/maxR, y: mY/maxR };
+    player.isMoving = true;
+    const octant = Math.round((angle+Math.PI)/(Math.PI/4)) % 8;
+    const map = [4,5,6,7,0,1,2,3]; // ajuste pra alinhar visualmente com o octante
+    player.dirIndex = map[octant];
+  } else { joyVector={x:0,y:0}; player.isMoving=false; }
+}
+joyZone.addEventListener('pointerdown', e=>{ isDragging=true; handleMove(e.clientX,e.clientY); });
+addEventListener('pointermove', e=>{ if(isDragging) handleMove(e.clientX,e.clientY); });
+addEventListener('pointerup', ()=>{ if(isDragging){ isDragging=false; joyStick.style.transform='translate(0,0)'; joyVector={x:0,y:0}; player.isMoving=false; } });
+
+// --- BOTÕES A/B ---
+document.getElementById('btnA').addEventListener('pointerdown', () => {
+  if (scene !== 'city') return;
+  const near = buildings.find(b => Math.hypot(player.worldX-b.doorX, player.worldY-b.doorY) < 1.0);
+  if (!near) return;
+  if (!near.isOpen) { near.isOpen = true; }
+  else { enterBuilding(near); }
+});
+document.getElementById('btnB').addEventListener('pointerdown', () => {
+  if (scene !== 'interior') return;
+  const distExit = Math.hypot(player.worldX-0, player.worldY-(INTERIOR_H/2-0.5));
+  if (distExit < 1.2) exitBuilding();
+});
+
+// --- COLISÃO ---
+function checkCollisionCity(tx,ty){
+  for (const b of buildings){
+    if (tx+player.radius > b.x && tx-player.radius < b.x+b.w &&
+        ty+player.radius > b.y && ty-player.radius < b.y+b.h) return true;
+  }
+  return false;
+}
+function checkCollisionInterior(tx,ty){
+  const minX = -INTERIOR_W/2 + player.radius, maxX = INTERIOR_W/2 - player.radius;
+  const minY = -0.5 + player.radius, maxY = INTERIOR_H - 0.5 - player.radius;
+  return tx < minX || tx > maxX || ty < minY || ty > maxY;
+}
+
+setInterval(() => {
+  if (!player.isMoving) return;
+  const isoX = joyVector.x*Math.cos(Math.PI/4) + joyVector.y*Math.sin(Math.PI/4);
+  const isoY = joyVector.y*Math.cos(Math.PI/4) - joyVector.x*Math.sin(Math.PI/4);
+  const nx = player.worldX + isoX*player.speed;
+  const ny = player.worldY + isoY*player.speed;
+  const collide = scene==='city' ? checkCollisionCity : checkCollisionInterior;
+  if (!collide(nx, player.worldY)) player.worldX = nx;
+  if (!collide(player.worldX, ny)) player.worldY = ny;
+}, 1000/60);
+
+render();
+</script>
+</body>
+</html>

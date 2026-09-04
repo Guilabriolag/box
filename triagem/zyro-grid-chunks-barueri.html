@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZYRO — Grid de Chunks / Região de Barueri</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root{
+    --bg: #0a0e0c;
+    --panel: #10161388;
+    --line: #2a3a34;
+    --grid: #4fd1a5;
+    --grid-dim: #2f7a5c;
+    --accent: #ffb347;
+    --text: #d9e6de;
+    --text-dim: #7f9c8f;
+    --mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text); font-family: var(--mono); }
+
+  #map { position: absolute; inset: 0; background: #0a0e0c; }
+
+  /* leaflet tile tint to feel like an instrument display */
+  .leaflet-tile-pane { filter: saturate(0.55) brightness(0.75) contrast(1.05) hue-rotate(-6deg); }
+  .leaflet-control-attribution { background: rgba(10,14,12,0.7) !important; color: var(--text-dim) !important; font-family: var(--mono); font-size: 10px; }
+  .leaflet-control-attribution a { color: var(--grid) !important; }
+  .leaflet-control-zoom a { background: var(--panel) !important; color: var(--grid) !important; border-color: var(--line) !important; }
+
+  .hud {
+    position: absolute;
+    z-index: 1000;
+    pointer-events: none;
+  }
+
+  #title-block {
+    top: 14px; left: 14px;
+    pointer-events: none;
+  }
+  #title-block .eyebrow {
+    font-size: 10px; letter-spacing: 0.14em; color: var(--grid-dim);
+  }
+  #title-block h1 {
+    margin: 2px 0 0 0; font-size: 15px; font-weight: 600; color: var(--text);
+    letter-spacing: 0.02em;
+  }
+  #title-block .sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+  #panel {
+    top: 14px; right: 14px; width: 232px;
+    background: var(--panel);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 14px;
+    pointer-events: auto;
+  }
+  #panel h2 {
+    font-size: 10px; letter-spacing: 0.12em; color: var(--grid-dim);
+    margin: 0 0 10px 0; font-weight: 600; border-bottom: 1px solid var(--line); padding-bottom: 8px;
+  }
+  .field { margin-bottom: 12px; }
+  .field label { display:flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); margin-bottom: 5px; }
+  .field label span.val { color: var(--grid); font-weight: 600; }
+  input[type=range] {
+    -webkit-appearance: none; width: 100%; height: 3px; background: var(--line); border-radius: 2px; outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%;
+    background: var(--grid); cursor: pointer; border: 2px solid #0a0e0c;
+  }
+  .toggle-row { display:flex; align-items:center; justify-content: space-between; font-size: 11px; color: var(--text-dim); margin-bottom: 10px; }
+  .toggle-row button {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em;
+    background: transparent; border: 1px solid var(--line); color: var(--text-dim);
+    padding: 4px 8px; border-radius: 2px; cursor: pointer;
+  }
+  .toggle-row button.on { border-color: var(--grid); color: var(--grid); }
+
+  #stats {
+    margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--line);
+    font-size: 10.5px; color: var(--text-dim); line-height: 1.9;
+  }
+  #stats b { color: var(--text); }
+
+  #legend {
+    bottom: 14px; left: 14px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 3px;
+    padding: 10px 12px; font-size: 10.5px; color: var(--text-dim);
+    pointer-events: none;
+  }
+  #legend .row { display:flex; align-items:center; gap: 7px; margin: 3px 0; }
+  #legend .swatch { width: 10px; height: 10px; border-radius: 1px; flex-shrink:0; }
+
+  #chunk-readout {
+    bottom: 14px; right: 14px; width: 232px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 3px;
+    padding: 12px 14px; pointer-events: none; display: none;
+  }
+  #chunk-readout h3 {
+    margin: 0 0 6px 0; font-size: 12px; color: var(--accent); letter-spacing: 0.04em;
+  }
+  #chunk-readout .row { display:flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); padding: 2px 0; }
+  #chunk-readout .row span:last-child { color: var(--text); }
+
+  .chunk-label {
+    color: var(--grid-dim); font-family: var(--mono); font-size: 9px; font-weight: 600;
+    text-shadow: 0 0 3px #0a0e0c, 0 0 3px #0a0e0c;
+    pointer-events: none; white-space: nowrap;
+  }
+
+  .city-label {
+    color: #f4efe4; font-family: var(--mono); font-size: 10px; font-weight: 600;
+    text-shadow: 0 0 4px #000, 0 0 4px #000;
+    pointer-events: none; white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div class="hud" id="title-block">
+  <div class="eyebrow">ZYRO — WORLD GRID</div>
+  <h1>Região de Barueri</h1>
+  <div class="sub">REGIAO_BARUERI_OESTE · rede SP-280 · SP-312 · Ubaldo Lolli</div>
+</div>
+
+<div class="hud" id="panel">
+  <h2>PARÂMETROS DO CHUNK</h2>
+  <div class="field">
+    <label>Tamanho do chunk <span class="val" id="sizeVal">2.0 km</span></label>
+    <input type="range" id="sizeSlider" min="0.5" max="5" step="0.1" value="2">
+  </div>
+  <div class="toggle-row">
+    <span>Grid</span>
+    <button id="toggleGrid" class="on">ON</button>
+  </div>
+  <div class="toggle-row">
+    <span>Rótulos de chunk</span>
+    <button id="toggleLabels" class="on">ON</button>
+  </div>
+  <div class="toggle-row">
+    <span>Traçado real</span>
+    <button id="toggleRoute" class="on">ON</button>
+  </div>
+  <div id="stats">
+    <div>Chunks na área: <b id="chunkCount">–</b></div>
+    <div>Colunas × linhas: <b id="chunkDims">–</b></div>
+    <div>Origem (0,0): <b>canto SO</b></div>
+  </div>
+</div>
+
+<div class="hud" id="legend">
+  <div class="row"><span class="swatch" style="background:var(--grid); opacity:.5;"></span>chunk vazio (não atribuído)</div>
+  <div class="row"><span class="swatch" style="background:var(--accent);"></span>chunk atravessado por via</div>
+  <div class="row"><span class="swatch" style="background:#e6c34f;"></span>SP-280 · Castello Branco</div>
+  <div class="row"><span class="swatch" style="background:#4fd1a5;"></span>SP-312 · Estrada dos Romeiros</div>
+  <div class="row"><span class="swatch" style="background:#5aa9ff;"></span>Via Ubaldo Lolli (conector)</div>
+  <div class="row"><span class="swatch" style="background:#f4efe4; border-radius:50%;"></span>município da região</div>
+</div>
+
+<div class="hud" id="chunk-readout">
+  <h3 id="chunkTitle">chunk_00_00</h3>
+  <div class="row"><span>id</span><span id="ro-id">—</span></div>
+  <div class="row"><span>centro</span><span id="ro-center">—</span></div>
+  <div class="row"><span>tamanho</span><span id="ro-size">—</span></div>
+  <div class="row"><span>status</span><span id="ro-status">—</span></div>
+</div>
+
+<script>
+// ---------- NODES: coordenadas reais confirmadas (nível "world") ----------
+const NODES = {
+  sao_paulo:              { name: "São Paulo",                lat: -23.5503780, lon: -46.6339518 },
+  osasco:                 { name: "Osasco",                   lat: -23.5318198, lon: -46.7916315 },
+  barueri:                { name: "Barueri",                  lat: -23.5035038, lon: -46.8785555 },
+  alphaville:             { name: "Alphaville",                lat: -23.4768588, lon: -46.8662018 },
+  itapevi:                { name: "Itapevi",                  lat: -23.5507572, lon: -46.9388116 },
+  santana_de_parnaiba:    { name: "Santana de Parnaíba",       lat: -23.4447994, lon: -46.9182981 },
+  pirapora_do_bom_jesus:  { name: "Pirapora do Bom Jesus",     lat: -23.3964495, lon: -47.0028047 },
+  aracariguama:           { name: "Araçariguama",              lat: -23.4377440, lon: -47.0638699 },
+  sao_roque:              { name: "São Roque",                 lat: -23.5298156, lon: -47.1374002 },
+  catarina:               { name: "Catarina Fashion Outlet",   lat: -23.4199300, lon: -47.1643600 }, // km ~60, ainda em São Roque
+  mairinque:              { name: "Mairinque",                 lat: -23.5451019, lon: -47.1902389 },
+  itu:                    { name: "Itu",                       lat: -23.2636298, lon: -47.3010875 },
+  cabreuva:               { name: "Cabreúva",                  lat: -23.3073663, lon: -47.1336779 }
+};
+
+// ---------- ROAD_NETWORK: malha regional como rede de segmentos + nós ----------
+const ROAD_NETWORK = {
+  castelo_branco: {
+    type: "highway",
+    code: "SP-280",
+    color: "#e6c34f",
+    nodes: ["sao_paulo", "osasco", "barueri", "aracariguama", "sao_roque", "catarina", "mairinque", "itu"]
+  },
+  romeiros: {
+    type: "regional_road",
+    code: "SP-312",
+    color: "#4fd1a5",
+    nodes: ["barueri", "santana_de_parnaiba", "pirapora_do_bom_jesus", "cabreuva", "itu"]
+  },
+  ubaldo_lolli: {
+    type: "connector",
+    code: "Via Ubaldo Lolli",
+    color: "#5aa9ff",
+    nodes: ["pirapora_do_bom_jesus", "aracariguama"]
+  }
+};
+
+// Municípios que compõem a região de trabalho (chunk grid vive só aqui dentro)
+const MUNICIPIOS_REGIAO = ["barueri", "alphaville", "itapevi", "santana_de_parnaiba", "pirapora_do_bom_jesus", "aracariguama", "sao_roque"];
+const POIS = ["catarina"];
+
+// Deriva as polylines a partir da rede de nós (não mais coordenadas soltas)
+function segmentsOf(roadKey) {
+  const road = ROAD_NETWORK[roadKey];
+  return road.nodes.map(n => [NODES[n].lat, NODES[n].lon]);
+}
+
+// ---------- Mapa base ----------
+const map = L.map('map', { zoomControl: true, attributionControl: true })
+  .setView([-23.42, -47.15], 10);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap &copy; CARTO',
+  subdomains: 'abcd',
+  maxZoom: 19
+}).addTo(map);
+
+// ---------- Bounding box da REGIÃO (só os municípios de trabalho, não a malha inteira) ----------
+const PAD = 0.06; // graus de margem
+const regionCoords = [...MUNICIPIOS_REGIAO, ...POIS].map(k => NODES[k]);
+let lats = regionCoords.map(c => c.lat), lons = regionCoords.map(c => c.lon);
+const south = Math.min(...lats) - PAD;
+const north = Math.max(...lats) + PAD;
+const west  = Math.min(...lons) - PAD;
+const east  = Math.max(...lons) + PAD;
+
+// a rede viária inteira (até Itu/São Paulo) fica visível no mapa, mas o grid de chunks
+// só existe dentro da bounding box da região — igual à hierarquia world > region
+const allNodeCoords = Object.values(NODES);
+const worldLats = allNodeCoords.map(c => c.lat), worldLons = allNodeCoords.map(c => c.lon);
+map.fitBounds([
+  [Math.min(...worldLats) - 0.03, Math.min(...worldLons) - 0.03],
+  [Math.max(...worldLats) + 0.03, Math.max(...worldLons) + 0.03]
+]);
+
+const boundsRect = L.rectangle([[south, west],[north, east]], {
+  color: '#2a3a34', weight: 1, fill: false, dashArray: '3 4'
+}).addTo(map);
+
+// ---------- Camadas ----------
+let gridLayer = L.layerGroup().addTo(map);
+let labelLayer = L.layerGroup().addTo(map);
+let routeLayer = L.layerGroup().addTo(map);
+let cityLayer = L.layerGroup().addTo(map);
+
+// km por grau (aproximação local, região de -23.4° lat)
+const KM_PER_DEG_LAT = 111.0;
+const KM_PER_DEG_LON = 111.0 * Math.cos(-23.42 * Math.PI / 180);
+
+function degLat(km) { return km / KM_PER_DEG_LAT; }
+function degLon(km) { return km / KM_PER_DEG_LON; }
+
+function pointInSegDistanceKm(lat, lon, seg) {
+  // distância mínima (aprox, planar) do ponto até a polyline seg (array de [lat,lon])
+  let min = Infinity;
+  for (let i = 0; i < seg.length - 1; i++) {
+    const [lat1, lon1] = seg[i], [lat2, lon2] = seg[i+1];
+    const x1 = lon1 * KM_PER_DEG_LON, y1 = lat1 * KM_PER_DEG_LAT;
+    const x2 = lon2 * KM_PER_DEG_LON, y2 = lat2 * KM_PER_DEG_LAT;
+    const px = lon * KM_PER_DEG_LON, py = lat * KM_PER_DEG_LAT;
+    const dx = x2 - x1, dy = y2 - y1;
+    const len2 = dx*dx + dy*dy;
+    let t = len2 === 0 ? 0 : ((px-x1)*dx + (py-y1)*dy) / len2;
+    t = Math.max(0, Math.min(1, t));
+    const cx = x1 + t*dx, cy = y1 + t*dy;
+    const d = Math.hypot(px-cx, py-cy);
+    if (d < min) min = d;
+  }
+  return min;
+}
+
+function buildGrid(chunkKm) {
+  gridLayer.clearLayers();
+  labelLayer.clearLayers();
+
+  const stepLat = degLat(chunkKm);
+  const stepLon = degLon(chunkKm);
+
+  const cols = Math.ceil((east - west) / stepLon);
+  const rows = Math.ceil((north - south) / stepLat);
+
+  document.getElementById('chunkCount').textContent = (cols * rows).toLocaleString('pt-BR');
+  document.getElementById('chunkDims').textContent = `${cols} × ${rows}`;
+
+  for (let cx = 0; cx < cols; cx++) {
+    for (let cy = 0; cy < rows; cy++) {
+      const lonMin = west + cx * stepLon;
+      const lonMax = Math.min(lonMin + stepLon, east);
+      const latMin = south + cy * stepLat;
+      const latMax = Math.min(latMin + stepLat, north);
+      const centerLat = (latMin + latMax) / 2;
+      const centerLon = (lonMin + lonMax) / 2;
+
+      const onRoute = Object.keys(ROAD_NETWORK).some(key =>
+        pointInSegDistanceKm(centerLat, centerLon, segmentsOf(key)) < chunkKm * 0.75
+      );
+
+      const rect = L.rectangle([[latMin, lonMin],[latMax, lonMax]], {
+        color: onRoute ? '#ffb347' : '#4fd1a5',
+        weight: onRoute ? 1.1 : 0.6,
+        opacity: onRoute ? 0.85 : 0.35,
+        fillColor: onRoute ? '#ffb347' : '#4fd1a5',
+        fillOpacity: onRoute ? 0.12 : 0.035
+      });
+
+      const id = `chunk_${String(cx).padStart(2,'0')}_${String(cy).padStart(2,'0')}`;
+      rect.on('click', () => showReadout(id, cx, cy, centerLat, centerLon, chunkKm, onRoute));
+      rect.addTo(gridLayer);
+
+      if (chunkKm >= 0.8) {
+        const lbl = L.marker([centerLat, centerLon], {
+          icon: L.divIcon({ className: 'chunk-label', html: `${cx},${cy}`, iconSize: [0,0] }),
+          interactive: false
+        });
+        lbl.addTo(labelLayer);
+      }
+    }
+  }
+}
+
+function showReadout(id, cx, cy, lat, lon, size, onRoute) {
+  document.getElementById('chunk-readout').style.display = 'block';
+  document.getElementById('chunkTitle').textContent = id;
+  document.getElementById('ro-id').textContent = `[${cx}, ${cy}]`;
+  document.getElementById('ro-center').textContent = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+  document.getElementById('ro-size').textContent = `${size.toFixed(1)} km × ${size.toFixed(1)} km`;
+  document.getElementById('ro-status').textContent = onRoute ? 'atravessado pela via' : 'não atribuído';
+}
+
+// ---------- Traçado real: um polyline por segmento da ROAD_NETWORK, cor própria ----------
+function buildRoute() {
+  routeLayer.clearLayers();
+  Object.keys(ROAD_NETWORK).forEach(key => {
+    const road = ROAD_NETWORK[key];
+    L.polyline(segmentsOf(key), {
+      color: road.color,
+      weight: road.type === 'highway' ? 3 : road.type === 'regional_road' ? 2.5 : 2,
+      opacity: 0.85,
+      dashArray: road.type === 'connector' ? '2 5' : null
+    }).addTo(routeLayer);
+  });
+}
+
+// ---------- Cidades / nós da rede ----------
+function buildCities() {
+  cityLayer.clearLayers();
+  Object.keys(NODES).forEach(key => {
+    const n = NODES[key];
+    const isRegion = MUNICIPIOS_REGIAO.includes(key);
+    const isPoi = POIS.includes(key);
+    const isHub = key === 'barueri';
+    L.circleMarker([n.lat, n.lon], {
+      radius: isHub ? 6 : isPoi ? 5 : 4,
+      color: '#f4efe4', weight: 1.5,
+      fillColor: isHub ? '#ffb347' : isPoi ? '#5aa9ff' : (isRegion ? '#f4efe4' : '#7f9c8f'),
+      fillOpacity: isRegion || isPoi ? 0.9 : 0.55
+    }).addTo(cityLayer);
+    L.marker([n.lat, n.lon], {
+      icon: L.divIcon({ className: 'city-label', html: n.name, iconSize: [0,0], iconAnchor: [-8, 4] }),
+      interactive: false
+    }).addTo(cityLayer);
+  });
+}
+
+// ---------- Init ----------
+let currentSize = 2.0;
+buildGrid(currentSize);
+buildRoute();
+buildCities();
+
+// ---------- Controles ----------
+const slider = document.getElementById('sizeSlider');
+const sizeVal = document.getElementById('sizeVal');
+slider.addEventListener('input', () => {
+  currentSize = parseFloat(slider.value);
+  sizeVal.textContent = `${currentSize.toFixed(1)} km`;
+  buildGrid(currentSize);
+  document.getElementById('chunk-readout').style.display = 'none';
+});
+
+function wireToggle(btnId, layer) {
+  const btn = document.getElementById(btnId);
+  btn.addEventListener('click', () => {
+    const on = btn.classList.toggle('on');
+    btn.textContent = on ? 'ON' : 'OFF';
+    if (on) map.addLayer(layer); else map.removeLayer(layer);
+  });
+}
+wireToggle('toggleGrid', gridLayer);
+wireToggle('toggleRoute', routeLayer);
+
+document.getElementById('toggleLabels').addEventListener('click', (e) => {
+  const btn = e.currentTarget;
+  const on = btn.classList.toggle('on');
+  btn.textContent = on ? 'ON' : 'OFF';
+  if (on) map.addLayer(labelLayer); else map.removeLayer(labelLayer);
+});
+</script>
+
+</body>
+</html>

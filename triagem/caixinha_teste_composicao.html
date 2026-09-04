@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CAIXINHA / prova de composição — TATO + PROXIMIDADE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#050505; --line:#242420; --text:#e8e8e2; --muted:#787870;
+    --amber:#d99a32; --amber2:#f1c66a; --field:#57c7ff; --ok:#6dffa0;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;}
+  html,body{margin:0;background:var(--bg);height:100%;}
+  body{color:var(--text);font-family:'JetBrains Mono',monospace;min-height:100vh;padding:16px;
+    display:flex;flex-direction:column;gap:14px;}
+
+  h1{font-size:11px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin:0;font-weight:500;}
+  h1 span{color:var(--amber2);}
+  .note{font-size:10px;color:var(--muted);line-height:1.6;border-left:2px solid var(--line);padding-left:10px;}
+
+  .stage{
+    position:relative;flex:1;min-height:280px;border:1px solid var(--line);
+    background:radial-gradient(ellipse at 50% 40%,#0f0f0e 0%,#050505 70%);
+    overflow:hidden;touch-action:none;
+  }
+  .totem{
+    position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);
+    width:90px;height:90px;border-radius:50%;
+    border:1px solid #55554d;
+    background:radial-gradient(circle,#2a2a26 0 20%,#141412 40%,#0a0a09 70%);
+    display:flex;align-items:center;justify-content:center;
+    font-size:9px;color:var(--muted);letter-spacing:.1em;
+    transition:box-shadow .2s ease, border-color .2s ease;
+  }
+  .totem.contato{border-color:var(--amber);box-shadow:0 0 30px rgba(217,154,50,.4);}
+  .totem-ring{position:absolute;inset:-14px;border-radius:50%;border:1px solid rgba(217,154,50,0);transition:border-color .2s;}
+  .totem.contato .totem-ring{border-color:rgba(217,154,50,.35);}
+  .zona-anel{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);border-radius:50%;
+    border:1px dashed rgba(255,255,255,.06);pointer-events:none;}
+
+  .neutra{
+    position:absolute;right:14px;bottom:14px;width:100px;height:56px;
+    border:1px dashed #3a3a35;display:flex;align-items:center;justify-content:center;
+    font-size:8px;color:var(--muted);text-align:center;letter-spacing:.06em;padding:6px;
+  }
+
+  .cursor-dot{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--field);
+    box-shadow:0 0 8px var(--field);pointer-events:none;transform:translate(-50%,-50%);opacity:0;}
+
+  .readout{border:1px solid var(--line);background:#0a0a09;padding:12px 14px;font-size:10px;}
+  .readout-row{display:flex;justify-content:space-between;padding:3px 0;color:var(--muted);}
+  .readout-row b{color:var(--text);font-weight:500;}
+  .frase{margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:12px;color:var(--amber2);
+    min-height:16px;}
+  .frase.composta{color:var(--ok);}
+
+  .log{border:1px solid var(--line);background:#050505;padding:10px 12px;max-height:130px;overflow-y:auto;font-size:9px;}
+  .log-item{padding:3px 0;color:var(--muted);border-bottom:1px solid #161613;}
+  .log-item:last-child{border-bottom:none;}
+  .log-item.composta{color:var(--ok);}
+  .log-item.tato{color:var(--amber2);}
+  .log-item.prox{color:var(--field);}
+</style>
+</head>
+<body>
+
+  <h1>CAIXINHA <span>/ prova de composição</span></h1>
+  <div class="note">
+    Passa o mouse perto do totem sem clicar → proximidade isolada. Clica na zona neutra (canto) → tato isolado. Clica no totem (ou perto, em zona de contato) → composição real. Em touchscreen, proximidade isolada é limitada — o toque já ativa tato junto.
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="zona-anel" id="anelMuitoProx" style="width:170px;height:170px;"></div>
+    <div class="zona-anel" id="anelProx" style="width:280px;height:280px;"></div>
+    <div class="totem" id="totem"><div class="totem-ring"></div>TOTEM</div>
+    <div class="neutra">zona neutra<br>(tato isolado)</div>
+    <div class="cursor-dot" id="cursorDot"></div>
+  </div>
+
+  <div class="readout">
+    <div class="readout-row"><span>TATO</span><b id="roTato">inativo</b></div>
+    <div class="readout-row"><span>PROXIMIDADE</span><b id="roProx">— (distante)</b></div>
+    <div class="readout-row"><span>DISTÂNCIA</span><b id="roDist">—</b></div>
+    <div class="frase" id="frase">aguardando percepção…</div>
+  </div>
+
+  <div class="log" id="log"></div>
+
+<script>
+(function(){
+
+  // ============= CAIXINHA MÍNIMA (núcleo de percepção) =============
+  class CaixinhaMinima {
+    constructor(){
+      this.ultimaPercepcao = {};   // último evento por tipo de sensor
+      this.memoria = [];
+      this.onInterpretacao = null;
+    }
+    receberBruto(tipoSensor, dadosBrutos){
+      const percepcao = {
+        timestamp: Date.now(),
+        sensor: tipoSensor,
+        dadosBrutos: dadosBrutos
+      };
+      this.ultimaPercepcao[tipoSensor] = percepcao;
+      const interpretacao = this.interpretar(percepcao);
+      this.memoria.push(interpretacao);
+      if(this.memoria.length > 40) this.memoria.shift();
+      if(this.onInterpretacao) this.onInterpretacao(interpretacao);
+      return interpretacao;
+    }
+    // Janela de tempo em que duas percepções de sensores diferentes
+    // ainda contam como "acontecendo ao mesmo tempo"
+    dentroDaJanela(percepcao, agora, janelaMs){
+      return percepcao && (agora - percepcao.timestamp) < janelaMs;
+    }
+    interpretar(p){
+      const agora = p.timestamp;
+      const tato = this.ultimaPercepcao['TATO'];
+      const prox = this.ultimaPercepcao['PROXIMIDADE'];
+      const tatoAtivo = tato && tato.dadosBrutos.fase === 'ATIVO' && this.dentroDaJanela(tato, agora, 600);
+      const zonaProx = prox ? prox.dadosBrutos.zona : 'DISTANTE';
+      const proxRecente = this.dentroDaJanela(prox, agora, 600);
+
+      let gramaticaZero, caso;
+
+      const emZonaDeContato = proxRecente && (zonaProx === 'CONTATO' || zonaProx === 'MUITO_PROXIMO');
+
+      if(p.sensor === 'TATO'){
+        if(p.dadosBrutos.fase === 'ATIVO' && emZonaDeContato){
+          gramaticaZero = { sujeito:'usuario', verbo:'tocar', objeto:'totem', condicao:'zona_de_contato', estado:'ativo' };
+          caso = 'composta';
+        } else if(p.dadosBrutos.fase === 'ATIVO'){
+          gramaticaZero = { sujeito:'usuario', verbo:'tocar', objeto: p.dadosBrutos.objeto || 'ambiente', condicao:'isolado', estado:'ativo' };
+          caso = 'tato';
+        } else {
+          gramaticaZero = { sujeito:'usuario', verbo:'soltar', objeto: p.dadosBrutos.objeto || 'ambiente', condicao:'fim', estado:'neutro' };
+          caso = 'tato';
+        }
+      } else { // PROXIMIDADE
+        if(tatoAtivo && emZonaDeContato){
+          gramaticaZero = { sujeito:'usuario', verbo:'tocar', objeto:'totem', condicao:'zona_de_contato', estado:'ativo' };
+          caso = 'composta';
+        } else if(zonaProx === 'DISTANTE'){
+          gramaticaZero = { sujeito:'usuario', verbo:'ausentar-se', objeto:'totem', condicao:'DISTANTE', estado:'neutro' };
+          caso = 'prox';
+        } else {
+          gramaticaZero = { sujeito:'usuario', verbo:'aproximar-se', objeto:'totem', condicao: zonaProx, estado:'neutro' };
+          caso = 'prox';
+        }
+      }
+
+      return { ...p, gramaticaZero, caso };
+    }
+  }
+
+  const nucleo = new CaixinhaMinima();
+
+  // ============= DOM =============
+  const stage = document.getElementById('stage');
+  const totem = document.getElementById('totem');
+  const cursorDot = document.getElementById('cursorDot');
+  const roTato = document.getElementById('roTato');
+  const roProx = document.getElementById('roProx');
+  const roDist = document.getElementById('roDist');
+  const fraseEl = document.getElementById('frase');
+  const logEl = document.getElementById('log');
+
+  function zonaFromDistancia(d){
+    if(d <= 55) return 'CONTATO';
+    if(d <= 100) return 'MUITO_PROXIMO';
+    if(d <= 200) return 'PROXIMO';
+    return 'DISTANTE';
+  }
+
+  function frasePorExtenso(g){
+    const verbos = {
+      'tocar':'toca', 'soltar':'solta', 'aproximar-se':'está próximo de', 'ausentar-se':'está distante de'
+    };
+    const verbo = verbos[g.verbo] || g.verbo;
+    let extra = '';
+    if(g.condicao === 'zona_de_contato') extra = ' (zona de contato)';
+    else if(g.condicao && g.condicao !== 'isolado' && g.condicao !== 'fim' && g.condicao !== 'DISTANTE') extra = ' (' + g.condicao.toLowerCase() + ')';
+    return 'usuário ' + verbo + ' ' + g.objeto + extra;
+  }
+
+  function logInterpretacao(interp){
+    const div = document.createElement('div');
+    div.className = 'log-item ' + interp.caso;
+    const tag = interp.caso === 'composta' ? 'COMPOSTA' : (interp.caso === 'tato' ? 'TATO ISOLADO' : 'PROXIMIDADE ISOLADA');
+    div.textContent = '[' + tag + '] ' + frasePorExtenso(interp.gramaticaZero);
+    logEl.prepend(div);
+    while(logEl.children.length > 12) logEl.removeChild(logEl.lastChild);
+  }
+
+  nucleo.onInterpretacao = (interp) => {
+    fraseEl.textContent = frasePorExtenso(interp.gramaticaZero);
+    fraseEl.className = 'frase' + (interp.caso === 'composta' ? ' composta' : '');
+    logInterpretacao(interp);
+    if(interp.caso === 'composta'){
+      totem.classList.add('contato');
+      if('vibrate' in navigator) navigator.vibrate(20);
+    }
+  };
+
+  // ============= SENSOR: PROXIMIDADE (posição real do ponteiro) =============
+  let ultimaZona = 'DISTANTE';
+  function medirProximidade(clientX, clientY){
+    const rect = stage.getBoundingClientRect();
+    const totemRect = totem.getBoundingClientRect();
+    const tcx = totemRect.left + totemRect.width/2;
+    const tcy = totemRect.top + totemRect.height/2;
+    const dist = Math.hypot(clientX - tcx, clientY - tcy);
+    const zona = zonaFromDistancia(dist);
+
+    roDist.textContent = Math.round(dist) + 'px';
+    roProx.textContent = zona;
+
+    cursorDot.style.opacity = 1;
+    cursorDot.style.left = (clientX - rect.left) + 'px';
+    cursorDot.style.top = (clientY - rect.top) + 'px';
+
+    if(zona !== ultimaZona){
+      ultimaZona = zona;
+      nucleo.receberBruto('PROXIMIDADE', { objeto:'totem', distancia: dist, zona: zona });
+      if(zona !== 'CONTATO' && zona !== 'MUITO_PROXIMO') totem.classList.remove('contato');
+    }
+  }
+
+  stage.addEventListener('pointermove', e => medirProximidade(e.clientX, e.clientY));
+  stage.addEventListener('pointerleave', () => { cursorDot.style.opacity = 0; });
+
+  // ============= SENSOR: TATO (pressão real) =============
+  function tatoAtivo(objeto){
+    roTato.textContent = 'ativo (' + objeto + ')';
+    nucleo.receberBruto('TATO', { fase:'ATIVO', objeto: objeto });
+  }
+  function tatoInativo(objeto){
+    roTato.textContent = 'inativo';
+    nucleo.receberBruto('TATO', { fase:'FIM', objeto: objeto });
+    totem.classList.remove('contato');
+  }
+
+  stage.addEventListener('pointerdown', e => {
+    const target = e.target.closest('.totem') ? 'totem' : (e.target.closest('.neutra') ? 'ambiente' : 'ambiente');
+    medirProximidade(e.clientX, e.clientY);
+    tatoAtivo(target);
+  });
+  stage.addEventListener('pointerup', e => {
+    const target = e.target.closest('.totem') ? 'totem' : 'ambiente';
+    tatoInativo(target);
+  });
+
+})();
+</script>
+
+</body>
+</html>

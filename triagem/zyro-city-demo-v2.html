@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ZYRO Engine - Cidade + Chunks</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; touch-action:none; user-select:none; -webkit-user-select:none; font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; }
+  body,html { width:100%; height:100%; overflow:hidden; background:#0b0c10; color:#fff; }
+  #gameCanvas { width:100vw; height:100vh; display:block; }
+  #top-bar { position:absolute; top:0; left:0; width:100%; padding:8px 16px; background:rgba(15,15,26,0.95); z-index:10; border-bottom:2px solid #1f2833; font-size:12px; font-weight:bold; color:#66fcf1; display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px 12px; }
+  #hint { position:absolute; top:52px; left:0; width:100%; text-align:center; color:#ffcc00; font-size:13px; font-weight:bold; z-index:10; pointer-events:none; text-shadow:0 1px 3px #000; opacity:0; transition:opacity .2s; }
+  #controls-container { position:absolute; bottom:30px; left:20px; z-index:10; }
+  #joystick-zone { width:150px; height:150px; background:rgba(255,255,255,0.08); border:3px solid rgba(102,252,241,0.4); border-radius:50%; position:relative; backdrop-filter:blur(4px); }
+  #joystick-stick { width:60px; height:60px; background:#66fcf1; border-radius:50%; position:absolute; top:45px; left:45px; box-shadow:0 0 15px rgba(102,252,241,.8); pointer-events:none; }
+  #action-container { position:absolute; bottom:30px; right:20px; z-index:10; display:flex; gap:15px; align-items:flex-end; }
+  .btn-action { width:65px; height:65px; border-radius:50%; border:none; font-size:20px; font-weight:bold; color:#0b0c10; background:#66fcf1; box-shadow:0 0 15px rgba(102,252,241,.5); display:flex; justify-content:center; align-items:center; cursor:pointer; transition:transform .1s,background .1s; }
+  .btn-action:active { transform:scale(0.92); background:#45a29e; }
+  .btn-b { background:#ffcc00; box-shadow:0 0 15px rgba(255,204,0,.5); }
+</style>
+</head>
+<body>
+
+<div id="top-bar">
+  <div>⚡ ZYRO ENGINE</div>
+  <div>📍 <span id="coordsDisplay">0.0, 0.0</span></div>
+  <div>🧩 Chunk: <span id="chunkDisplay">0,0</span> | Ativos: <span id="chunkCount">0</span></div>
+  <div>🏙️ <span id="sceneDisplay">Cidade</span></div>
+</div>
+<div id="hint">A</div>
+
+<canvas id="gameCanvas"></canvas>
+<div id="controls-container"><div id="joystick-zone"><div id="joystick-stick"></div></div></div>
+<div id="action-container">
+  <button class="btn-action btn-b" id="btnB">B</button>
+  <button class="btn-action" id="btnA">A</button>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+function resizeCanvas(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+addEventListener('resize', resizeCanvas); resizeCanvas();
+
+let ZOOM = 1.6;
+const MIN_ZOOM=0.8, MAX_ZOOM=3.0;
+const TILE_W=120, TILE_H=60;
+const TOTAL_FRAMES=12;
+
+const player = { worldX:-6, worldY:6, radius:0.4, speed:0.05, dirIndex:0, isMoving:false, animFrame:0 };
+
+// ============ PERSONAGEM 16 DIREÇÕES (motor original) ============
+const spriteCache = {};
+function getSVGString(viewType, step){
+  const progress = (step/TOTAL_FRAMES)*Math.PI*2;
+  const legShift = Math.sin(progress)*8, armShift = Math.cos(progress)*7;
+  const bodyBob = Math.abs(Math.sin(progress))*3, bodyTilt = Math.sin(progress)*2;
+  let body="";
+  if (viewType==='profile'){
+    body=`<g transform="rotate(${bodyTilt}, 32, 50)">
+      <rect x="${30+legShift}" y="58" width="7" height="26" rx="3" fill="#1b2a38"/>
+      <rect x="${30-legShift}" y="58" width="7" height="26" rx="3" fill="#233548"/>
+      <rect x="${29+legShift}" y="80" width="9" height="7" rx="2" fill="#0d0d0d"/>
+      <rect x="${29-legShift}" y="80" width="9" height="7" rx="2" fill="#0d0d0d"/>
+      <rect x="24" y="30" width="18" height="30" rx="4" fill="#2b3a4a" stroke="#151d26" stroke-width="2"/>
+      <rect x="18" y="34" width="12" height="18" rx="3" fill="#3a4b35"/>
+      <rect x="${28-armShift}" y="32" width="6" height="22" rx="3" fill="#233548"/>
+      <circle cx="${31-armShift}" cy="56" r="3.5" fill="#e0ac69"/>
+      <circle cx="33" cy="18" r="9" fill="#e0ac69"/>
+      <path d="M 24 10 C 32 10, 38 14, 33 22 C 28 22, 24 18, 24 10 Z" fill="#3a2212"/></g>`;
+  } else if (viewType==='diag_front'){
+    body=`<g transform="rotate(${bodyTilt}, 32, 50)">
+      <rect x="${21-legShift*0.5}" y="${58-legShift*0.7}" width="7" height="26" rx="3" fill="#15212d"/>
+      <rect x="${20-legShift*0.5}" y="${80-legShift*0.7}" width="9" height="7" rx="2" fill="#050505"/>
+      <rect x="${31+legShift*0.5}" y="${58+legShift*0.7}" width="8" height="26" rx="3" fill="#233548"/>
+      <rect x="${30+legShift*0.5}" y="${80+legShift*0.7}" width="10" height="7" rx="2" fill="#0d0d0d"/>
+      <rect x="18" y="30" width="28" height="30" rx="5" fill="#2b3a4a" stroke="#151d26" stroke-width="2"/>
+      <rect x="14" y="33" width="10" height="20" rx="3" fill="#3a4b35"/>
+      <polygon points="26,30 30,37 35,30" fill="#d9d9d9"/>
+      <rect x="11" y="${32-armShift}" width="6" height="20" rx="3" fill="#1b2a38"/>
+      <rect x="42" y="${32+armShift}" width="7" height="22" rx="3" fill="#2b3a4a"/>
+      <circle cx="45.5" cy="${56+armShift}" r="3.5" fill="#e0ac69"/>
+      <circle cx="32" cy="18" r="9.5" fill="#e0ac69"/>
+      <path d="M 23 15 C 23 7, 40 8, 38 18 C 32 18, 25 18, 23 15 Z" fill="#3a2212"/></g>`;
+  } else if (viewType==='diag_back'){
+    body=`<g transform="rotate(${bodyTilt}, 32, 50)">
+      <rect x="${21-legShift*0.5}" y="${58-legShift*0.7}" width="7" height="26" rx="3" fill="#15212d"/>
+      <rect x="${31+legShift*0.5}" y="${58+legShift*0.7}" width="8" height="26" rx="3" fill="#233548"/>
+      <rect x="18" y="31" width="26" height="27" rx="5" fill="#3a4b35" stroke="#233020" stroke-width="2"/>
+      <rect x="10" y="${32-armShift}" width="6" height="20" rx="3" fill="#1b2a38"/>
+      <rect x="43" y="${32+armShift}" width="7" height="22" rx="3" fill="#2b3a4a"/>
+      <circle cx="32" cy="18" r="9.5" fill="#3a2212"/></g>`;
+  } else if (viewType==='back'){
+    body=`<g transform="rotate(${bodyTilt}, 32, 50)">
+      <rect x="23" y="${58+legShift}" width="8" height="26" rx="3" fill="#1b2a38"/>
+      <rect x="33" y="${58-legShift}" width="8" height="26" rx="3" fill="#233548"/>
+      <rect x="22" y="${80+legShift}" width="10" height="7" rx="2" fill="#0d0d0d"/>
+      <rect x="32" y="${80-legShift}" width="10" height="7" rx="2" fill="#0d0d0d"/>
+      <rect x="18" y="32" width="28" height="26" rx="5" fill="#3a4b35" stroke="#233020" stroke-width="2"/>
+      <rect x="10" y="${32-armShift}" width="7" height="22" rx="3" fill="#233548"/>
+      <rect x="47" y="${32+armShift}" width="7" height="22" rx="3" fill="#2b3a4a"/>
+      <circle cx="32" cy="18" r="10" fill="#3a2212"/></g>`;
+  } else {
+    body=`<g transform="rotate(${bodyTilt}, 32, 50)">
+      <rect x="23" y="${58+legShift}" width="8" height="26" rx="3" fill="#1b2a38"/>
+      <rect x="33" y="${58-legShift}" width="8" height="26" rx="3" fill="#233548"/>
+      <rect x="22" y="${80+legShift}" width="10" height="7" rx="2" fill="#0d0d0d"/>
+      <rect x="32" y="${80-legShift}" width="10" height="7" rx="2" fill="#0d0d0d"/>
+      <rect x="16" y="30" width="32" height="30" rx="5" fill="#2b3a4a" stroke="#151d26" stroke-width="2"/>
+      <polygon points="28,30 32,38 36,30" fill="#d9d9d9"/>
+      <rect x="10" y="${32-armShift}" width="7" height="22" rx="3" fill="#233548"/>
+      <rect x="47" y="${32+armShift}" width="7" height="22" rx="3" fill="#2b3a4a"/>
+      <circle cx="13.5" cy="${56-armShift}" r="3.5" fill="#e0ac69"/>
+      <circle cx="50.5" cy="${56+armShift}" r="3.5" fill="#e0ac69"/>
+      <rect x="29" y="24" width="6" height="7" fill="#c99352"/>
+      <circle cx="32" cy="18" r="10" fill="#e0ac69"/>
+      <path d="M 22 16 C 22 7, 42 7, 42 16 Z" fill="#3a2212"/></g>`;
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="96" viewBox="0 0 64 96">
+    <ellipse cx="32" cy="86" rx="18" ry="8" fill="rgba(0,0,0,0.4)"/>
+    <g transform="translate(0, ${-bodyBob})">${body}</g></svg>`;
+}
+function preloadSprites(){
+  ['front','back','profile','diag_front','diag_back'].forEach(view=>{
+    spriteCache[view]=[];
+    for(let i=0;i<TOTAL_FRAMES;i++){
+      const img=new Image();
+      img.src='data:image/svg+xml;utf8,'+encodeURIComponent(getSVGString(view,i));
+      spriteCache[view].push(img);
+    }
+  });
+}
+preloadSprites();
+function getSpriteFor16(dirIndex){
+  let viewType='front', flipX=1, rot=0;
+  switch(dirIndex){
+    case 0: viewType='front'; break;
+    case 1: viewType='diag_front'; rot=-11.25; break;
+    case 2: viewType='diag_front'; break;
+    case 3: viewType='profile'; rot=-11.25; break;
+    case 4: viewType='profile'; break;
+    case 5: viewType='diag_back'; rot=11.25; break;
+    case 6: viewType='diag_back'; break;
+    case 7: viewType='back'; rot=-11.25; break;
+    case 8: viewType='back'; break;
+    case 9: viewType='back'; rot=11.25; break;
+    case 10: viewType='diag_back'; flipX=-1; break;
+    case 11: viewType='profile'; flipX=-1; rot=-11.25; break;
+    case 12: viewType='profile'; flipX=-1; break;
+    case 13: viewType='diag_front'; flipX=-1; rot=11.25; break;
+    case 14: viewType='diag_front'; flipX=-1; break;
+    case 15: viewType='front'; rot=11.25; break;
+  }
+  return {viewType, flipX, rot};
+}
+function drawPlayer(){
+  if (player.isMoving) player.animFrame = (player.animFrame+0.25)%TOTAL_FRAMES;
+  else player.animFrame = 0;
+  const frame = Math.floor(player.animFrame);
+  const sd = getSpriteFor16(player.dirIndex);
+  const img = spriteCache[sd.viewType][frame];
+  const c = {x:canvas.width/2, y:canvas.height/2};
+  const dw=64*ZOOM, dh=96*ZOOM;
+  ctx.save();
+  ctx.translate(c.x, c.y);
+  if (sd.flipX===-1) ctx.scale(-1,1);
+  if (sd.rot!==0) ctx.rotate(sd.rot*Math.PI/180);
+  if (img && img.complete) ctx.drawImage(img, -dw/2, -dh+15*ZOOM, dw, dh);
+  ctx.restore();
+}
+
+// ============ MUNDO: REDE DE RUAS ============
+// Cada rua é um segmento com largura própria. Fácil de estender.
+const roads = [
+  { x1:-60, y1:0, x2:60, y2:0, width:2.6 },     // avenida principal (horizontal)
+  { x1:0, y1:-60, x2:0, y2:60, width:2.6 },     // avenida principal (vertical)
+  { x1:-24, y1:-60, x2:-24, y2:60, width:2.0 }, // rua lateral oeste
+  { x1:24, y1:-60, x2:24, y2:60, width:2.0 },   // rua lateral leste
+  { x1:-60, y1:-24, x2:60, y2:-24, width:2.0 }, // rua lateral norte
+];
+function distToSegment(px,py,x1,y1,x2,y2){
+  const dx=x2-x1, dy=y2-y1;
+  const len2 = dx*dx+dy*dy;
+  let t = len2===0 ? 0 : ((px-x1)*dx+(py-y1)*dy)/len2;
+  t = Math.max(0, Math.min(1, t));
+  const cx = x1+t*dx, cy = y1+t*dy;
+  return Math.hypot(px-cx, py-cy);
+}
+function tileType(x,y){
+  for (const r of roads){
+    if (distToSegment(x,y,r.x1,r.y1,r.x2,r.y2) <= r.width/2) return 'rua';
+  }
+  for (const r of roads){
+    if (distToSegment(x,y,r.x1,r.y1,r.x2,r.y2) <= r.width/2 + 0.6) return 'calcada';
+  }
+  return 'grama';
+}
+
+// ============ PRÉDIOS ============
+function makeBuilding(cfg){ return Object.assign({isOpen:false}, cfg); }
+const buildings = [
+  makeBuilding({ id:'padaria', x:-10, y:-8, w:3.2, h:2.6, roofColor:'#ffcc00', wallColor:'#0077b6', wallColor2:'#023e8a', doorX:-8.4, doorY:-5.1, label:'Padaria' }),
+  makeBuilding({ id:'mercado', x:5, y:-8, w:3.4, h:2.6, roofColor:'#e63946', wallColor:'#2a9d8f', wallColor2:'#1b6b62', doorX:6.7, doorY:-5.1, label:'Mercado' }),
+  makeBuilding({ id:'oficina', x:-10, y:5, w:3.2, h:2.6, roofColor:'#8d99ae', wallColor:'#5a3e2b', wallColor2:'#3d2a1c', doorX:-8.4, doorY:7.9, label:'Oficina' }),
+  makeBuilding({ id:'lanchonete', x:5, y:5, w:3.4, h:2.6, roofColor:'#ffb703', wallColor:'#023047', wallColor2:'#012a38', doorX:6.7, doorY:7.9, label:'Lanchonete' }),
+  makeBuilding({ id:'farmacia', x:-30, y:-8, w:3.0, h:2.4, roofColor:'#06d6a0', wallColor:'#264653', wallColor2:'#1a3038', doorX:-27.8, doorY:-5.3, label:'Farmácia' }),
+  makeBuilding({ id:'livraria', x:28, y:5, w:3.0, h:2.4, roofColor:'#f4a261', wallColor:'#3d3b6b', wallColor2:'#28264a', doorX:29.5, doorY:7.7, label:'Livraria' }),
+];
+function buildingSVG(b){
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="260" viewBox="0 0 320 260">
+    <polygon points="160,235 300,165 160,95 20,165" fill="rgba(0,0,0,.35)"/>
+    <polygon points="20,165 160,235 160,115 20,45" fill="${b.wallColor}" stroke="#00131f" stroke-width="3"/>
+    <polygon points="160,235 300,165 300,45 160,115" fill="${b.wallColor2}" stroke="#00131f" stroke-width="3"/>
+    <polygon points="20,45 160,115 300,45 160,-25" fill="${b.roofColor}" stroke="#7a5c00" stroke-width="3"/>
+    <rect x="55" y="90" width="34" height="34" rx="3" fill="#66fcf1" opacity="0.8" transform="skewY(-15)"/>
+    <rect x="220" y="70" width="34" height="34" rx="3" fill="#66fcf1" opacity="0.8" transform="skewY(15)"/>
+    <text x="70" y="150" font-family="sans-serif" font-weight="bold" font-size="18" fill="#fff" transform="rotate(26,70,150)">${b.label.toUpperCase()}</text>
+  </svg>`;
+}
+function doorSVG(color){
+  const img=new Image();
+  img.src='data:image/svg+xml;utf8,'+encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="50" viewBox="0 0 40 50">
+      <rect x="6" y="4" width="28" height="42" rx="3" fill="${color}" stroke="#000" stroke-width="2"/>
+      <circle cx="28" cy="25" r="2.5" fill="#ffdd00"/></svg>`);
+  return img;
+}
+buildings.forEach(b=>{
+  b.img=new Image();
+  b.img.src='data:image/svg+xml;utf8,'+encodeURIComponent(buildingSVG(b));
+  b.doorImgClosed=doorSVG('#3a2212');
+  b.doorImgOpen=doorSVG('#1b7a3d');
+});
+
+// ============ LANDMARK: PRAÇA + CORETO ============
+// Landmarks são diferentes de prédios: área aberta, sem porta, com um elemento
+// central que tem colisão própria (o coreto) mas não troca de cena.
+const plaza = {
+  cx: -24, cy: 24, radius: 6,          // área da praça (não colide, só decorativa)
+  coreto: { x:-25, y:23, w:2, h:2 }    // colide, fica no centro
+};
+const coretoImg = new Image();
+coretoImg.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180">
+    <ellipse cx="90" cy="150" rx="70" ry="20" fill="rgba(0,0,0,.3)"/>
+    <polygon points="90,10 160,55 20,55" fill="#c1440e" stroke="#7a2a08" stroke-width="3"/>
+    <rect x="35" y="55" width="8" height="70" fill="#e9c46a"/>
+    <rect x="137" y="55" width="8" height="70" fill="#e9c46a"/>
+    <rect x="86" y="55" width="8" height="70" fill="#e9c46a"/>
+    <ellipse cx="90" cy="125" rx="60" ry="18" fill="#f4e3c1" stroke="#c9a86a" stroke-width="2"/>
+  </svg>`);
+
+// ============ CENAS / INTERIOR ============
+let scene='city';
+let savedCityPos={x:player.worldX,y:player.worldY};
+let activeInterior=null;
+const INTERIOR_W=6, INTERIOR_H=5;
+function enterBuilding(b){
+  savedCityPos={x:player.worldX,y:player.worldY};
+  activeInterior=b; scene='interior';
+  player.worldX=0; player.worldY=INTERIOR_H/2-0.6;
+  document.getElementById('sceneDisplay').innerText='Interior: '+b.label;
+}
+function exitBuilding(){
+  scene='city'; player.worldX=savedCityPos.x; player.worldY=savedCityPos.y;
+  document.getElementById('sceneDisplay').innerText='Cidade'; activeInterior=null;
+}
+
+// ============ SISTEMA DE CHUNKS ============
+const CHUNK_SIZE = 12;      // 12x12 unidades por chunk
+const CHUNK_RADIUS = 2;     // carrega chunks num raio de 2 ao redor do jogador
+function worldToChunk(x,y){ return { cx: Math.floor(x/CHUNK_SIZE), cy: Math.floor(y/CHUNK_SIZE) }; }
+function getLoadedChunkBounds(){
+  const {cx,cy} = worldToChunk(player.worldX, player.worldY);
+  return {
+    minCX: cx-CHUNK_RADIUS, maxCX: cx+CHUNK_RADIUS,
+    minCY: cy-CHUNK_RADIUS, maxCY: cy+CHUNK_RADIUS,
+    minX: (cx-CHUNK_RADIUS)*CHUNK_SIZE, maxX: (cx+CHUNK_RADIUS+1)*CHUNK_SIZE,
+    minY: (cy-CHUNK_RADIUS)*CHUNK_SIZE, maxY: (cy+CHUNK_RADIUS+1)*CHUNK_SIZE,
+    cx, cy
+  };
+}
+function entityInBounds(ex,ey,b){ return ex>=b.minX-6 && ex<=b.maxX+6 && ey>=b.minY-6 && ey<=b.maxY+6; }
+
+// ============ PROJEÇÃO ============
+function worldToScreen(wx,wy){
+  const relX=wx-player.worldX, relY=wy-player.worldY;
+  const tw=TILE_W*ZOOM/1.6, th=TILE_H*ZOOM/1.6;
+  return { x: canvas.width/2 + (relX-relY)*(tw/2), y: canvas.height/2 + (relX+relY)*(th/2) };
+}
+
+function drawBuilding(b){
+  const pos=worldToScreen(b.x+b.w/2, b.y+b.h/2);
+  const dw=320*ZOOM/1.6, dh=260*ZOOM/1.6;
+  if (b.img.complete) ctx.drawImage(b.img, pos.x-dw/2, pos.y-dh*0.72, dw, dh);
+  const dpos=worldToScreen(b.doorX,b.doorY);
+  const doorImg = b.isOpen ? b.doorImgOpen : b.doorImgClosed;
+  const ddw=26*ZOOM, ddh=32*ZOOM;
+  if (doorImg.complete) ctx.drawImage(doorImg, dpos.x-ddw/2, dpos.y-ddh*0.8, ddw, ddh);
+}
+function drawCoreto(){
+  const c = plaza.coreto;
+  const pos = worldToScreen(c.x+c.w/2, c.y+c.h/2);
+  const dw = 180*ZOOM/1.6, dh=180*ZOOM/1.6;
+  if (coretoImg.complete) ctx.drawImage(coretoImg, pos.x-dw/2, pos.y-dh*0.78, dw, dh);
+}
+
+// ============ RENDER CIDADE (só chunks carregados) ============
+function renderCity(){
+  const bounds = getLoadedChunkBounds();
+  document.getElementById('chunkDisplay').innerText = `${bounds.cx},${bounds.cy}`;
+
+  const tw=TILE_W*ZOOM/1.6, th=TILE_H*ZOOM/1.6;
+  let tilesDrawn=0;
+  for (let x=Math.floor(bounds.minX); x<bounds.maxX; x++){
+    for (let y=Math.floor(bounds.minY); y<bounds.maxY; y++){
+      const pos=worldToScreen(x,y);
+      if (pos.x < -tw || pos.x > canvas.width+tw || pos.y < -th || pos.y > canvas.height+th) continue;
+      ctx.beginPath();
+      ctx.moveTo(pos.x,pos.y);
+      ctx.lineTo(pos.x+tw/2, pos.y+th/2);
+      ctx.lineTo(pos.x, pos.y+th);
+      ctx.lineTo(pos.x-tw/2, pos.y+th/2);
+      ctx.closePath();
+      const t = tileType(x,y);
+      // praça: chão diferenciado dentro do raio
+      const inPlaza = Math.hypot(x-plaza.cx, y-plaza.cy) < plaza.radius;
+      ctx.fillStyle = inPlaza ? (((x+y)%2===0) ? '#4a3f2a' : '#524632')
+                     : t==='rua' ? (((x+y)%2===0) ? '#25272b' : '#2c2e33')
+                     : t==='calcada' ? (((x+y)%2===0) ? '#3a3f47' : '#41464f')
+                     : (((x+y)%2===0) ? '#182418' : '#1e2c1e');
+      ctx.fill();
+      ctx.strokeStyle='rgba(102,252,241,0.05)';
+      ctx.stroke();
+      tilesDrawn++;
+    }
+  }
+  document.getElementById('chunkCount').innerText = ((bounds.maxCX-bounds.minCX+1)*(bounds.maxCY-bounds.minCY+1));
+
+  const list=[{y:player.worldY, draw:drawPlayer}];
+  buildings.forEach(b=>{ if (entityInBounds(b.x+b.w/2, b.y+b.h/2, bounds)) list.push({y:b.y+b.h, draw:()=>drawBuilding(b)}); });
+  if (entityInBounds(plaza.coreto.x, plaza.coreto.y, bounds)) list.push({y:plaza.coreto.y+plaza.coreto.h, draw:drawCoreto});
+  list.sort((a,b)=>a.y-b.y).forEach(i=>i.draw());
+}
+
+function renderInterior(){
+  const tw=TILE_W*ZOOM/1.6, th=TILE_H*ZOOM/1.6;
+  for (let x=0;x<INTERIOR_W;x++){
+    for (let y=0;y<INTERIOR_H;y++){
+      const pos=worldToScreen(x-INTERIOR_W/2+0.5, y-0.5);
+      ctx.beginPath();
+      ctx.moveTo(pos.x,pos.y);
+      ctx.lineTo(pos.x+tw/2,pos.y+th/2);
+      ctx.lineTo(pos.x,pos.y+th);
+      ctx.lineTo(pos.x-tw/2,pos.y+th/2);
+      ctx.closePath();
+      ctx.fillStyle = ((x+y)%2===0) ? '#3a2e1f' : '#42351f';
+      ctx.fill();
+      ctx.strokeStyle='rgba(255,204,0,0.08)';
+      ctx.stroke();
+    }
+  }
+  const exitPos = worldToScreen(0, INTERIOR_H/2-0.5);
+  ctx.beginPath(); ctx.arc(exitPos.x,exitPos.y,10*ZOOM,0,Math.PI*2);
+  ctx.fillStyle='rgba(102,252,241,0.5)'; ctx.fill();
+  drawPlayer();
+}
+
+function updateHint(){
+  const hint=document.getElementById('hint');
+  if (scene==='city'){
+    const near = buildings.find(b=>Math.hypot(player.worldX-b.doorX, player.worldY-b.doorY)<1.0);
+    if (near){ hint.style.opacity=1; hint.innerText = near.isOpen ? `A: Entrar (${near.label})` : `A: Abrir porta (${near.label})`; }
+    else hint.style.opacity=0;
+  } else {
+    const distExit=Math.hypot(player.worldX-0, player.worldY-(INTERIOR_H/2-0.5));
+    hint.style.opacity = distExit<1.2 ? 1 : 0;
+    hint.innerText='B: Sair';
+  }
+}
+
+function render(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if (scene==='city') renderCity(); else renderInterior();
+  document.getElementById('coordsDisplay').innerText = `${player.worldX.toFixed(1)}, ${player.worldY.toFixed(1)} | Zoom: ${ZOOM.toFixed(1)}x`;
+  updateHint();
+  requestAnimationFrame(render);
+}
+
+// ============ ZOOM ============
+addEventListener('wheel', e=>{ ZOOM = e.deltaY<0 ? Math.min(MAX_ZOOM,ZOOM+0.15) : Math.max(MIN_ZOOM,ZOOM-0.15); }, {passive:true});
+let touchStartDist=0;
+addEventListener('touchstart', e=>{ if(e.touches.length===2) touchStartDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); }, {passive:true});
+addEventListener('touchmove', e=>{
+  if(e.touches.length===2){
+    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+    ZOOM=Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, ZOOM+(d-touchStartDist)*0.005));
+    touchStartDist=d;
+  }
+}, {passive:true});
+
+// ============ JOYSTICK (16 direções) ============
+const joyZone=document.getElementById('joystick-zone');
+const joyStick=document.getElementById('joystick-stick');
+let isDragging=false, joyVector={x:0,y:0};
+function handleMove(cx,cy){
+  const rect=joyZone.getBoundingClientRect();
+  const centerX=rect.left+rect.width/2, centerY=rect.top+rect.height/2;
+  let dX=cx-centerX, dY=cy-centerY;
+  const maxR=55;
+  const dist=Math.min(Math.hypot(dX,dY), maxR);
+  const angle=Math.atan2(dY,dX);
+  const mX=Math.cos(angle)*dist, mY=Math.sin(angle)*dist;
+  joyStick.style.transform=`translate(${mX}px,${mY}px)`;
+  if (dist>3){
+    joyVector={x:mX/maxR, y:mY/maxR};
+    player.isMoving=true;
+    const angleStep=(Math.PI*2)/16;
+    let octant=Math.round((angle+Math.PI)/angleStep)%16;
+    const dirMap=[12,11,10,9,8,7,6,5,4,3,2,1,0,15,14,13];
+    player.dirIndex=dirMap[octant];
+  } else { joyVector={x:0,y:0}; player.isMoving=false; }
+}
+joyZone.addEventListener('pointerdown', e=>{ isDragging=true; handleMove(e.clientX,e.clientY); });
+addEventListener('pointermove', e=>{ if(isDragging) handleMove(e.clientX,e.clientY); });
+addEventListener('pointerup', ()=>{ if(isDragging){ isDragging=false; joyStick.style.transform='translate(0,0)'; joyVector={x:0,y:0}; player.isMoving=false; } });
+
+// ============ BOTÕES ============
+document.getElementById('btnA').addEventListener('pointerdown', ()=>{
+  if (scene!=='city') return;
+  const near = buildings.find(b=>Math.hypot(player.worldX-b.doorX, player.worldY-b.doorY)<1.0);
+  if (!near) return;
+  if (!near.isOpen) near.isOpen=true; else enterBuilding(near);
+});
+document.getElementById('btnB').addEventListener('pointerdown', ()=>{
+  if (scene!=='interior') return;
+  const distExit=Math.hypot(player.worldX-0, player.worldY-(INTERIOR_H/2-0.5));
+  if (distExit<1.2) exitBuilding();
+});
+
+// ============ COLISÃO ============
+function checkCollisionCity(tx,ty){
+  for (const b of buildings){
+    if (tx+player.radius>b.x && tx-player.radius<b.x+b.w && ty+player.radius>b.y && ty-player.radius<b.y+b.h) return true;
+  }
+  const c = plaza.coreto;
+  if (tx+player.radius>c.x && tx-player.radius<c.x+c.w && ty+player.radius>c.y && ty-player.radius<c.y+c.h) return true;
+  return false;
+}
+function checkCollisionInterior(tx,ty){
+  const minX=-INTERIOR_W/2+player.radius, maxX=INTERIOR_W/2-player.radius;
+  const minY=-0.5+player.radius, maxY=INTERIOR_H-0.5-player.radius;
+  return tx<minX || tx>maxX || ty<minY || ty>maxY;
+}
+setInterval(()=>{
+  if (!player.isMoving) return;
+  const isoX = joyVector.x*Math.cos(Math.PI/4) + joyVector.y*Math.sin(Math.PI/4);
+  const isoY = joyVector.y*Math.cos(Math.PI/4) - joyVector.x*Math.sin(Math.PI/4);
+  const nx=player.worldX+isoX*player.speed, ny=player.worldY+isoY*player.speed;
+  const collide = scene==='city' ? checkCollisionCity : checkCollisionInterior;
+  if (!collide(nx, player.worldY)) player.worldX=nx;
+  if (!collide(player.worldX, ny)) player.worldY=ny;
+}, 1000/60);
+
+render();
+</script>
+</body>
+</html>

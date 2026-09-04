@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Área 137 — Complexo Rodoviário Experiencial | Labriolag</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; overflow: hidden; background: #0b0f19; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #info { position: absolute; top: 15px; width: 100%; text-align: center; color: #fff; pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); z-index: 10; }
+        #info h1 { margin: 0 0 5px 0; font-size: 22px; color: #c8a24a; }
+        #info p { margin: 0; font-size: 13px; color: #e2e8f0; }
+        #panel { position: absolute; top: 70px; right: 20px; width: 280px; background: rgba(15,23,42,0.9); border: 1px solid rgba(200,162,74,0.5); border-radius: 10px; padding: 16px; color: #f1f5f9; z-index: 20; display: none; backdrop-filter: blur(6px); }
+        #panel h3 { margin: 0 0 6px 0; color: #c8a24a; font-size: 16px; }
+        #panel p { margin: 0 0 4px 0; font-size: 13px; line-height: 1.5; color: #cbd5e1; }
+        #panel .tag { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 8px; display: block; }
+        #panel .flow { font-size: 11px; color: #86efac; margin-top: 8px; font-family: monospace; }
+        #panel .close { position: absolute; top: 8px; right: 10px; cursor: pointer; color: #94a3b8; font-size: 14px; }
+        #toolbar { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 20; flex-wrap: wrap; justify-content: center; max-width: 90vw; }
+        .btn { padding: 9px 14px; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; background: rgba(15,23,42,0.75); color: #f1f5f9; font-size: 12px; font-weight: 600; cursor: pointer; backdrop-filter: blur(4px); }
+        .btn:hover { background: rgba(30,41,59,0.9); }
+        .btn.active { background: #c8a24a; color: #1e1208; }
+        #hint { position: absolute; bottom: 68px; left: 50%; transform: translateX(-50%); color: #94a3b8; font-size: 11px; z-index: 15; pointer-events: none; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <h1>ÁREA 137 — Complexo Rodoviário Experiencial (Universo Labriolag)</h1>
+        <p>Arraste para rotacionar · Scroll para zoom · Clique nos módulos para ver a cadeia de interação</p>
+    </div>
+    <div id="hint">Inspirado na tipologia do Rancho 53 (Rod. Castelo Branco km 53) — reinterpretado, não copiado</div>
+    <div id="panel">
+        <span class="close" onclick="closePanel()">✕</span>
+        <span class="tag" id="p-tag">Módulo</span>
+        <h3 id="p-title">—</h3>
+        <p id="p-desc">—</p>
+        <p class="flow" id="p-flow"></p>
+    </div>
+    <div id="toolbar">
+        <button class="btn" id="btn-night" onclick="toggleNight()">🌙 Noite</button>
+        <button class="btn" id="btn-labels" onclick="toggleLabels()">🏷️ Legendas</button>
+        <button class="btn" id="btn-tour" onclick="startTour()">🎥 Tour</button>
+        <button class="btn" id="btn-life" onclick="toggleLife()">🚶 NPCs/Veículos</button>
+    </div>
+
+    <script type="importmap">
+        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x8fb8dd);
+        scene.fog = new THREE.FogExp2(0x8fb8dd, 0.0018);
+
+        const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 3000);
+        camera.position.set(120, 60, 160);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(innerWidth, innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.06;
+        controls.maxPolarAngle = Math.PI / 2 - 0.02;
+        controls.minDistance = 10; controls.maxDistance = 400;
+        controls.target.set(0, 8, -10);
+
+        const hemi = new THREE.HemisphereLight(0xcfe4f5, 0x3a3020, 0.6);
+        scene.add(hemi);
+        const sun = new THREE.DirectionalLight(0xfff3d8, 1.3);
+        sun.position.set(90, 120, 60);
+        sun.castShadow = true;
+        sun.shadow.mapSize.set(2048, 2048);
+        sun.shadow.camera.left = -180; sun.shadow.camera.right = 180;
+        sun.shadow.camera.top = 160; sun.shadow.camera.bottom = -160;
+        scene.add(sun);
+        const ambient = new THREE.AmbientLight(0xffffff, 0.35);
+        scene.add(ambient);
+
+        const M = {
+            grass: new THREE.MeshStandardMaterial({ color: 0x4c7a3d, roughness: 0.95 }),
+            asphalt: new THREE.MeshStandardMaterial({ color: 0x24242c, roughness: 0.9 }),
+            asphaltLight: new THREE.MeshStandardMaterial({ color: 0x3a3a44, roughness: 0.85 }),
+            lane: new THREE.MeshStandardMaterial({ color: 0xf4d35e, roughness: 0.5 }),
+            laneWhite: new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.5 }),
+            stucco: new THREE.MeshStandardMaterial({ color: 0xede0c8, roughness: 0.6 }),
+            stuccoDark: new THREE.MeshStandardMaterial({ color: 0xd8c79f, roughness: 0.6 }),
+            roof: new THREE.MeshStandardMaterial({ color: 0xb5532f, roughness: 0.8 }),
+            azulejo: new THREE.MeshStandardMaterial({ color: 0x2f6f9e, roughness: 0.35, metalness: 0.05 }),
+            azulejoLight: new THREE.MeshStandardMaterial({ color: 0xdce9f2, roughness: 0.35 }),
+            stone: new THREE.MeshStandardMaterial({ color: 0xc9b98e, roughness: 0.7 }),
+            wood: new THREE.MeshStandardMaterial({ color: 0x6b4426, roughness: 0.8 }),
+            window: new THREE.MeshStandardMaterial({ color: 0x1b2635, roughness: 0.25, emissive: 0x000000 }),
+            windowLit: new THREE.MeshStandardMaterial({ color: 0x3a3018, roughness: 0.3, emissive: 0xf4c96a, emissiveIntensity: 1.1 }),
+            glass: new THREE.MeshStandardMaterial({ color: 0x2d5c78, roughness: 0.15, transparent: true, opacity: 0.7 }),
+            trunk: new THREE.MeshStandardMaterial({ color: 0x5a3b22, roughness: 0.9 }),
+            leaf: new THREE.MeshStandardMaterial({ color: 0x2f6b34, roughness: 0.8 }),
+            vine: new THREE.MeshStandardMaterial({ color: 0x3d7a2e, roughness: 0.8 }),
+            water: new THREE.MeshStandardMaterial({ color: 0x3f7ea6, roughness: 0.1, transparent: true, opacity: 0.85 }),
+            metal: new THREE.MeshStandardMaterial({ color: 0x54534a, roughness: 0.4, metalness: 0.5 }),
+            crateWood: new THREE.MeshStandardMaterial({ color: 0x8a5a34, roughness: 0.8 }),
+            npcSkin: new THREE.MeshStandardMaterial({ color: 0xd8a878, roughness: 0.7 }),
+            npcShirt1: new THREE.MeshStandardMaterial({ color: 0x274b6b, roughness: 0.7 }),
+            npcShirt2: new THREE.MeshStandardMaterial({ color: 0x8a2e2e, roughness: 0.7 }),
+            npcShirt3: new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.7 }),
+            carBody: new THREE.MeshStandardMaterial({ color: 0x1e3a5f, roughness: 0.4, metalness: 0.3 }),
+            carBody2: new THREE.MeshStandardMaterial({ color: 0x8a1f1f, roughness: 0.4, metalness: 0.3 }),
+            evGreen: new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.4 }),
+            signBlank: new THREE.MeshStandardMaterial({ color: 0x14213d, roughness: 0.3 }),
+            signGold: new THREE.MeshStandardMaterial({ color: 0xc8a24a, roughness: 0.35, metalness: 0.3 }),
+        };
+
+        const litWindows = [];
+        const stringLights = [];
+        const interactive = [];
+        const labelSprites = [];
+        const npcs = [];
+        const vehicles = [];
+        const root = new THREE.Group();
+        scene.add(root);
+
+        function reg(mesh, tag, title, desc, flow) {
+            mesh.userData = { tag, title, desc, flow };
+            interactive.push(mesh);
+        }
+        function label(text, x, y, z) {
+            const c = document.createElement('canvas'); c.width = 280; c.height = 60;
+            const ctx = c.getContext('2d');
+            ctx.fillStyle = 'rgba(15,23,42,0.78)'; ctx.fillRect(0, 0, 280, 60);
+            ctx.fillStyle = '#c8a24a'; ctx.font = 'bold 22px Segoe UI'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(text, 140, 30);
+            const tex = new THREE.CanvasTexture(c);
+            const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true }));
+            sp.scale.set(14, 3, 1); sp.position.set(x, y, z); sp.visible = false;
+            root.add(sp); labelSprites.push(sp);
+        }
+
+        // ==========================================================
+        // L0 — TERRITÓRIO: terreno, rodovia, acesso, sinalização
+        // ==========================================================
+        const ground = new THREE.Mesh(new THREE.BoxGeometry(420, 1, 420), M.grass);
+        ground.position.y = -0.5; ground.receiveShadow = true; root.add(ground);
+
+        // Rodovia principal ao fundo
+        const highway = new THREE.Mesh(new THREE.BoxGeometry(420, 0.1, 18), M.asphalt);
+        highway.position.set(0, 0.05, 130); highway.receiveShadow = true; root.add(highway);
+        for (let x = -200; x <= 200; x += 12) {
+            const stripe = new THREE.Mesh(new THREE.BoxGeometry(5, 0.12, 0.5), M.lane);
+            stripe.position.set(x, 0.11, 130); root.add(stripe);
+        }
+
+        // Faixa de desaceleração / acesso curvo até o pátio
+        const accessCurve = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(60, 0.08, 122),
+            new THREE.Vector3(50, 0.08, 100),
+            new THREE.Vector3(35, 0.08, 78),
+            new THREE.Vector3(20, 0.08, 62)
+        ]);
+        const accessGeo = new THREE.TubeGeometry(accessCurve, 40, 5, 8, false);
+        const access = new THREE.Mesh(accessGeo, M.asphaltLight);
+        access.receiveShadow = true;
+        root.add(access);
+        reg(access, 'ROAD_ACCESS', 'Acesso Rodoviário', 'Faixa de desaceleração que sai da Rodovia e conduz até o pátio da Área 137 — primeiro contato do jogador com o complexo.', 'RODOVIA → DESACELERAR → ACESSO → ESTACIONAR');
+
+        // Saída (curva simétrica do outro lado)
+        const exitCurve = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(-20, 0.08, 62),
+            new THREE.Vector3(-35, 0.08, 78),
+            new THREE.Vector3(-50, 0.08, 100),
+            new THREE.Vector3(-60, 0.08, 122)
+        ]);
+        const exitMesh = new THREE.Mesh(new THREE.TubeGeometry(exitCurve, 40, 5, 8, false), M.asphaltLight);
+        exitMesh.receiveShadow = true;
+        root.add(exitMesh);
+
+        // Totem / placa principal "ÁREA 137" visível da rodovia
+        function buildEntranceSign(x, z) {
+            const g = new THREE.Group();
+            const pole1 = new THREE.Mesh(new THREE.BoxGeometry(0.6, 9, 0.6), M.metal);
+            pole1.position.set(-2, 4.5, 0); g.add(pole1);
+            const pole2 = pole1.clone(); pole2.position.set(2, 4.5, 0); g.add(pole2);
+            const panel = new THREE.Mesh(new THREE.BoxGeometry(6, 3, 0.4), M.signBlank);
+            panel.position.set(0, 8, 0); panel.castShadow = true; g.add(panel);
+            const panelTrim = new THREE.Mesh(new THREE.BoxGeometry(6.3, 3.3, 0.2), M.signGold);
+            panelTrim.position.set(0, 8, -0.15); g.add(panelTrim);
+            g.position.set(x, 0, z);
+            reg(panel, 'IDENTIDADE', 'Totem "Área 137"', 'Sinalização principal visível da rodovia — identidade própria do universo Labriolag, sem qualquer referência literal ao estabelecimento real que a inspirou.', '');
+            return g;
+        }
+        root.add(buildEntranceSign(70, 108));
+
+        // ==========================================================
+        // L0 — ESTACIONAMENTO (carros, motos, van/ônibus, EV)
+        // ==========================================================
+        const parkLot = new THREE.Mesh(new THREE.BoxGeometry(90, 0.1, 46), M.asphalt);
+        parkLot.position.set(5, 0.05, 60); parkLot.receiveShadow = true; root.add(parkLot);
+        reg(parkLot, 'PARKING', 'Estacionamento Principal', 'Vagas para carros, motos, vans e ônibus, com circulação de pedestres e iluminação própria — recebe o jogador logo após o acesso.', 'ACESSO → ESTACIONAR → DESCER → CAMINHAR');
+
+        function parkingStripe(x, z, w, d, mat) {
+            const s = new THREE.Mesh(new THREE.BoxGeometry(w, 0.12, d), mat || M.laneWhite);
+            s.position.set(x, 0.11, z); root.add(s);
+        }
+        for (let i = -35; i <= 35; i += 4.2) parkingStripe(i, 48, 0.18, 8);
+        for (let i = -35; i <= 35; i += 4.2) parkingStripe(i, 74, 0.18, 8);
+
+        // Vagas de moto (marcação menor)
+        for (let i = -30; i <= -18; i += 2.2) parkingStripe(i, 40, 0.14, 3);
+
+        // Ponto de carregamento elétrico
+        function evCharger(x, z) {
+            const g = new THREE.Group();
+            const post = new THREE.Mesh(new THREE.BoxGeometry(0.8, 2.4, 0.5), M.evGreen);
+            post.position.y = 1.2; post.castShadow = true; g.add(post);
+            const screen = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.1), M.window);
+            screen.position.set(0, 1.7, 0.28); g.add(screen);
+            g.position.set(x, 0, z);
+            reg(post, 'EV_CHARGING', 'Carregamento Elétrico', 'Pontos de recarga para veículos elétricos junto ao estacionamento — parte da infraestrutura de acesso rodoviário moderno da Área 137.', 'ESTACIONAR → CONECTAR → CARREGAR → DESCONECTAR');
+            root.add(g);
+        }
+        evCharger(40, 60); evCharger(43, 60);
+
+        // Postes de iluminação do pátio
+        function lampPost(x, z) {
+            const g = new THREE.Group();
+            const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.18, 5, 8), M.metal);
+            pole.position.y = 2.5; g.add(pole);
+            const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.35, 10, 10), M.windowLit);
+            bulb.position.y = 5.1; g.add(bulb);
+            stringLights.push(bulb);
+            g.position.set(x, 0, z);
+            root.add(g);
+        }
+        [-30, -10, 10, 30].forEach(x => { lampPost(x, 42); lampPost(x, 78); });
+
+        // Árvores do estacionamento
+        function createTree(x, z, scale = 1) {
+            const g = new THREE.Group();
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.28 * scale, 0.4 * scale, 3 * scale, 7), M.trunk);
+            trunk.position.y = 1.5 * scale; trunk.castShadow = true; g.add(trunk);
+            for (let i = 0; i < 3; i++) {
+                const leaf = new THREE.Mesh(new THREE.DodecahedronGeometry(1.5 * scale, 0), M.leaf);
+                leaf.position.set((Math.random() - 0.5) * 1.3 * scale, 3.3 * scale + i * 0.7 * scale, (Math.random() - 0.5) * 1.3 * scale);
+                leaf.castShadow = true; g.add(leaf);
+            }
+            g.position.set(x, 0, z);
+            root.add(g);
+        }
+        [-42, -18, 18, 42].forEach(x => createTree(x, 34, 1));
+        for (let i = 0; i < 24; i++) {
+            const a = Math.random() * Math.PI * 2, r = 130 + Math.random() * 90;
+            createTree(Math.cos(a) * r, Math.sin(a) * r, 0.9 + Math.random());
+        }
+
+        // ==========================================================
+        // PÉRGOLA / "PARREIRA" — passarela coberta até a praça
+        // ==========================================================
+        function buildPergola(x, z, length) {
+            const g = new THREE.Group();
+            for (let i = 0; i <= length; i += 3) {
+                const post1 = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 3, 8), M.wood);
+                post1.position.set(-2.2, 1.5, i); post1.castShadow = true; g.add(post1);
+                const post2 = post1.clone(); post2.position.set(2.2, 1.5, i); g.add(post2);
+                const beam = new THREE.Mesh(new THREE.BoxGeometry(5, 0.2, 0.3), M.wood);
+                beam.position.set(0, 3, i); g.add(beam);
+            }
+            const longBeam = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.25, length + 2), M.wood);
+            longBeam.position.set(-2.2, 3.1, length / 2); g.add(longBeam);
+            const longBeam2 = longBeam.clone(); longBeam2.position.set(2.2, 3.1, length / 2); g.add(longBeam2);
+            for (let i = 0; i < 16; i++) {
+                const vine = new THREE.Mesh(new THREE.SphereGeometry(0.5, 6, 6), M.vine);
+                vine.position.set((Math.random() - 0.5) * 4, 3.2 + Math.random() * 0.4, Math.random() * length);
+                g.add(vine);
+            }
+            const path = new THREE.Mesh(new THREE.BoxGeometry(4, 0.1, length), M.stone);
+            path.position.set(0, 0.05, length / 2); path.receiveShadow = true; g.add(path);
+            g.position.set(x, 0, z);
+            reg(g.children[0], 'PERGOLA', 'Pérgola da Parreira', 'Passarela coberta por treliça de madeira e vinha, ligando o estacionamento à praça central — o "espinhaço verde" do complexo.', 'ESTACIONAMENTO → CAMINHAR (pérgola) → PRAÇA');
+            return g;
+        }
+        root.add(buildPergola(-2, 24, 16));
+
+        // ==========================================================
+        // L1 — PRAÇA CENTRAL (hub de circulação, fonte, mesas externas)
+        // ==========================================================
+        const plaza = new THREE.Mesh(new THREE.CylinderGeometry(20, 20, 0.2, 32), M.stone);
+        plaza.position.set(0, 0.1, 8); plaza.receiveShadow = true; root.add(plaza);
+        reg(plaza, 'PLAZA', 'Praça Central', 'Hub de circulação do complexo — conecta pérgola, veranda, empório, lanchonete e espaço de eventos. Ponto de encontro e convivência.', 'PRAÇA → ESCOLHER DESTINO → (RESTAURANTE | LOJA | EVENTOS)');
+
+        const fountainBase = new THREE.Mesh(new THREE.CylinderGeometry(4.5, 4.5, 0.6, 24), M.stone);
+        fountainBase.position.set(0, 0.4, 8); root.add(fountainBase);
+        const fountainWater = new THREE.Mesh(new THREE.CylinderGeometry(4, 4, 0.25, 24), M.water);
+        fountainWater.position.set(0, 0.7, 8); root.add(fountainWater);
+        const fountainSpout = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.5, 1.8, 10), M.stone);
+        fountainSpout.position.set(0, 1.2, 8); root.add(fountainSpout);
+
+        function outdoorTable(x, z) {
+            const g = new THREE.Group();
+            const top = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 0.1, 12), M.wood);
+            top.position.y = 1.1; top.castShadow = true; g.add(top);
+            const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 1.1, 8), M.metal);
+            leg.position.y = 0.55; g.add(leg);
+            const umbrella = new THREE.Mesh(new THREE.ConeGeometry(1.6, 0.7, 8), M.roof);
+            umbrella.position.y = 2.2; umbrella.castShadow = true; g.add(umbrella);
+            g.position.set(x, 0, z);
+            root.add(g);
+        }
+        [[-11, 18], [11, 18], [-13, 3], [13, 3], [-8, -4], [8, -4]].forEach(p => outdoorTable(p[0], p[1]));
+
+        // ==========================================================
+        // L1 — EDIFÍCIO PRINCIPAL "CASTELINHO" + ALAS
+        // ==========================================================
+        function archWindowRow(parentG, count, x0, y, z, spacing, mat) {
+            for (let i = 0; i < count; i++) {
+                const win = new THREE.Mesh(new THREE.BoxGeometry(1.3, 2.2, 0.12), mat || M.glass);
+                win.position.set(x0 + i * spacing, y, z);
+                parentG.add(win);
+                litWindows.push(win);
+            }
+        }
+
+        function buildMainBuilding(x, z) {
+            const g = new THREE.Group();
+
+            // Corpo central (2 pavimentos)
+            const body = new THREE.Mesh(new THREE.BoxGeometry(34, 8.5, 20), M.stucco);
+            body.position.set(0, 4.25, 0); body.castShadow = true; body.receiveShadow = true; g.add(body);
+            const roofBody = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 15, 4.5, 4), M.roof);
+            roofBody.rotation.y = Math.PI / 4; roofBody.position.set(0, 8.5 + 2.25, 0); roofBody.castShadow = true; g.add(roofBody);
+
+            // Faixa de azulejos (painel decorativo típico)
+            const azulejoBand = new THREE.Mesh(new THREE.BoxGeometry(34.2, 1.6, 0.15), M.azulejo);
+            azulejoBand.position.set(0, 5.4, 10.08); g.add(azulejoBand);
+            const azulejoBand2 = azulejoBand.clone(); azulejoBand2.position.set(0, 5.4, -10.08); g.add(azulejoBand2);
+
+            archWindowRow(g, 6, -12.5, 3, 10.06, 5, M.glass);
+
+            // Torre de canto — "castelinho", elemento identificável da rodovia
+            const tower = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.6, 12, 12), M.stuccoDark);
+            tower.position.set(-17, 6, 8); tower.castShadow = true; g.add(tower);
+            const towerRoof = new THREE.Mesh(new THREE.ConeGeometry(4.2, 6, 12), M.roof);
+            towerRoof.position.set(-17, 12 + 3, 8); towerRoof.castShadow = true; g.add(towerRoof);
+            const towerFlag = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 2, 6), M.metal);
+            towerFlag.position.set(-17, 12 + 6 + 1, 8); g.add(towerFlag);
+            for (let i = 0; i < 3; i++) {
+                const tw = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.4, 0.12), M.glass);
+                tw.position.set(-17 + Math.sin(i) * 0.1, 2.5 + i * 3.5, 11.5);
+                g.add(tw); litWindows.push(tw);
+            }
+            reg(tower, 'MAIN_BUILDING', 'Torre "Castelinho"', 'Torre circular de canto com telhado cônico — o elemento arquitetônico que torna o edifício principal reconhecível já de longe, na rodovia.', 'RODOVIA → AVISTAR TORRE → ENTRAR NO COMPLEXO');
+
+            // Veranda / varanda coberta na frente
+            const veranda = new THREE.Mesh(new THREE.BoxGeometry(30, 0.3, 6), M.wood);
+            veranda.position.set(0, 3.6, 13); veranda.castShadow = true; g.add(veranda);
+            for (let vx = -13; vx <= 13; vx += 5.2) {
+                const col = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 3.6, 10), M.stone);
+                col.position.set(vx, 1.8, 15.8); col.castShadow = true; g.add(col);
+            }
+            reg(veranda, 'VERANDA', 'Varanda Externa', 'Área externa coberta na fachada, pet-friendly, com mesas voltadas para a praça — extensão natural do salão principal.', 'PRAÇA → VARANDA → SENTAR → PEDIR → COMER');
+
+            g.position.set(x, 0, z);
+            return g;
+        }
+        const mainBuilding = buildMainBuilding(0, -12);
+        root.add(mainBuilding);
+
+        // Ala Restaurante (dois ambientes: sala A e sala B, sob o mesmo telhado)
+        function buildRestaurantWing(x, z) {
+            const g = new THREE.Group();
+            const roomA = new THREE.Mesh(new THREE.BoxGeometry(15, 6.5, 16), M.stucco);
+            roomA.position.set(-9, 3.25, 0); roomA.castShadow = true; roomA.receiveShadow = true; g.add(roomA);
+            const roomB = new THREE.Mesh(new THREE.BoxGeometry(15, 6.5, 16), M.stuccoDark);
+            roomB.position.set(9, 3.25, 0); roomB.castShadow = true; roomB.receiveShadow = true; g.add(roomB);
+            [roomA, roomB].forEach((r, i) => {
+                const roof = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 10.5, 3, 4), M.roof);
+                roof.rotation.y = Math.PI / 4; roof.position.set(i === 0 ? -9 : 9, 6.5 + 1.5, 0); roof.castShadow = true; g.add(roof);
+            });
+            archWindowRow(g, 4, -14, 3.5, 8.06, 3.4);
+            archWindowRow(g, 4, 2, 3.5, 8.06, 3.4);
+            g.position.set(x, 0, z);
+            reg(roomA, 'RESTAURANT', 'Restaurante — Sala A', 'Primeiro salão gastronômico: mesas, cadeiras e balcão de atendimento. Um dos dois ambientes distintos do restaurante principal.', 'PORTA → ENTRAR → MESA → SENTAR → PEDIR → COMER → PAGAR → SAIR');
+            reg(roomB, 'RESTAURANT', 'Restaurante — Sala B', 'Segundo salão, com identidade decorativa própria — permite eventos simultâneos e fluxos de NPC diferentes dos da Sala A.', 'PORTA → ENTRAR → MESA → SENTAR → PEDIR → COMER → PAGAR → SAIR');
+            return g;
+        }
+        root.add(buildRestaurantWing(0, -32));
+        label('Restaurante (2 Salas)', 0, 11, -32);
+
+        // Ala Lanchonete (fluxo rápido, à direita do prédio principal)
+        function buildLanchonete(x, z) {
+            const g = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.BoxGeometry(12, 5, 10), M.stucco);
+            body.position.y = 2.5; body.castShadow = true; body.receiveShadow = true; g.add(body);
+            const counter = new THREE.Mesh(new THREE.BoxGeometry(9, 1.1, 0.6), M.wood);
+            counter.position.set(0, 0.55, 4.9); g.add(counter);
+            const glassFront = new THREE.Mesh(new THREE.BoxGeometry(10, 2.6, 0.12), M.glass);
+            glassFront.position.set(0, 2.3, 5.06); g.add(glassFront);
+            litWindows.push(glassFront);
+            const roof = new THREE.Mesh(new THREE.BoxGeometry(13, 0.4, 11), M.roof);
+            roof.position.y = 5.2; roof.castShadow = true; g.add(roof);
+            g.position.set(x, 0, z);
+            reg(body, 'SNACK_BAR', 'Lanchonete', 'Unidade de fluxo rápido: balcão de retirada, cozinha aberta e mesas compactas — pastel de belém, cafés e lanches para quem tem pressa.', 'BALCÃO → PEDIR → PAGAR → RETIRAR → CONSUMIR');
+            return g;
+        }
+        root.add(buildLanchonete(-30, -6));
+        label('Lanchonete', -30, 8, -6);
+
+        // Ala Empório + Adega (entrada, à esquerda da praça)
+        function buildEmporioAdega(x, z) {
+            const g = new THREE.Group();
+            const emporio = new THREE.Mesh(new THREE.BoxGeometry(14, 5.5, 11), M.stuccoDark);
+            emporio.position.set(0, 2.75, 0); emporio.castShadow = true; emporio.receiveShadow = true; g.add(emporio);
+            const roof = new THREE.Mesh(new THREE.BoxGeometry(15, 0.4, 12), M.roof);
+            roof.position.y = 5.7; roof.castShadow = true; g.add(roof);
+            const glassFront = new THREE.Mesh(new THREE.BoxGeometry(11, 3, 0.12), M.glass);
+            glassFront.position.set(0, 2, 5.56); g.add(glassFront);
+            litWindows.push(glassFront);
+            // "adega" — nicho lateral com estantes visíveis
+            const adegaNiche = new THREE.Mesh(new THREE.BoxGeometry(4, 4.5, 3), M.azulejoLight);
+            adegaNiche.position.set(8, 2.25, 2); adegaNiche.castShadow = true; g.add(adegaNiche);
+            for (let i = 0; i < 3; i++) {
+                const shelf = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.15, 2.4), M.wood);
+                shelf.position.set(8, 1 + i * 1.2, 2); g.add(shelf);
+            }
+            g.position.set(x, 0, z);
+            reg(emporio, 'MARKET', 'Empório', 'Área comercial de entrada: prateleiras com azeites, conservas, doces e queijos fictícios da Área 137 — jogador pode pegar, inspecionar e comprar.', 'ENTRAR → OBSERVAR PRATELEIRA → PEGAR PRODUTO → COMPRAR → INVENTÁRIO → SAIR');
+            reg(adegaNiche, 'CELLAR', 'Adega', 'Nicho especializado dentro do empório, com estantes de garrafas e iluminação própria — loja temática de vinhos da Área 137.', 'ENTRAR → OBSERVAR ESTANTE → PEGAR GARRAFA → COMPRAR → SAIR');
+            return g;
+        }
+        root.add(buildEmporioAdega(28, -8));
+        label('Empório / Adega', 28, 9, -8);
+
+        // Loja de presentes / artesanato (módulo pequeno junto à praça)
+        function buildGiftShop(x, z) {
+            const g = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.BoxGeometry(9, 4.4, 8), M.stucco);
+            body.position.y = 2.2; body.castShadow = true; body.receiveShadow = true; g.add(body);
+            const roof = new THREE.Mesh(new THREE.ConeGeometry(6.5, 2.6, 4), M.roof);
+            roof.rotation.y = Math.PI / 4; roof.position.y = 4.4 + 1.3; roof.castShadow = true; g.add(roof);
+            const glassFront = new THREE.Mesh(new THREE.BoxGeometry(6.5, 2.2, 0.1), M.glass);
+            glassFront.position.set(0, 1.6, 4.06); g.add(glassFront);
+            litWindows.push(glassFront);
+            g.position.set(x, 0, z);
+            reg(body, 'SHOP', 'Loja de Presentes / Artesanato', 'Loja temática pequena com produtos fictícios de identidade própria da Área 137 — souvenirs, artesanato e itens decorativos.', 'ENTRAR → OBSERVAR VITRINE → PEGAR ITEM → COMPRAR → SAIR');
+            return g;
+        }
+        root.add(buildGiftShop(22, 20));
+        label('Loja de Presentes', 22, 8, 20);
+
+        // ==========================================================
+        // FÁBRICA DE PRODUÇÃO VISÍVEL (referência à fábrica de pastel)
+        // ==========================================================
+        function buildFactory(x, z) {
+            const g = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.BoxGeometry(13, 5, 10), M.stoneLightFallback());
+            body.position.y = 2.5; body.castShadow = true; body.receiveShadow = true; g.add(body);
+            const roof = new THREE.Mesh(new THREE.BoxGeometry(14, 0.4, 11), M.roof);
+            roof.position.y = 5.2; roof.castShadow = true; g.add(roof);
+            const bigWindow = new THREE.Mesh(new THREE.BoxGeometry(9, 2.8, 0.12), M.glass);
+            bigWindow.position.set(0, 2.6, 5.06); g.add(bigWindow);
+            litWindows.push(bigWindow);
+            // fornos / bancadas visíveis
+            for (let i = -3; i <= 3; i += 3) {
+                const oven = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.4, 1.2), M.metal);
+                oven.position.set(i, 0.7, 3.5); g.add(oven);
+            }
+            const chimney = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 3, 8), M.metal);
+            chimney.position.set(-5, 6.5, -2); chimney.castShadow = true; g.add(chimney);
+            g.position.set(x, 0, z);
+            reg(body, 'BAKERY', 'Fábrica de Produção (Pastelaria)', 'Área de produção visível ao público, atrás de vidro — o jogador observa o ciclo produção → armazenamento → loja → venda em funcionamento contínuo.', 'PRODUZIR → ARMAZENAR → TRANSPORTAR → LOJA → VENDER');
+            return g;
+        }
+        // helper de fallback de material (evita repetir declaração)
+        THREE.Material.prototype.constructor; // no-op guard
+        M.stoneLightFallback = () => M.stone;
+        root.add(buildFactory(-30, -22));
+        label('Fábrica de Produção', -30, 8, -22);
+
+        // ==========================================================
+        // ESPAÇO DE EVENTOS (pavilhão aberto, palco, iluminação decorativa)
+        // ==========================================================
+        function buildEventSpace(x, z) {
+            const g = new THREE.Group();
+            const deck = new THREE.Mesh(new THREE.CylinderGeometry(11, 11, 0.3, 24), M.wood);
+            deck.position.y = 0.15; deck.receiveShadow = true; g.add(deck);
+            const stage = new THREE.Mesh(new THREE.BoxGeometry(6, 0.8, 4), M.stone);
+            stage.position.set(0, 0.55, -5); stage.castShadow = true; g.add(stage);
+            for (let i = 0; i < 8; i++) {
+                const a = (i / 8) * Math.PI * 2;
+                const post = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 5, 8), M.wood);
+                post.position.set(Math.cos(a) * 10, 2.5, Math.sin(a) * 10); post.castShadow = true; g.add(post);
+                const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), M.windowLit);
+                bulb.position.set(Math.cos(a) * 10, 5.1, Math.sin(a) * 10); g.add(bulb);
+                stringLights.push(bulb);
+            }
+            const canopy = new THREE.Mesh(new THREE.ConeGeometry(12, 3, 8, 1, true), M.stuccoDark);
+            canopy.position.y = 5; canopy.material = new THREE.MeshStandardMaterial({ color: 0xd8c79f, roughness: 0.6, side: THREE.DoubleSide });
+            g.add(canopy);
+            g.position.set(x, 0, z);
+            reg(deck, 'EVENT_SPACE', 'Espaço de Eventos', 'Pavilhão coberto e modular, com palco e iluminação decorativa em festão — preparado para shows, campeonatos e eventos futuros do universo Labriolag.', 'PRAÇA → ESPAÇO DE EVENTOS → PALCO → APRESENTAR/ASSISTIR');
+            return g;
+        }
+        root.add(buildEventSpace(-14, 28));
+        label('Espaço de Eventos', -14, 9, 28);
+
+        // ==========================================================
+        // BACKSTAGE / SERVIÇO / LOGÍSTICA (atrás do prédio principal)
+        // ==========================================================
+        function buildBackstage(x, z) {
+            const g = new THREE.Group();
+            const serviceRoad = new THREE.Mesh(new THREE.BoxGeometry(40, 0.1, 12), M.asphalt);
+            serviceRoad.position.y = 0.05; serviceRoad.receiveShadow = true; g.add(serviceRoad);
+            reg(serviceRoad, 'SERVICE_AREA', 'Via de Serviço', 'Corredor de circulação exclusivo para veículos de carga e funcionários — separado do fluxo de visitantes.', 'ENTRADA DE FUNCIONÁRIOS → VIA DE SERVIÇO → DOCA');
+
+            const dock = new THREE.Mesh(new THREE.BoxGeometry(10, 4, 6), M.metal);
+            dock.position.set(-10, 2, -4); dock.castShadow = true; g.add(dock);
+            reg(dock, 'LOADING_DOCK', 'Doca de Carga', 'Ponto de recebimento e expedição de mercadorias, com portão de serviço e acesso direto ao estoque e à fábrica.', 'CAMINHÃO → DOCA → DESCARREGAR → ESTOQUE');
+
+            for (let i = 0; i < 6; i++) {
+                const crate = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), M.crateWood);
+                crate.position.set(2 + (i % 3) * 1.4, 0.6 + Math.floor(i / 3) * 1.3, -3);
+                crate.castShadow = true; g.add(crate);
+            }
+            const bin = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.6, 1.4, 10), M.metal);
+            bin.position.set(14, 0.7, -3); g.add(bin);
+
+            g.position.set(x, 0, z);
+            return g;
+        }
+        root.add(buildBackstage(-2, -44));
+        label('Backstage / Logística', -2, 6, -44);
+
+        // ==========================================================
+        // NPCs — capsulas com ciclo simples andar → parar → interagir
+        // ==========================================================
+        function createNPC(mat) {
+            const g = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.35, 1.1, 4, 8), mat);
+            body.position.y = 1; body.castShadow = true; g.add(body);
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 10, 10), M.npcSkin);
+            head.position.y = 1.85; g.add(head);
+            return g;
+        }
+        const npcPaths = [
+            { pts: [[-2, 8], [8, 4], [12, -6], [4, -10], [-2, 8]], mat: M.npcShirt1 },
+            { pts: [[20, -6], [10, 6], [0, 10], [-8, 6], [20, -6]], mat: M.npcShirt2 },
+            { pts: [[-25, -4], [-20, -20], [-10, -25], [-25, -4]], mat: M.npcShirt3 },
+            { pts: [[15, 18], [22, 8], [15, -2], [15, 18]], mat: M.npcShirt1 },
+        ];
+        npcPaths.forEach(p => {
+            const mesh = createNPC(p.mat);
+            root.add(mesh);
+            npcs.push({ mesh, pts: p.pts, t: Math.random() * p.pts.length, speed: 0.15 + Math.random() * 0.1 });
+        });
+
+        // ==========================================================
+        // VEÍCULOS — carros estacionados + 1 animado entrando pela via
+        // ==========================================================
+        function createCar(mat) {
+            const g = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.BoxGeometry(4.2, 1.1, 1.9), mat);
+            body.position.y = 0.75; body.castShadow = true; g.add(body);
+            const cabin = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.8, 1.7), mat);
+            cabin.position.set(-0.2, 1.55, 0); cabin.castShadow = true; g.add(cabin);
+            [[-1.4, -0.9], [-1.4, 0.9], [1.4, -0.9], [1.4, 0.9]].forEach(w => {
+                const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.3, 12), M.metal);
+                wheel.rotation.z = Math.PI / 2; wheel.position.set(w[0], 0.4, w[1]); g.add(wheel);
+            });
+            return g;
+        }
+        [[-24, 48, M.carBody], [-14, 48, M.carBody2], [-4, 74, M.carBody], [6, 74, M.carBody2], [16, 48, M.carBody]].forEach(c => {
+            const car = createCar(c[2]); car.position.set(c[0], 0, c[1]); root.add(car);
+        });
+        const movingCar = createCar(M.carBody2);
+        root.add(movingCar);
+        vehicles.push({ mesh: movingCar, curve: accessCurve, t: 0, speed: 0.06 });
+
+        // ==========================================================
+        // INTERAÇÃO — clique, dia/noite, tour, legendas, vida (NPC/veículos)
+        // ==========================================================
+        const ray = new THREE.Raycaster(), pointer = new THREE.Vector2();
+        renderer.domElement.addEventListener('click', (e) => {
+            pointer.x = (e.clientX / innerWidth) * 2 - 1;
+            pointer.y = -(e.clientY / innerHeight) * 2 + 1;
+            ray.setFromCamera(pointer, camera);
+            const hit = ray.intersectObjects(interactive, false)[0];
+            if (hit) {
+                const d = hit.object.userData;
+                document.getElementById('p-tag').textContent = d.tag;
+                document.getElementById('p-title').textContent = d.title;
+                document.getElementById('p-desc').textContent = d.desc;
+                document.getElementById('p-flow').textContent = d.flow || '';
+                document.getElementById('panel').style.display = 'block';
+            }
+        });
+        window.closePanel = () => document.getElementById('panel').style.display = 'none';
+
+        let night = false;
+        window.toggleNight = function () {
+            night = !night;
+            const btn = document.getElementById('btn-night');
+            scene.background = new THREE.Color(night ? 0x080b14 : 0x8fb8dd);
+            scene.fog.color = new THREE.Color(night ? 0x080b14 : 0x8fb8dd);
+            sun.intensity = night ? 0.1 : 1.3;
+            ambient.intensity = night ? 0.1 : 0.35;
+            hemi.intensity = night ? 0.1 : 0.6;
+            litWindows.forEach(w => w.material = night ? M.windowLit : M.glass);
+            btn.textContent = night ? '☀️ Dia' : '🌙 Noite';
+            btn.classList.toggle('active', night);
+        };
+
+        let labelsOn = false;
+        window.toggleLabels = function () {
+            labelsOn = !labelsOn;
+            labelSprites.forEach(s => s.visible = labelsOn);
+            document.getElementById('btn-labels').classList.toggle('active', labelsOn);
+        };
+
+        let lifeOn = true;
+        window.toggleLife = function () {
+            lifeOn = !lifeOn;
+            document.getElementById('btn-life').classList.toggle('active', lifeOn);
+        };
+
+        const tourStops = [
+            { pos: [120, 60, 160], target: [0, 8, -10] },
+            { pos: [70, 25, 100], target: [20, 5, 65] },
+            { pos: [0, 14, 40], target: [0, 6, 8] },
+            { pos: [-35, 15, -5], target: [-30, 4, -6] },
+            { pos: [10, 16, -40], target: [0, 6, -32] },
+            { pos: [120, 60, 160], target: [0, 8, -10] }
+        ];
+        let touring = false, tourT = 0, tourIndex = 0;
+        window.startTour = function () {
+            touring = true; tourT = 0; tourIndex = 0;
+            controls.enabled = false;
+            document.getElementById('btn-tour').classList.add('active');
+        };
+        function updateTour(delta) {
+            if (!touring) return;
+            tourT += delta * 0.22;
+            if (tourT >= 1) {
+                tourT = 0; tourIndex++;
+                if (tourIndex >= tourStops.length - 1) {
+                    touring = false; controls.enabled = true;
+                    document.getElementById('btn-tour').classList.remove('active');
+                    return;
+                }
+            }
+            const a = tourStops[tourIndex], b = tourStops[tourIndex + 1];
+            camera.position.set(
+                THREE.MathUtils.lerp(a.pos[0], b.pos[0], tourT),
+                THREE.MathUtils.lerp(a.pos[1], b.pos[1], tourT),
+                THREE.MathUtils.lerp(a.pos[2], b.pos[2], tourT));
+            controls.target.set(
+                THREE.MathUtils.lerp(a.target[0], b.target[0], tourT),
+                THREE.MathUtils.lerp(a.target[1], b.target[1], tourT),
+                THREE.MathUtils.lerp(a.target[2], b.target[2], tourT));
+        }
+
+        function updateNPCs(delta) {
+            if (!lifeOn) return;
+            npcs.forEach(n => {
+                n.t += delta * n.speed;
+                const segCount = n.pts.length - 1;
+                const segT = n.t % segCount;
+                const i = Math.floor(segT);
+                const f = segT - i;
+                const a = n.pts[i], b = n.pts[(i + 1) % n.pts.length];
+                const x = THREE.MathUtils.lerp(a[0], b[0], f);
+                const z = THREE.MathUtils.lerp(a[1], b[1], f);
+                n.mesh.position.set(x, 0, z);
+                n.mesh.lookAt(b[0], 0, b[1]);
+            });
+        }
+        function updateVehicles(delta) {
+            if (!lifeOn) return;
+            vehicles.forEach(v => {
+                v.t += delta * v.speed;
+                if (v.t > 1) v.t = 0;
+                const pt = v.curve.getPointAt(v.t);
+                const tangent = v.curve.getTangentAt(v.t);
+                v.mesh.position.set(pt.x, 0.05, pt.z);
+                v.mesh.lookAt(pt.x + tangent.x, 0.05, pt.z + tangent.z);
+            });
+        }
+
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            updateTour(delta);
+            updateNPCs(delta);
+            updateVehicles(delta);
+            const t = clock.getElapsedTime();
+            fountainWater.position.y = 0.7 + Math.sin(t * 2) * 0.02;
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = innerWidth / innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(innerWidth, innerHeight);
+        });
+    </script>
+</body>
+</html>
