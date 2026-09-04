@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gzero — Alph@beto Manifestation Lab</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#050814;color:#edf2ff;font-family:system-ui,sans-serif}
+#app{max-width:1250px;margin:auto;padding:18px}.top{display:flex;gap:12px;align-items:center;justify-content:space-between}
+h1{font-size:22px;margin:0}.muted{color:#8f9dbb;font-size:13px}
+.card{background:#0d1426;border:1px solid #202d49;border-radius:15px;padding:14px;margin-top:12px}
+.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+label{display:block;color:#8f9dbb;font-size:11px;margin-bottom:4px}
+input,button{width:100%;border:1px solid #2d3b5c;background:#0a1020;color:#fff;border-radius:9px;padding:9px}
+button{cursor:pointer;font-weight:700}.frag{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}.frag button.active{outline:2px solid #fff}
+.stage{position:relative;height:430px;overflow:hidden;border-radius:12px;background:radial-gradient(circle at center,#111b37,#050814 72%)}
+svg{width:100%;height:100%;display:block}.hud{position:absolute;left:15px;top:13px;font:12px ui-monospace,monospace;line-height:1.55}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}.stat{background:#0a1020;border-radius:9px;padding:9px}.stat b{display:block;font-size:15px}.stat span{color:#7f8eab;font-size:10px}
+.log{font:11px ui-monospace,monospace;max-height:145px;overflow:auto;white-space:pre-wrap;color:#bdc9df}
+@media(max-width:800px){.controls{grid-template-columns:1fr 1fr}.frag{grid-template-columns:repeat(5,1fr)}.stats{grid-template-columns:repeat(3,1fr)}.stage{height:360px}}
+</style>
+</head>
+<body>
+<div id="app">
+ <div class="top"><div><h1>Gzero / Alph@beto — Manifestation Lab</h1><div class="muted">fragmento → contexto → observação → manifestação SVG</div></div><div class="muted">WA01 → WB01 → WP01</div></div>
+
+ <div class="card controls">
+  <div><label>ENTITY</label><input id="entity" value="X"></div>
+  <div><label>SPACE</label><input id="space" value="S01"></div>
+  <div><label>IDTIME</label><input id="time" value="T01"></div>
+  <div><label>KEY</label><input id="key" value="K01"></div>
+ </div>
+
+ <div class="card">
+  <label>FRAGMENTOS</label>
+  <div class="frag" id="frags"></div>
+ </div>
+
+ <div class="card stage">
+  <svg id="svg" viewBox="0 0 1000 430" preserveAspectRatio="xMidYMid meet">
+   <defs>
+    <filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+   </defs>
+   <g id="scene"></g>
+  </svg>
+  <div class="hud">
+   <div>FRAGMENT <b id="hfrag">01</b></div>
+   <div>REP <b id="hrep">—</b></div>
+   <div>STATE <b id="hstate">—</b></div>
+  </div>
+ </div>
+
+ <div class="card stats">
+  <div class="stat"><span>FORMA</span><b id="shape">—</b></div>
+  <div class="stat"><span>COR / HUE</span><b id="hue">—</b></div>
+  <div class="stat"><span>ÂNGULO</span><b id="angle">—</b></div>
+  <div class="stat"><span>ESPESSURA</span><b id="width">—</b></div>
+  <div class="stat"><span>FREQUÊNCIA</span><b id="freq">—</b></div>
+  <div class="stat"><span>VELOCIDADE</span><b id="speed">—</b></div>
+ </div>
+
+ <div class="card controls">
+  <button onclick="changeTime()">IDTIME → próximo</button>
+  <button onclick="changeKey()">KEY → próxima</button>
+  <button onclick="replay()">Reproduzir manifestação</button>
+  <button onclick="repeat100()">Testar 100×</button>
+ </div>
+
+ <div class="card"><label>CADEIA DE OBSERVAÇÕES / EVENTOS</label><div class="log" id="log"></div></div>
+</div>
+
+<script>
+const fragments=["00","01","02","03","04","05","06","07","08","09","11","12","13","21","22","23","31","32","33","99"];
+let current="01", animationId=0;
+
+function hash(s){let h=2166136261>>>0;for(let c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)>>>0}return h>>>0}
+function resolve(f=current){
+ const seed=`${entity.value}|${space.value}|${time.value}|${key.value}|${f}`,h=hash(seed);
+ const shapes=["circle","triangle","diamond","cross","arc","hex","star"];
+ return {
+  h, rep:h.toString(16).padStart(8,"0"), shape:shapes[h%shapes.length],
+  hue:h%360, angle:h%360, width:1+(h%8), freq:180+(h%700),
+  speed:.25+(h%100)/100, amp:35+(h%90), state:(h&1)?"1":"0", seed
+ };
+}
+function makeSVG(r){
+ const scene=document.getElementById("scene"); scene.innerHTML="";
+ const ns="http://www.w3.org/2000/svg", cx=500,cy=220, col=`hsl(${r.hue} 78% 62%)`;
+ const g=document.createElementNS(ns,"g"); g.setAttribute("transform",`rotate(${r.angle} ${cx} ${cy})`);
+ let el;
+ if(r.shape==="circle"){el=document.createElementNS(ns,"circle");el.setAttribute("cx",cx);el.setAttribute("cy",cy);el.setAttribute("r",70)}
+ else if(r.shape==="triangle"){el=document.createElementNS(ns,"polygon");el.setAttribute("points","500,135 575,280 425,280")}
+ else if(r.shape==="diamond"){el=document.createElementNS(ns,"polygon");el.setAttribute("points","500,125 585,220 500,315 415,220")}
+ else if(r.shape==="cross"){el=document.createElementNS(ns,"path");el.setAttribute("d","M430 150L570 290M570 150L430 290")}
+ else if(r.shape==="arc"){el=document.createElementNS(ns,"path");el.setAttribute("d","M410 260 Q500 110 590 260")}
+ else if(r.shape==="hex"){el=document.createElementNS(ns,"polygon");el.setAttribute("points","500,125 580,172 580,268 500,315 420,268 420,172")}
+ else {el=document.createElementNS(ns,"polygon");el.setAttribute("points","500,120 525,190 600,190 540,235 565,310 500,265 435,310 460,235 400,190 475,190")}
+ el.setAttribute("fill","none");el.setAttribute("stroke",col);el.setAttribute("stroke-width",r.width);el.setAttribute("filter","url(#glow)");
+ g.appendChild(el);
+ for(let i=0;i<12;i++){const p=document.createElementNS(ns,"circle");p.setAttribute("r",2+(i%3));p.setAttribute("fill",col);p.setAttribute("opacity",".8");p.setAttribute("cx",cx);p.setAttribute("cy",cy);p.dataset.i=i;g.appendChild(p)}
+ scene.appendChild(g);
+ const start=performance.now(), id=++animationId;
+ function tick(now){if(id!==animationId)return;const t=(now-start)/1000;g.setAttribute("transform",`rotate(${r.angle+t*r.speed*80} ${cx} ${cy}) scale(${1+.08*Math.sin(t*r.freq/80)})`);
+  [...g.querySelectorAll("circle")].forEach((p,i)=>{const a=t*r.speed+(i/12)*Math.PI*2;p.setAttribute("cx",cx+Math.cos(a)*r.amp);p.setAttribute("cy",cy+Math.sin(a)*r.amp)});
+  requestAnimationFrame(tick)}
+ requestAnimationFrame(tick);
+}
+function observe(add=true){
+ const r=resolve();current=current;
+ hfrag.textContent=current;hrep.textContent=r.rep;hstate.textContent=r.state;
+ shape.textContent=r.shape;hue.textContent=r.hue+"°";angle.textContent=r.angle+"°";width.textContent=r.width+" px";freq.textContent=r.freq+" Hz";speed.textContent=r.speed.toFixed(2);
+ makeSVG(r);if(add)addLog(`OBSERVATION | ${current} | ${time.value} | ${key.value} | ${r.rep} | STATE ${r.state}`);
+}
+function addLog(x){log.textContent+=x+"\\n";log.scrollTop=999999}
+function changeTime(){time.value=time.value==="T01"?"T02":time.value==="T02"?"T03":"T01";observe();addLog("EVENT | IDTIME alterado → "+time.value)}
+function changeKey(){key.value=key.value==="K01"?"K02":key.value==="K02"?"K03":"K01";observe();addLog("EVENT | KEY alterada → "+key.value)}
+function replay(){observe();addLog("EVENT | manifestação reproduzida")}
+function repeat100(){const a=resolve().rep, ok=Array.from({length:100},()=>resolve().rep===a).every(Boolean);addLog(`TEST 100× | ${ok?"PASS":"FAIL"} | ${a}`);alert(ok?"PASS — 100/100 representações iguais.":"FAIL — divergência.")}
+const fragBox=document.getElementById("frags");
+fragments.forEach(f=>{const b=document.createElement("button");b.textContent=f;b.onclick=()=>{current=f;document.querySelectorAll(".frag button").forEach(x=>x.classList.remove("active"));b.classList.add("active");observe()};fragBox.appendChild(b)});
+document.querySelector(".frag button:nth-child(2)").classList.add("active");
+[entity,space,time,key].forEach(x=>x.addEventListener("change",()=>observe()));
+observe(false);
+</script>
+</body>
+</html>

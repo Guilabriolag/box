@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Gzero — Aquário de Outro Planeta</title>
+<style>
+:root{
+ --void:#050311; --deep:#0b0a22; --nebula:#2a1b4d; --teal:#5df1c9; --pink:#ff79d0;
+ --amber:#ffc46b; --ink:#eaf6ff; --dim:#7d84b8; --glass:rgba(14,12,34,.62);
+ --acid:#9dff4a; --violet:#b98bff; --cyanhud:#5df1ff;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{height:100%;overscroll-behavior:none}
+body{margin:0;background:var(--void);color:var(--ink);font-family:"Courier New",ui-monospace,monospace;overflow:hidden}
+#app{position:relative;height:100dvh;width:100%;max-width:520px;margin:auto;overflow:hidden}
+svg{width:100%;height:100%;display:block;touch-action:none}
+
+/* ---- topbar / retrato ---- */
+.chip{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:25;cursor:pointer;
+ display:flex;gap:8px;align-items:center;background:var(--glass);backdrop-filter:blur(8px);
+ border:1px solid rgba(93,241,201,.25);border-radius:999px;padding:6px 14px 6px 6px;font-size:11px;color:var(--teal);
+ letter-spacing:.5px}
+.chip .avatar{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,var(--teal) 40%,#0b3a30 100%);
+ box-shadow:0 0 8px rgba(93,241,201,.6);flex:none}
+.chip b{color:var(--ink);font-weight:700}
+
+.retrato{position:absolute;top:56px;left:50%;transform:translateX(-50%) scaleY(0);transform-origin:top center;
+ z-index:24;background:var(--glass);backdrop-filter:blur(10px);border:1px solid rgba(93,241,201,.25);
+ border-radius:16px;padding:10px 16px;font-size:11px;color:var(--dim);text-align:center;transition:transform .3s cubic-bezier(.2,.9,.3,1.2);
+ opacity:0}
+.retrato.open{transform:translateX(-50%) scaleY(1);opacity:1}
+.retrato b{color:var(--teal);display:block;font-size:13px;margin-bottom:2px}
+
+/* ---- handles ---- */
+.handle{position:absolute;left:50%;transform:translateX(-50%);z-index:20;touch-action:none;cursor:grab;
+ display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 22px}
+.handle .bar{width:44px;height:5px;border-radius:5px;background:rgba(234,246,255,.35)}
+.handle.top{top:0}
+.handle.bottom{bottom:0}
+.handle .lbl{font-size:9px;color:var(--dim);letter-spacing:1px}
+
+/* ---- painéis ---- */
+.panel{position:absolute;left:0;right:0;z-index:15;background:var(--glass);backdrop-filter:blur(14px);
+ border:1px solid rgba(93,241,201,.18);transition:transform .38s cubic-bezier(.2,.9,.25,1.15);padding:14px 16px 18px}
+.panel.dragging{transition:none}
+.panel-top{top:0;border-radius:0 0 22px 22px;transform:translateY(-101%)}
+.panel-top.open{transform:translateY(0)}
+.panel-bottom{bottom:0;border-radius:22px 22px 0 0;transform:translateY(101%)}
+.panel-bottom.open{transform:translateY(0)}
+
+.clockrow{display:flex;justify-content:space-between;align-items:baseline;margin:22px 0 14px;padding-bottom:10px;
+ border-bottom:1px dashed rgba(93,241,201,.2)}
+.clockrow .time{font-size:30px;color:var(--ink);letter-spacing:1px}
+.clockrow .date{text-align:right;font-size:11px;color:var(--dim);line-height:1.5}
+.clockrow .date b{color:var(--teal);text-transform:capitalize}
+
+label{display:block;color:var(--dim);font-size:9px;margin-bottom:3px;letter-spacing:1px;text-transform:uppercase}
+.fieldrow{display:flex;gap:6px;align-items:flex-end}
+input{width:100%;border:1px solid rgba(93,241,201,.3);background:rgba(2,6,14,.65);color:var(--ink);
+ border-radius:9px;padding:8px 9px;font-family:inherit;font-size:13px}
+.dice{flex:none;width:34px;height:34px;border-radius:9px;border:1px solid rgba(255,196,107,.4);
+ background:rgba(255,196,107,.1);color:var(--amber);font-size:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px}
+
+.toggle{display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(2,6,14,.5);
+ border:1px solid rgba(93,241,201,.15);border-radius:14px;padding:9px 4px;font-size:9px;color:var(--dim);
+ letter-spacing:.4px;text-align:center}
+.sw{width:38px;height:20px;border-radius:20px;background:rgba(125,132,184,.3);position:relative;transition:.2s}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#dfe6ff;transition:.2s}
+.toggle.on .sw{background:linear-gradient(90deg,var(--teal),var(--pink))}
+.toggle.on .sw::after{left:20px;background:#fff}
+.toggle.on{color:var(--ink)}
+
+.tidebtn{margin-top:12px;width:100%;border:1px solid rgba(255,196,107,.4);background:rgba(255,196,107,.08);
+ color:var(--amber);border-radius:10px;padding:9px;font-family:inherit;font-weight:700;font-size:12px;letter-spacing:.5px}
+
+.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px}
+.stat{background:rgba(2,6,14,.55);border:1px solid rgba(93,241,201,.12);border-radius:10px;padding:7px}
+.stat span{display:block;color:var(--dim);font-size:8px;letter-spacing:.5px}
+.stat b{color:var(--teal);font-size:13px}
+
+.frag{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin-top:6px}
+.frag button{border:1px solid rgba(93,241,201,.25);background:rgba(2,6,14,.6);color:var(--dim);
+ border-radius:8px;padding:6px 0;font-family:inherit;font-size:10px}
+.frag button.active{outline:1.5px solid var(--teal);color:var(--teal);box-shadow:0 0 10px rgba(93,241,201,.4)}
+
+.log{font-size:10px;max-height:70px;overflow:auto;color:#8fa2c0;white-space:pre-wrap;margin-top:6px;
+ background:rgba(2,6,14,.4);border-radius:8px;padding:6px}
+
+.hint{position:absolute;bottom:118px;left:0;right:0;text-align:center;font-size:10px;color:var(--dim);
+ letter-spacing:.5px;z-index:3;pointer-events:none;transition:opacity .6s}
+
+/* ---- FAB estojo ---- */
+.fab{position:absolute;right:14px;bottom:76px;z-index:26;width:52px;height:52px;border-radius:50%;
+ border:1px solid rgba(255,121,208,.5);background:linear-gradient(145deg,rgba(255,121,208,.25),rgba(93,241,201,.15));
+ backdrop-filter:blur(6px);font-size:22px;color:var(--ink);box-shadow:0 0 16px rgba(255,121,208,.35)}
+
+.kitbackdrop{position:absolute;inset:0;background:rgba(2,3,10,.55);backdrop-filter:blur(2px);z-index:29;
+ opacity:0;pointer-events:none;transition:opacity .3s}
+.kitbackdrop.open{opacity:1;pointer-events:auto}
+.kit{position:absolute;left:0;right:0;bottom:0;z-index:30;background:linear-gradient(180deg,#150f2e,#0a0818);
+ border:1px solid rgba(255,121,208,.3);border-radius:22px 22px 0 0;padding:16px 18px 22px;
+ transform:translateY(105%);transition:transform .4s cubic-bezier(.2,.9,.25,1.1)}
+.kit.open{transform:translateY(0)}
+.kit h3{margin:4px 0 2px;font-size:14px;color:var(--pink)}
+.kit .note{font-size:10px;color:var(--dim);margin-bottom:14px}
+.meter{margin-bottom:10px}
+.meter .row{display:flex;justify-content:space-between;font-size:10px;color:var(--dim);margin-bottom:3px;letter-spacing:.5px}
+.meter .track{height:8px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden}
+.meter .fill{height:100%;border-radius:6px;transition:width .4s}
+.kitbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.kitbtns button{border:none;border-radius:12px;padding:13px 6px;font-family:inherit;font-weight:700;font-size:12px;color:#0a0818}
+#btnFeed{background:linear-gradient(135deg,var(--amber),#ff9f5a)}
+#btnPet{background:linear-gradient(135deg,var(--teal),#7fc4ff)}
+.kitclose{width:100%;margin-top:10px;background:transparent;border:1px solid rgba(255,255,255,.15);color:var(--dim);
+ border-radius:10px;padding:8px;font-family:inherit;font-size:11px}
+
+/* ---- HUD holográfico dimensional ---- */
+.scanline{position:absolute;left:0;right:0;height:130px;top:-130px;z-index:8;pointer-events:none;
+ background:linear-gradient(180deg,transparent,rgba(93,241,255,.10) 45%,rgba(93,241,255,.22) 50%,rgba(93,241,255,.10) 55%,transparent);
+ animation:scan 5.5s linear infinite;mix-blend-mode:screen}
+@keyframes scan{0%{top:-130px}100%{top:100%}}
+
+.glitch{position:relative;display:inline-block;color:var(--cyanhud)}
+.glitch::before,.glitch::after{content:attr(data-text);position:absolute;left:0;top:0;width:100%;overflow:hidden}
+.glitch::before{color:#ff2bd6;opacity:.75;animation:glitchTop 2.6s infinite linear alternate-reverse;clip-path:inset(0 0 55% 0)}
+.glitch::after{color:#39fff0;opacity:.75;animation:glitchBot 2.2s infinite linear alternate-reverse;clip-path:inset(55% 0 0 0)}
+@keyframes glitchTop{0%{transform:translate(0,0)}20%{transform:translate(-2px,-1px)}40%{transform:translate(2px,1px)}60%{transform:translate(-1px,1px)}80%{transform:translate(1px,-1px)}100%{transform:translate(0,0)}}
+@keyframes glitchBot{0%{transform:translate(0,0)}25%{transform:translate(2px,1px)}50%{transform:translate(-2px,-1px)}75%{transform:translate(1px,-2px)}100%{transform:translate(0,0)}}
+
+.hudfab{position:absolute;left:14px;bottom:76px;z-index:26;width:52px;height:52px;border-radius:50%;
+ border:1px solid rgba(93,241,255,.5);background:linear-gradient(145deg,rgba(93,241,255,.22),rgba(157,255,74,.12));
+ backdrop-filter:blur(6px);font-size:22px;color:var(--ink);box-shadow:0 0 16px rgba(93,241,255,.35)}
+
+.hud{border-color:rgba(93,241,255,.35);background:linear-gradient(180deg,#0a1428,#050914)}
+.hudrow{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--dim);letter-spacing:.4px;margin-bottom:9px}
+.hudrow span{flex:1}
+.hudrow b{color:var(--cyanhud);min-width:46px;text-align:right}
+.hudrow input[type=range]{flex:2;accent-color:var(--cyanhud)}
+.lockbtn{border:1px solid rgba(93,241,255,.4);background:rgba(93,241,255,.08);color:var(--cyanhud);
+ border-radius:8px;padding:5px 10px;font-family:inherit;font-size:10px}
+.hudgrid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.hudbar span{display:block;font-size:9px;color:var(--dim);margin-bottom:3px;letter-spacing:.4px}
+.hudbar .track{height:7px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden}
+.hudbar .fill{height:100%;width:40%}
+.scanbox{margin-top:12px;border:1px solid rgba(93,241,255,.25);border-radius:10px;padding:9px 11px;
+ font-size:10px;color:var(--dim);line-height:1.9;background:rgba(2,6,14,.5)}
+.scanbox b{color:var(--acid)}
+
+/* ---- joystick manual ---- */
+.joytoggle{position:absolute;top:10px;right:12px;z-index:25;width:34px;height:34px;border-radius:50%;
+ border:1px solid rgba(93,241,201,.3);background:var(--glass);backdrop-filter:blur(8px);font-size:15px;color:var(--teal)}
+.joypad{position:absolute;left:50%;bottom:132px;transform:translateX(-50%) scale(0);width:104px;height:104px;
+ border-radius:50%;background:radial-gradient(circle,rgba(93,241,201,.1),rgba(2,6,14,.55));
+ border:1px solid rgba(93,241,201,.3);z-index:22;touch-action:none;transition:transform .25s cubic-bezier(.2,.9,.3,1.3);opacity:0}
+.joypad.on{transform:translateX(-50%) scale(1);opacity:1}
+.joynub{position:absolute;left:50%;top:50%;width:42px;height:42px;margin:-21px 0 0 -21px;border-radius:50%;
+ background:radial-gradient(circle at 35% 30%,#fff,var(--teal) 45%,#0b3a30 100%);box-shadow:0 0 14px rgba(93,241,201,.6)}
+
+/* ---- balão de fala ---- */
+.bubble{position:absolute;z-index:23;max-width:220px;background:rgba(10,8,24,.88);backdrop-filter:blur(8px);
+ border:1px solid rgba(93,241,201,.4);border-radius:14px 14px 14px 4px;padding:9px 12px;font-size:12px;
+ color:var(--ink);line-height:1.4;box-shadow:0 0 18px rgba(93,241,201,.25);opacity:0;transform:translateY(6px) scale(.94);
+ transform-origin:bottom left;transition:opacity .25s,transform .25s;pointer-events:none}
+.bubble.show{opacity:1;transform:translateY(0) scale(1)}
+.bubble .tag{display:block;font-size:8px;letter-spacing:1px;color:var(--teal);text-transform:uppercase;margin-bottom:2px;opacity:.8}
+
+/* ---- chat com IA ---- */
+.chatfab{position:absolute;right:14px;bottom:138px;z-index:26;width:44px;height:44px;border-radius:50%;
+ border:1px solid rgba(157,255,74,.5);background:linear-gradient(145deg,rgba(157,255,74,.22),rgba(93,241,201,.12));
+ backdrop-filter:blur(6px);font-size:18px;color:var(--ink);box-shadow:0 0 14px rgba(157,255,74,.3)}
+.chatpanel{position:absolute;left:0;right:0;bottom:0;z-index:30;background:linear-gradient(180deg,#0f1a12,#08120c);
+ border:1px solid rgba(157,255,74,.3);border-radius:22px 22px 0 0;padding:14px 16px 18px;
+ transform:translateY(105%);transition:transform .4s cubic-bezier(.2,.9,.25,1.1);max-height:62vh;display:flex;flex-direction:column}
+.chatpanel.open{transform:translateY(0)}
+.chatpanel h3{margin:2px 0 8px;font-size:13px;color:var(--acid)}
+.chatlog{flex:1;overflow:auto;font-size:11px;color:#c9e9d5;line-height:1.5;margin-bottom:10px;min-height:80px;max-height:32vh}
+.chatlog .me{color:var(--dim);margin:6px 0 2px}
+.chatlog .them{color:var(--acid);margin:2px 0 6px}
+.chatrow{display:flex;gap:8px}
+.chatrow input{flex:1}
+.chatrow button{flex:none;width:44px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--acid),var(--teal));
+ color:#08120c;font-weight:700;font-family:inherit}
+.chattyping{font-size:10px;color:var(--dim);font-style:italic;margin-bottom:6px;display:none}
+.chattyping.on{display:block}
+</style>
+</head>
+<body>
+<div id="app">
+ <svg id="svg" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+   <radialGradient id="voidGrad" cx="50%" cy="38%" r="75%">
+    <stop offset="0%" stop-color="#131240"/><stop offset="55%" stop-color="#070518"/><stop offset="100%" stop-color="#020103"/>
+   </radialGradient>
+   <radialGradient id="planetGrad" cx="38%" cy="35%" r="65%">
+    <stop offset="0%" stop-color="#ffd9a8"/><stop offset="45%" stop-color="#e8794f"/><stop offset="100%" stop-color="#5b1c3a"/>
+   </radialGradient>
+   <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+    <feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+   </filter>
+   <filter id="softblur"><feGaussianBlur stdDeviation="18"/></filter>
+   <radialGradient id="vignette" cx="50%" cy="46%" r="72%">
+    <stop offset="55%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity=".55"/>
+   </radialGradient>
+   <linearGradient id="glassStreak" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#fff" stop-opacity=".22"/><stop offset="35%" stop-color="#fff" stop-opacity="0"/>
+   </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="400" height="800" fill="url(#voidGrad)"/>
+  <g id="nebulae" opacity=".55"></g>
+  <g id="stars"></g>
+  <g id="planet">
+   <ellipse cx="330" cy="120" rx="150" ry="46" fill="none" stroke="#ffcf9e" stroke-width="4" opacity=".35" transform="rotate(-18 330 120)"/>
+   <circle cx="330" cy="120" r="70" fill="url(#planetGrad)"/>
+   <ellipse cx="330" cy="120" rx="150" ry="46" fill="none" stroke="#ffe6c2" stroke-width="6" opacity=".5" transform="rotate(-18 330 120)" stroke-dasharray="2 10"/>
+  </g>
+  <g id="corals"></g>
+  <g id="spores"></g>
+
+  <g id="wake"></g>
+  <g id="creature"></g>
+  <circle id="grabRing" cx="0" cy="0" r="20" fill="none" stroke="#eaf6ff" stroke-width="1.4" opacity="0"/>
+
+  <!-- vidro curvo do aquário em primeiro plano -->
+  <g id="glassFX" style="pointer-events:none">
+   <path d="M15 40 Q200 10 385 40 L385 760 Q200 790 15 760 Z" fill="none" stroke="rgba(180,220,255,.16)" stroke-width="10"/>
+   <ellipse id="streak1" cx="120" cy="230" rx="70" ry="230" fill="url(#glassStreak)" transform="rotate(18 120 230)"/>
+   <ellipse id="streak2" cx="330" cy="560" rx="34" ry="150" fill="url(#glassStreak)" transform="rotate(14 330 560)" opacity=".5"/>
+   <rect id="sunOverlay" x="0" y="0" width="400" height="800" fill="#020108" opacity="0"/>
+   <rect x="0" y="0" width="400" height="800" fill="url(#vignette)"/>
+  </g>
+ </svg>
+
+ <div class="chip" id="chip"><span class="avatar" id="avatarDot"></span> <span id="chipName">—</span> · <b id="chipState">viva</b></div>
+ <div class="retrato" id="retrato">
+  <b id="rName">—</b>
+  <span id="rSpecies">—</span><br>
+  <span id="rSignature" style="opacity:.7">assinatura —</span>
+ </div>
+
+ <div class="hint" id="hint">toque e arraste a criatura · puxe as abas ↑ ↓</div>
+ <div class="scanline"></div>
+
+ <div class="bubble" id="bubble"><span class="tag" id="bubbleTag">—</span><span id="bubbleText"></span></div>
+
+ <button class="fab chatfab" id="fabChat" onclick="openChat(true)">💬</button>
+ <div class="kitbackdrop" id="chatBackdrop" onclick="openChat(false)"></div>
+ <div class="chatpanel" id="chatPanel">
+  <h3>Falar com <span id="chatCreatureName">a criatura</span></h3>
+  <div class="chatlog" id="chatLog"></div>
+  <div class="chattyping" id="chatTyping">…pensando em outra língua…</div>
+  <div class="chatrow">
+   <input id="chatInput" placeholder="diga algo…" onkeydown="if(event.key==='Enter')sendChat()">
+   <button onclick="sendChat()">➤</button>
+  </div>
+  <button class="kitclose" onclick="openChat(false)">fechar conversa</button>
+ </div>
+
+ <button class="joytoggle" id="joyToggle" onclick="toggleJoy()">🕹️</button>
+ <div class="joypad" id="joyPad"><div class="joynub" id="joyNub"></div></div>
+
+ <!-- painel superior: perfil / cadastro / relógio -->
+ <div class="handle top" id="handleTop"><div class="lbl">perfil</div><div class="bar"></div></div>
+ <div class="panel panel-top" id="panelTop">
+  <div class="clockrow">
+   <div class="time" id="clockTime">--:--</div>
+   <div class="date">semana <b id="clockWeek">—</b><br><span id="clockDate">—/—</span> · <b id="clockYear">—</b></div>
+  </div>
+  <div class="grid2">
+   <div><label>nome da criatura</label><input id="nome" placeholder="auto"></div>
+   <div><label>entidade</label><div class="fieldrow"><input id="entity" value="X"><button class="dice" onclick="randomize('entity')">🎲</button></div></div>
+  </div>
+  <div class="grid2">
+   <div><label>espaço</label><div class="fieldrow"><input id="space" value="S01"><button class="dice" onclick="randomize('space')">🎲</button></div></div>
+   <div><label>chave</label><div class="fieldrow"><input id="key" value="K01"><button class="dice" onclick="randomize('key')">🎲</button></div></div>
+  </div>
+  <button class="tidebtn" onclick="changeTide()">🌊 mudar a maré (idtempo <span id="tideval">T01</span>)</button>
+  <div class="grid4">
+   <div class="toggle on" id="tgTurbo" onclick="toggle(this,'turbo')"><div class="sw"></div>turbo</div>
+   <div class="toggle" id="tgRest" onclick="toggle(this,'rest')"><div class="sw"></div>repouso</div>
+   <div class="toggle on" id="tgHud" onclick="toggle(this,'hud')"><div class="sw"></div>hud</div>
+   <div class="toggle on" id="tgTrail" onclick="toggle(this,'trail')"><div class="sw"></div>rastro</div>
+  </div>
+  <div class="grid2" style="margin-top:9px">
+   <div class="toggle" id="tgNotif" onclick="toggleNotif()"><div class="sw"></div>notificações</div>
+   <div class="toggle" id="tgDim" onclick="toggleDimension()"><div class="sw"></div>dimensão <b id="dimLabel" style="color:var(--pink)">C-137</b></div>
+  </div>
+ </div>
+
+ <!-- gaveta inferior: larvas / atributos -->
+ <div class="handle bottom" id="handleBottom"><div class="bar"></div><div class="lbl">atributos</div></div>
+ <div class="panel panel-bottom" id="panelBottom">
+  <label>larva / estágio</label>
+  <div class="frag" id="frags"></div>
+  <div class="statgrid">
+   <div class="stat"><span>espécie</span><b id="stShape">—</b></div>
+   <div class="stat"><span>bioluz</span><b id="stHue">—</b></div>
+   <div class="stat"><span>orientação</span><b id="stAngle">—</b></div>
+   <div class="stat"><span>carapaça</span><b id="stWidth">—</b></div>
+   <div class="stat"><span>pulso</span><b id="stFreq">—</b></div>
+   <div class="stat"><span>nado</span><b id="stSpeed">—</b></div>
+  </div>
+  <label style="margin-top:10px">observações</label>
+  <div class="log" id="log"></div>
+ </div>
+
+ <!-- botão + estojo de cuidados -->
+ <button class="fab" id="fabKit" onclick="openKit(true)">🧰</button>
+ <div class="kitbackdrop" id="kitBackdrop" onclick="openKit(false)"></div>
+ <div class="kit" id="kit">
+  <h3>Estojo de cuidados</h3>
+  <div class="note">altera o estado do bichinho — não a essência (espécie, cor e assinatura continuam as mesmas)</div>
+  <div class="meter"><div class="row"><span>saciedade</span><span id="mSac">—</span></div><div class="track"><div class="fill" id="fSac" style="background:var(--amber);width:0%"></div></div></div>
+  <div class="meter"><div class="row"><span>carinho</span><span id="mCar">—</span></div><div class="track"><div class="fill" id="fCar" style="background:var(--pink);width:0%"></div></div></div>
+  <div class="meter"><div class="row"><span>energia</span><span id="mEne">—</span></div><div class="track"><div class="fill" id="fEne" style="background:var(--teal);width:0%"></div></div></div>
+  <div class="kitbtns">
+   <button id="btnFeed" onclick="feed()">🍤 alimentar</button>
+   <button id="btnPet" onclick="petCuddle()">🤍 fazer carinho</button>
+  </div>
+  <button class="kitclose" onclick="openKit(false)">fechar estojo</button>
+ </div>
+
+ <!-- botão + painel do scanner dimensional (HUD holográfico) -->
+ <button class="fab hudfab" id="fabHud" onclick="openHud(true)">📡</button>
+ <div class="kitbackdrop" id="hudBackdrop" onclick="openHud(false)"></div>
+ <div class="kit hud" id="hudPanel">
+  <h3 class="glitch" data-text="SCANNER DIMENSIONAL">SCANNER DIMENSIONAL</h3>
+  <div class="note">telemetria do tanque · dimensão de origem: indeterminada</div>
+
+  <div class="hudrow"><span>sincronização de frequência</span><input type="range" id="rngSync" min="0" max="100" value="82" oninput="onSync(this.value)"><b id="valSync">82%</b></div>
+  <div class="hudrow"><span>fótons escuros</span><b id="valPhotons">— μ</b></div>
+  <div class="hudrow"><span>âncora de causalidade</span><button class="lockbtn" id="btnLock" onclick="toggleLock()">🔓 destravada</button></div>
+
+  <div class="hudgrid2">
+   <div class="hudbar"><span>metano líquido</span><div class="track"><div class="fill" id="fMet" style="background:var(--acid)"></div></div></div>
+   <div class="hudbar"><span>amônia</span><div class="track"><div class="fill" id="fAmo" style="background:var(--violet)"></div></div></div>
+  </div>
+
+  <div class="hudrow" style="margin-bottom:2px"><span>índice de bioluminescência</span></div>
+  <svg viewBox="0 0 200 40" style="width:100%;height:34px;margin-bottom:10px;display:block"><polyline id="sparkLine" fill="none" stroke="var(--acid)" stroke-width="2"/></svg>
+
+  <div class="hudrow"><span>gravidade artificial</span><input type="range" id="rngGrav" min="-100" max="100" value="0" oninput="onGrav(this.value)"><b id="valGrav">0%</b></div>
+
+  <button class="tidebtn" style="border-color:rgba(157,255,74,.4);color:var(--acid);background:rgba(157,255,74,.08)" onclick="cycleSun()">☀️ ciclo solar: <span id="sunLabel">sóis binários</span></button>
+
+  <div class="scanbox">
+   <div>ESPÉCIE: <b id="scanSpecies">—</b></div>
+   <div>DESIGNAÇÃO: <b id="scanType">—</b></div>
+   <div>STATUS NEUROLÓGICO: <b id="scanStatus">—</b></div>
+   <div>INTEGRIDADE DE PIXEL: <b id="scanIntegrity">100%</b></div>
+  </div>
+  <button class="kitclose" onclick="openHud(false)">fechar scanner</button>
+ </div>
+</div>
+
+<script>
+const ns="http://www.w3.org/2000/svg";
+const $=id=>document.getElementById(id);
+
+/* ================= núcleo determinístico (essência) ================= */
+const fragments=["00","01","02","03","04","05","06","07","08","09","11","12","13","21","22","23","31","32","33","99"];
+let current="01", tide="T01";
+function hash(s){let h=2166136261>>>0;for(let c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)>>>0}return h>>>0}
+function rehash(h,salt){return hash(h.toString(16)+"|"+salt)}
+const shapeNames=["circle","triangle","diamond","cross","arc","hex","star"];
+const speciesName={circle:"Medusozoário",triangle:"Trilobita espinhoso",diamond:"Anomalocáride",
+ cross:"Hidrozoário radial",arc:"Ctenóforo achatado",hex:"Radiolário blindado",star:"Sifonóforo estelar"};
+const lobes={circle:0,triangle:3,diamond:4,cross:8,arc:2,hex:6,star:10};
+const aspect={circle:1,triangle:.95,diamond:.82,cross:1,arc:.62,hex:1,star:1.12};
+
+const moodWords=["curioso(a)","faminto(a)","eufórico(a)","confuso(a)","sonolento(a)","desconfiado(a)","feliz"];
+let dimension="C-137";
+function resolve(f=current){
+ const seed=`${entity.value}|${space.value}|${tide}|${key.value}|${f}|${dimension}`, h=hash(seed);
+ const shape=shapeNames[h%shapeNames.length];
+ const jitter=[];
+ for(let i=0;i<5;i++){const jh=rehash(h,"j"+i);jitter.push({freq:2+(jh%7),phase:(jh%628)/100,amp:.02+((jh>>3)%40)/1000})}
+ return {
+  h, rep:h.toString(16).padStart(8,"0"), shape, jitter,
+  hue:h%360, angle:h%360, width:1+(h%8), freq:180+(h%700),
+  speed:.25+(h%100)/100, amp:35+(h%90), state:(h&1)?"1":"0",
+  tent: 5+(h%4), R: 58+(h%14), mood: moodWords[(h>>>8)%moodWords.length]
+ };
+}
+function toggleDimension(){
+ dimension=dimension==="C-137"?"X-∞":"C-137";
+ dimLabel.textContent=dimension; dimLabel.style.color=dimension==="X-∞"?"var(--acid)":"var(--pink)";
+ tgDim.classList.toggle("on",dimension==="X-∞");
+ observe(); addLog("EVENTO | salto dimensional → "+dimension);
+ speak("uh… tudo parece um pouco diferente agora.","salto dimensional",4000);
+}
+function alienName(h){
+ const a=["Xy","Vor","Qel","Zha","Nyx","Thal","Kry","Or","Vel","Ith","Sur","Mal","Fen","Grix","Ael"];
+ const b=["ath","on","ix","ux","ara","eth","oth","yn","ora","esh","um","ai"];
+ return a[h%a.length]+b[(h>>5)%b.length];
+}
+function randToken(){return Math.random().toString(36).slice(2,5).toUpperCase()}
+function randomize(field){
+ if(field==="entity")entity.value=randToken();
+ if(field==="space")space.value="S"+(10+Math.floor(Math.random()*89));
+ if(field==="key")key.value="K"+(10+Math.floor(Math.random()*89));
+ observe(); addLog("EVENTO | "+field+" regenerado(a)");
+}
+
+/* ================= estado mutável (não a essência) ================= */
+let pet={saciedade:72,carinho:64,energia:80}, excite=0;
+function clamp(v){return Math.max(0,Math.min(100,v))}
+function updateMeters(){
+ mSac.textContent=Math.round(pet.saciedade); mCar.textContent=Math.round(pet.carinho); mEne.textContent=Math.round(pet.energia);
+ fSac.style.width=pet.saciedade+"%"; fCar.style.width=pet.carinho+"%"; fEne.style.width=pet.energia+"%";
+}
+function feed(){pet.saciedade=clamp(pet.saciedade+24);pet.energia=clamp(pet.energia+6);excite=1;updateMeters();addLog("CUIDADO | alimentado — saciedade "+Math.round(pet.saciedade));speak(pickPhrase("obrigadoComida"))}
+function petCuddle(){pet.carinho=clamp(pet.carinho+22);excite=1;updateMeters();addLog("CUIDADO | recebeu carinho — carinho "+Math.round(pet.carinho));speak(pickPhrase("obrigadoCarinho"))}
+setInterval(()=>{
+ pet.saciedade=clamp(pet.saciedade-2); pet.carinho=clamp(pet.carinho-1.5);
+ pet.energia=clamp(pet.energia+(pet.saciedade>40?1:-3));
+ updateMeters(); updateMood();
+ maybeSpeak();
+ if(Math.random()<0.004) specialMoment();
+},4000);
+function updateMood(){
+ let m="viva";
+ if(pet.energia<25)m="cansada"; else if(pet.saciedade<25)m="com fome"; else if(pet.carinho<25)m="carente"; else m=flags.rest?"dormindo":"feliz";
+ chipState.textContent=m;
+}
+function openKit(v){kit.classList.toggle("open",v);kitBackdrop.classList.toggle("open",v)}
+
+/* ================= balão de fala + notificações ================= */
+function positionBubble(){
+ try{
+  const pt=svg.createSVGPoint(); pt.x=pos.x; pt.y=Math.max(60,pos.y-100);
+  const m=svg.getScreenCTM(); if(!m)return;
+  const sp=pt.matrixTransform(m);
+  const appRect=$("app").getBoundingClientRect();
+  let left=sp.x-appRect.left-110, top=sp.y-appRect.top-20;
+  left=Math.max(8,Math.min(appRect.width-228,left));
+  top=Math.max(64,Math.min(appRect.height-150,top));
+  bubble.style.left=left+"px"; bubble.style.top=top+"px";
+ }catch(e){}
+}
+function speak(text,tag,duration=4200){
+ if(!text)return;
+ bubbleTag.textContent=tag||(nome.value||chipName.textContent||"criatura");
+ bubbleText.textContent=text;
+ positionBubble();
+ bubble.classList.add("show");
+ clearTimeout(speak._t);
+ speak._t=setTimeout(()=>bubble.classList.remove("show"),duration);
+ addLog("FALA | "+text);
+ notify(text);
+}
+let notifOn=false;
+function toggleNotif(){
+ if(!notifOn){
+  if(!("Notification" in window)){addLog("AVISO | notificações não suportadas neste navegador");return}
+  Notification.requestPermission().then(p=>{
+   if(p==="granted"){notifOn=true;tgNotif.classList.add("on");addLog("EVENTO | notificações ativadas")}
+   else addLog("AVISO | permissão de notificação negada");
+  });
+ } else { notifOn=false; tgNotif.classList.remove("on"); addLog("EVENTO | notificações desativadas") }
+}
+function notify(text){
+ if(notifOn && document.hidden && "Notification" in window && Notification.permission==="granted"){
+  try{ new Notification((nome.value||chipName.textContent||"Gzero")+" precisa de você",{body:text}) }catch(e){}
+ }
+}
+const scripts={
+ fome:["psst… será que tem alguma coisa pra eu comer por aí?","meu núcleo tá pedindo energia… alimenta eu?","tô sentindo um vazio bioluminescente… acho que é fome."],
+ carinho:["ninguém encostou em mim hoje… um carinho?","meus tentáculos tão meio murchos de solidão.","um toque ia cair bem agora, sabe?"],
+ energia:["preciso descansar um pouco… ativa o modo repouso pra mim?","tô arrastando pelos meus próprios fluidos de tão cansado(a).","meu pulso tá fraco… queria dormir um pouco."],
+ feliz:["a água aqui tá gostosa hoje.","gosto de te ver por aqui, sabia?","essa maré combina comigo."],
+ curioso:["o que será que tem do outro lado do vidro?","será que existe outro aquário como esse em algum lugar?"],
+ obrigadoComida:["hmm, delicioso!","isso bateu bem no meu núcleo.","(o equivalente alienígena de um sorriso)"],
+ obrigadoCarinho:["isso foi bom.","meus tentáculos relaxaram.","gostei disso."]
+};
+function pickPhrase(cat){const arr=scripts[cat]||scripts.feliz; return arr[Math.floor(Math.random()*arr.length)]}
+function maybeSpeak(){
+ if(bubble.classList.contains("show"))return;
+ if(Math.random()>0.28)return;
+ let cat="feliz";
+ if(pet.saciedade<30)cat="fome";
+ else if(pet.carinho<30)cat="carinho";
+ else if(pet.energia<30)cat="energia";
+ else if(curR && curR.mood && curR.mood.startsWith("curioso"))cat="curioso";
+ speak(pickPhrase(cat));
+}
+
+/* ================= HUD holográfico / scanner dimensional ================= */
+const alienType={circle:"Cefalópode de Plasma",triangle:"Leviatã de Amônia jovem",diamond:"Predador de matéria escura",
+ cross:"Colônia neural radial",arc:"Nadador de éter",hex:"Blindado de radiólitos quânticos",star:"Enxame sifonóforo estelar"};
+let sync=82, grav=0, locked=false, sunState=0;
+const sunLabels=["sóis binários","eclipse frequente","escuridão abissal"];
+const sunDark=[0,.35,.72];
+let sparkBuf=new Array(40).fill(20);
+function onSync(v){sync=+v;valSync.textContent=v+"%"}
+function onGrav(v){grav=+v;valGrav.textContent=v+"%"}
+function toggleLock(){locked=!locked;btnLock.textContent=locked?"🔒 travada":"🔓 destravada";addLog("EVENTO | âncora de causalidade "+(locked?"travada":"destravada"))}
+function cycleSun(){sunState=(sunState+1)%3;sunLabel.textContent=sunLabels[sunState];sunOverlay.setAttribute("opacity",sunDark[sunState]);addLog("EVENTO | ciclo solar → "+sunLabels[sunState])}
+function openHud(v){hudPanel.classList.toggle("open",v);hudBackdrop.classList.toggle("open",v);if(v)updateScan()}
+function updateScan(){
+ const r=curR; if(!r)return;
+ scanSpecies.textContent=speciesName[r.shape]; scanType.textContent=alienType[r.shape];
+ let status="sereno(a)";
+ if(pet.energia<25)status="letárgico(a)"; else if(pet.saciedade<25)status="faminto(a)"; else if(pet.carinho<25)status="estressado(a)";
+ scanStatus.textContent=status; scanIntegrity.textContent=Math.round(sync)+"%";
+}
+
+/* ================= chat com IA ================= */
+function buildPersonaPrompt(){
+ const r=curR||{};
+ const name=nome.value||chipName.textContent||"a criatura";
+ return `Você é uma criatura alienígena aquática chamada ${name}, da espécie ${speciesName[r.shape]||"desconhecida"}, vivendo em um aquário de outro planeta na dimensão ${dimension}. Seu humor atual é ${r.mood||"indefinido"}. Seus níveis: saciedade ${Math.round(pet.saciedade)}%, carinho ${Math.round(pet.carinho)}%, energia ${Math.round(pet.energia)}%. Responda em português do Brasil, em 1 a 2 frases curtas, com personalidade lúdica e levemente estranha de alienígena — nunca diga que é uma IA ou um programa, apenas reaja como a criatura reagiria. Se algum nível estiver abaixo de 30, pode pedir cuidado (comida, carinho ou descanso) de forma natural, sem parecer um menu de opções.`;
+}
+function appendChatLine(who,text){
+ const div=document.createElement("div"); div.className=who; div.textContent=(who==="me"?"você: ":"")+text;
+ chatLog.appendChild(div); chatLog.scrollTop=chatLog.scrollHeight;
+}
+function openChat(v){
+ chatPanel.classList.toggle("open",v); chatBackdrop.classList.toggle("open",v);
+ if(v){chatCreatureName.textContent=nome.value||chipName.textContent||"a criatura"; setTimeout(()=>chatInput.focus(),300)}
+}
+async function callAlien(userText){
+ const resp=await fetch("https://api.anthropic.com/v1/messages",{
+  method:"POST", headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({model:"claude-sonnet-4-6", max_tokens:200, system:buildPersonaPrompt(),
+   messages:[{role:"user",content:userText}]})
+ });
+ const data=await resp.json();
+ return (data.content||[]).map(b=>b.text||"").join(" ").trim();
+}
+async function sendChat(){
+ const text=chatInput.value.trim(); if(!text)return;
+ appendChatLine("me",text); chatInput.value="";
+ chatTyping.classList.add("on");
+ try{
+  const reply=await callAlien(text) || "…(silêncio alienígena)";
+  chatTyping.classList.remove("on");
+  appendChatLine("them",reply);
+  speak(reply,nome.value||chipName.textContent||"criatura",5200);
+ }catch(err){
+  chatTyping.classList.remove("on");
+  appendChatLine("them","(a conexão com a dimensão falhou — tenta de novo?)");
+ }
+}
+async function specialMoment(){
+ if(!curR)return;
+ try{
+  const reply=await callAlien("(observe o ambiente e diga algo espontâneo — o usuário não falou nada agora, foi você que puxou assunto)");
+  if(reply){ speak(reply,"momento especial",5600); appendChatLine("them",reply) }
+ }catch(e){}
+}
+
+/* ================= joystick manual ================= */
+let joyOn=false, joyHeld=false, joyDir={x:0,y:0};
+const JR=32;
+function toggleJoy(){joyOn=!joyOn;joyPad.classList.toggle("on",joyOn);if(!joyOn){joyHeld=false;joyNub.style.transform="translate(0,0)";joyDir={x:0,y:0}}}
+function joyPoint(e){const r=joyPad.getBoundingClientRect();return {x:e.clientX-(r.left+r.width/2), y:e.clientY-(r.top+r.height/2)}}
+function moveJoy(e){let p=joyPoint(e);const m=Math.hypot(p.x,p.y);if(m>JR){p.x=p.x/m*JR;p.y=p.y/m*JR}joyNub.style.transform=`translate(${p.x}px,${p.y}px)`;joyDir={x:p.x/JR,y:p.y/JR}}
+joyPad.addEventListener("pointerdown",e=>{joyHeld=true;joyPad.setPointerCapture(e.pointerId);moveJoy(e)});
+joyPad.addEventListener("pointermove",e=>{if(joyHeld)moveJoy(e)});
+function joyRelease(){joyHeld=false;joyNub.style.transform="translate(0,0)";joyDir={x:0,y:0}}
+joyPad.addEventListener("pointerup",joyRelease); joyPad.addEventListener("pointercancel",joyRelease);
+
+/* ================= física de "puxar/esticar" ================= */
+let spring={x:0,y:0,vx:0,vy:0,tx:0,ty:0}, dragging=false, pointerId=null;
+const MAXPULL=95, STIFF=90, DAMP=9.5;
+let pos={x:200,y:400}, swimTarget={x:200,y:400}, swimTimer=1;
+
+function jitterAt(angle,jitterArr){let s=0;for(const j of jitterArr)s+=Math.sin(j.freq*angle+j.phase)*j.amp;return s}
+function bodyRadius(angle,r,t,moveAngle,moveMag){
+ const R=r.R;
+ let m=1;
+ if(lobes[r.shape]>0) m+=.16*Math.cos(lobes[r.shape]*angle+r.h%6);
+ m+=.05*Math.sin(3*angle+t*.6);
+ m+=jitterAt(angle,r.jitter);
+ let rad=R*m;
+ if(moveMag>2){let d=angle-moveAngle;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;rad+=Math.min(10,moveMag*.35)*Math.cos(d)}
+ return rad;
+}
+function pullBump(angle){
+ const mag=Math.hypot(spring.x,spring.y);
+ if(mag<1)return {bump:0,ang:0,mag:0};
+ const pullAng=Math.atan2(spring.y,spring.x);
+ let diff=angle-pullAng; while(diff>Math.PI)diff-=2*Math.PI; while(diff<-Math.PI)diff+=2*Math.PI;
+ const spread=.55;
+ return {bump:mag*Math.exp(-(diff*diff)/(2*spread*spread)),ang:pullAng,mag};
+}
+function smoothPath(pts){
+ let d=`M ${(pts[0].x+pts[pts.length-1].x)/2} ${(pts[0].y+pts[pts.length-1].y)/2}`;
+ for(let i=0;i<pts.length;i++){const p=pts[i],n=pts[(i+1)%pts.length];const mx=(p.x+n.x)/2,my=(p.y+n.y)/2;d+=` Q ${p.x} ${p.y} ${mx} ${my}`}
+ return d+" Z";
+}
+
+/* ================= criatura ================= */
+let bodyPath,core,tentEls=[],partEls=[],curR=null;
+function buildCreature(r){
+ curR=r;
+ const g=$("creature"); g.innerHTML="";
+ const col=`hsl(${r.hue} 85% 66%)`, colDeep=`hsl(${r.hue} 70% 38%)`;
+ bodyPath=document.createElementNS(ns,"path");
+ bodyPath.setAttribute("fill",`hsla(${r.hue},80%,45%,.24)`);
+ bodyPath.setAttribute("stroke",col);bodyPath.setAttribute("stroke-width",r.width);
+ bodyPath.setAttribute("filter","url(#glow)");
+ g.appendChild(bodyPath);
+
+ core=document.createElementNS(ns,"circle");
+ core.setAttribute("r",9);core.setAttribute("fill",col);core.setAttribute("filter","url(#glow)");
+ g.appendChild(core);
+
+ tentEls=[];
+ for(let i=0;i<r.tent;i++){
+  const t=document.createElementNS(ns,"path");
+  t.setAttribute("fill","none");t.setAttribute("stroke",colDeep);
+  t.setAttribute("stroke-width",Math.max(1,r.width*.5));t.setAttribute("stroke-linecap","round");
+  t.setAttribute("opacity",".8");
+  g.appendChild(t); tentEls.push(t);
+ }
+ partEls=[];
+ for(let i=0;i<10;i++){const p=document.createElementNS(ns,"circle");p.setAttribute("r",1.3+(i%3)*.7);p.setAttribute("fill",col);p.setAttribute("opacity",".8");g.appendChild(p);partEls.push(p)}
+ avatarDot.style.background=`radial-gradient(circle at 35% 30%,#fff,${col} 40%,#0b1520 100%)`;
+}
+let lastPos={x:200,y:400};
+function drawFrame(t){
+ const r=curR; if(!r)return;
+ const px=pos.x, py=pos.y;
+ const moveMag=Math.hypot(px-lastPos.x,py-lastPos.y)*8, moveAngle=Math.atan2(py-lastPos.y,px-lastPos.x);
+ lastPos={x:px,y:py};
+
+ const N=40, pts=[];
+ for(let i=0;i<N;i++){
+  const a=i/N*Math.PI*2;
+  let rad=bodyRadius(a,r,t,moveAngle,moveMag);
+  const pb=pullBump(a); rad+=pb.bump;
+  pts.push({x:px+Math.cos(a)*rad, y:py+Math.sin(a)*rad*aspect[r.shape]});
+ }
+ bodyPath.setAttribute("d",smoothPath(pts));
+ bodyPath.setAttribute("opacity",(.55+.45*(pet.carinho/100)).toFixed(2));
+ const cOff={x:spring.x*.14,y:spring.y*.14};
+ core.setAttribute("cx",px+cOff.x);core.setAttribute("cy",py+cOff.y);
+ core.setAttribute("r",(7+3*Math.abs(Math.sin(t*r.freq/60)))*(1+excite*.4));
+ core.setAttribute("opacity",(.5+.5*(pet.saciedade/100)).toFixed(2));
+
+ const mag=Math.hypot(spring.x,spring.y), pullAng=Math.atan2(spring.y,spring.x);
+ const speedMult=1+excite*1.3;
+ tentEls.forEach((tent,i)=>{
+  const baseA=Math.PI*.15 + (i/(tentEls.length-1||1))*Math.PI*.7 + Math.PI*.5;
+  const rootR=bodyRadius(baseA,r,t,moveAngle,moveMag)*.92;
+  const rootX=px+Math.cos(baseA)*rootR, rootY=py+Math.sin(baseA)*rootR*aspect[r.shape];
+  let diff=baseA-pullAng; while(diff>Math.PI)diff-=2*Math.PI; while(diff<-Math.PI)diff+=2*Math.PI;
+  const near=Math.exp(-(diff*diff)/(2*.6*.6));
+  const extra=mag*near*.9;
+  const droop=pet.energia<30?6:0;
+  const len=r.R*1.35+(r.h%30)+extra-droop;
+  const wig=Math.sin(t*r.speed*3*speedMult+i*1.3)*16;
+  const endX=px+Math.cos(baseA)*len + spring.x*near*.5;
+  const endY=py+Math.sin(baseA)*len + spring.y*near*.5 + Math.sin(t*r.speed*2*speedMult+i)*10 + droop;
+  const midX=px+Math.cos(baseA)*len*.55+wig, midY=py+Math.sin(baseA)*len*.55+wig*.6;
+  tent.setAttribute("d",`M${rootX} ${rootY} Q${midX} ${midY} ${endX} ${endY}`);
+ });
+ const ampG=r.amp*(1-grav/300);
+ partEls.forEach((p,i)=>{const a=t*r.speed*speedMult+(i/partEls.length)*Math.PI*2;p.setAttribute("cx",px+cOff.x+Math.cos(a)*ampG);p.setAttribute("cy",py+cOff.y+Math.sin(a)*ampG)});
+
+ // esteira/rastro de bolhas atrás do movimento
+ if(flags.trail && moveMag>3 && Math.random()<.4){
+  const w=document.createElementNS(ns,"circle");
+  w.setAttribute("cx",px-Math.cos(moveAngle)*r.R*.8);w.setAttribute("cy",py-Math.sin(moveAngle)*r.R*.8);
+  w.setAttribute("r",1.5+Math.random()*2);w.setAttribute("fill","#bfe9ff");w.setAttribute("opacity",".5");
+  $("wake").appendChild(w);
+  let life=1;
+  const fade=()=>{life-=.02;w.setAttribute("opacity",Math.max(0,life*.5));w.setAttribute("r",(1.5+Math.random())*(1+ (1-life)) );
+   if(life>0)requestAnimationFrame(fade); else w.remove()};
+  requestAnimationFrame(fade);
+ }
+}
+
+/* ================= fundo: estrelas / nébulas / corais / esporos ================= */
+function makeStars(){const g=$("stars");g.innerHTML="";for(let i=0;i<70;i++){const c=document.createElementNS(ns,"circle");
+ c.setAttribute("cx",Math.random()*400);c.setAttribute("cy",Math.random()*640);c.setAttribute("r",Math.random()*1.4+.3);
+ c.setAttribute("fill","#eaf6ff");c.style.animation=`blink ${(2+Math.random()*3).toFixed(2)}s infinite`;c.style.animationDelay=(Math.random()*3).toFixed(2)+"s";
+ g.appendChild(c)}}
+function makeNebulae(){const g=$("nebulae");g.innerHTML="";const cols=["#5df1c9","#ff79d0","#7a5cff"];
+ for(let i=0;i<3;i++){const e=document.createElementNS(ns,"ellipse");e.setAttribute("cx",80+i*140);e.setAttribute("cy",180+i*90);
+  e.setAttribute("rx",130);e.setAttribute("ry",90);e.setAttribute("fill",cols[i]);e.setAttribute("filter","url(#softblur)");e.setAttribute("opacity",".18");g.appendChild(e)}}
+function makeCorals(){const g=$("corals");g.innerHTML="";
+ for(let i=0;i<8;i++){const x=20+i*50+((i*29)%30),h=60+((i*47)%90);
+  const p=document.createElementNS(ns,"path");p.setAttribute("stroke",`hsla(${280+i*10},70%,60%,.4)`);p.setAttribute("stroke-width","5");
+  p.setAttribute("fill","none");p.setAttribute("stroke-linecap","round");p.dataset.x=x;p.dataset.h=h;p.dataset.i=i;g.appendChild(p)}}
+let spores=[];
+function makeSpores(){const g=$("spores");g.innerHTML="";spores=[];
+ for(let i=0;i<24;i++){const c=document.createElementNS(ns,"circle");const d={x:Math.random()*400,y:Math.random()*800,r:.6+Math.random()*1.6,phase:Math.random()*6,sp:.2+Math.random()*.4,drift:(Math.random()-.5)*.5};
+  c.setAttribute("r",d.r);c.setAttribute("fill","#8fe6d2");spores.push({el:c,...d});g.appendChild(c)}}
+
+/* ================= loop principal ================= */
+let flags={turbo:true,rest:false,hud:true,trail:true};
+let last=performance.now();
+function loop(now){
+ const dt=Math.min(.05,(now-last)/1000); last=now;
+ const t=now/1000*(flags.turbo?1.7:1)*(flags.rest?.3:1);
+ excite=Math.max(0,excite-dt*.6);
+
+ // natação livre (manual via joystick, ou autônoma)
+ if(!dragging){
+  const speed=(curR?curR.speed:0.5)*46*(flags.rest?.35:1)*(0.6+pet.energia/160)*(1+excite*.5)*(1-grav/260);
+  if(joyHeld && (joyDir.x||joyDir.y)){
+   pos.x+=joyDir.x*speed*1.4*dt; pos.y+=joyDir.y*speed*1.4*dt;
+   pos.x=Math.max(50,Math.min(350,pos.x)); pos.y=Math.max(150,Math.min(620,pos.y));
+   swimTarget={x:pos.x,y:pos.y}; swimTimer=.4;
+  } else {
+   swimTimer-=dt;
+   const d=Math.hypot(swimTarget.x-pos.x,swimTarget.y-pos.y);
+   if(d<12||swimTimer<=0){
+    swimTarget={x:70+Math.random()*260, y:170+Math.random()*430}; swimTimer=2+Math.random()*3.5;
+   }
+   const dx=swimTarget.x-pos.x, dy=swimTarget.y-pos.y, dist=Math.hypot(dx,dy)||1;
+   const step=Math.min(dist,speed*dt);
+   pos.x+=dx/dist*step; pos.y+=dy/dist*step;
+  }
+ }
+
+ // mola de estica-e-puxa
+ const tx=dragging?spring.tx:0, ty=dragging?spring.ty:0;
+ spring.vx+=((tx-spring.x)*STIFF - spring.vx*DAMP)*dt;
+ spring.vy+=((ty-spring.y)*STIFF - spring.vy*DAMP)*dt;
+ spring.x+=spring.vx*dt; spring.y+=spring.vy*dt;
+
+ drawFrame(t);
+
+ document.querySelectorAll("#corals path").forEach(p=>{const x=+p.dataset.x,h=+p.dataset.h,i=+p.dataset.i,sway=Math.sin(t*.4+i)*10;
+  p.setAttribute("d",`M${x} 800 Q${x-14+sway} ${800-h*.5} ${x+sway*.4} ${800-h} Q${x+14+sway} ${800-h*.5} ${x} 800`)});
+ if(flags.trail){
+  spores.forEach(d=>{d.y-=d.sp*(flags.rest?.3:1);d.x+=Math.sin(t*.6+d.phase)*d.drift*.4;if(d.y<-5){d.y=805;d.x=Math.random()*400}
+   d.el.setAttribute("cx",d.x);d.el.setAttribute("cy",d.y);d.el.setAttribute("opacity",flags.rest?.15:.35+.4*Math.abs(Math.sin(t*1.1+d.phase)))});
+ }
+ $("planet").setAttribute("transform",`rotate(${Math.sin(t*.05)*3} 330 120)`);
+ streak1.setAttribute("opacity",.16+.06*Math.sin(t*.3));
+ streak2.setAttribute("opacity",.4+.1*Math.sin(t*.22+1));
+
+ // telemetria do HUD holográfico
+ if(hudPanel.classList.contains("open")){
+  valPhotons.textContent=(3.1+Math.sin(t*.7)*.4+(Math.random()-.5)*.06).toFixed(2)+" μ";
+  fMet.style.width=(50+20*Math.sin(t*.15))+"%"; fAmo.style.width=(40+15*Math.sin(t*.11+2))+"%";
+  sparkBuf.shift(); sparkBuf.push(20-16*Math.sin(t*(curR?curR.freq:300)/60));
+  sparkLine.setAttribute("points",sparkBuf.map((v,i)=>`${i*(200/(sparkBuf.length-1))},${v}`).join(" "));
+  updateScan();
+ }
+ if(sync<40 && Math.random()<.12){
+  bodyPath.setAttribute("transform",`translate(${(Math.random()-.5)*4},${(Math.random()-.5)*4})`);
+ } else if(bodyPath){ bodyPath.removeAttribute("transform") }
+
+ requestAnimationFrame(loop);
+}
+
+/* ================= interação de arrastar/esticar a criatura ================= */
+const svg=$("svg");
+function svgPoint(evt){
+ const pt=svg.createSVGPoint(); pt.x=evt.clientX; pt.y=evt.clientY;
+ const m=svg.getScreenCTM().inverse(); return pt.matrixTransform(m);
+}
+svg.addEventListener("pointerdown",e=>{
+ const p=svgPoint(e); const d=Math.hypot(p.x-pos.x,p.y-pos.y);
+ if(d<170){dragging=true;pointerId=e.pointerId;svg.setPointerCapture(pointerId);$("grabRing").setAttribute("opacity",".8");hint.style.opacity=0}
+});
+svg.addEventListener("pointermove",e=>{
+ if(!dragging||e.pointerId!==pointerId)return;
+ const p=svgPoint(e); let dx=p.x-pos.x, dy=p.y-pos.y; const m=Math.hypot(dx,dy);
+ if(m>MAXPULL){dx=dx/m*MAXPULL;dy=dy/m*MAXPULL}
+ spring.tx=dx;spring.ty=dy;
+ $("grabRing").setAttribute("cx",pos.x+dx);$("grabRing").setAttribute("cy",pos.y+dy);
+});
+function release(e){if(e.pointerId!==pointerId)return;dragging=false;pointerId=null;$("grabRing").setAttribute("opacity",0);swimTimer=.3}
+svg.addEventListener("pointerup",release); svg.addEventListener("pointercancel",release);
+
+/* ================= observação / cadastro ================= */
+function observe(add=true){
+ const r=resolve(); buildCreature(r);
+ const name=(nome.value.trim())||alienName(r.h);
+ chipName.textContent=name; rName.textContent=name; rSpecies.textContent=speciesName[r.shape]; rSignature.textContent="assinatura "+r.rep;
+ updateMood();
+ stShape.textContent=speciesName[r.shape]; stHue.textContent=r.hue+"°"; stAngle.textContent=r.angle+"°";
+ stWidth.textContent=r.width+"mm"; stFreq.textContent=r.freq+"Hz"; stSpeed.textContent=r.speed.toFixed(2)+"kn";
+ if(add)addLog(`${name} | larva ${current} | maré ${tide} | assinatura ${r.rep} | ${speciesName[r.shape]}`);
+}
+function addLog(x){log.textContent=x+"\n"+log.textContent}
+function changeTide(){tide=tide==="T01"?"T02":tide==="T02"?"T03":"T01";tideval.textContent=tide;observe();addLog("EVENTO | maré mudou → "+tide)}
+function toggle(el,key){flags[key]=!flags[key];el.classList.toggle("on",flags[key]);
+ if(key==="hud"){handleBottom.style.display=flags.hud?"flex":"none";}
+ if(key==="rest"){updateMood()}
+}
+
+/* ================= larvas ================= */
+const fragBox=$("frags");
+fragments.forEach(f=>{const b=document.createElement("button");b.textContent=f;
+ b.onclick=()=>{current=f;document.querySelectorAll(".frag button").forEach(x=>x.classList.remove("active"));b.classList.add("active");observe()};
+ fragBox.appendChild(b)});
+document.querySelector(".frag button:nth-child(2)").classList.add("active");
+[entity,space,key].forEach(x=>x.addEventListener("change",()=>observe()));
+nome.addEventListener("change",()=>observe());
+
+/* ================= relógio ================= */
+const dias=["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
+function tickClock(){const d=new Date();clockTime.textContent=d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+ clockWeek.textContent=dias[d.getDay()];clockDate.textContent=String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0");
+ clockYear.textContent=d.getFullYear()}
+tickClock(); setInterval(tickClock,1000);
+
+/* ================= retrato: abre/fecha ao tocar no chip ================= */
+chip.addEventListener("click",()=>retrato.classList.toggle("open"));
+
+/* ================= gavetas arrastáveis ================= */
+function makeDraggable(handle,panel,edge){
+ let startY=0, startOpen=false, panelH=0;
+ function open(v){panel.classList.toggle("open",v)}
+ handle.addEventListener("click",()=>open(!panel.classList.contains("open")));
+ handle.addEventListener("pointerdown",e=>{
+  handle.setPointerCapture(e.pointerId); startY=e.clientY; startOpen=panel.classList.contains("open");
+  panelH=panel.offsetHeight||300; panel.classList.add("dragging");
+ });
+ handle.addEventListener("pointermove",e=>{
+  if(e.buttons===0)return; const dy=e.clientY-startY;
+  let revealed = edge==="top" ? (startOpen?panelH:0)+dy : (startOpen?panelH:0)-dy;
+  revealed=Math.max(0,Math.min(panelH,revealed));
+  panel.style.transform = edge==="top" ? `translateY(${revealed-panelH}px)` : `translateY(${panelH-revealed}px)`;
+ });
+ function end(e){
+  panel.classList.remove("dragging"); panel.style.transform="";
+  const rect=panel.getBoundingClientRect();
+  const revealed = edge==="top" ? rect.bottom : (window.innerHeight-rect.top);
+  open(revealed > panelH*.4);
+ }
+ handle.addEventListener("pointerup",end); handle.addEventListener("pointercancel",end);
+}
+makeDraggable(handleTop,panelTop,"top");
+makeDraggable(handleBottom,panelBottom,"bottom");
+
+/* ================= boot ================= */
+makeStars(); makeNebulae(); makeCorals(); makeSpores();
+updateMeters();
+observe(false);
+requestAnimationFrame(loop);
+setTimeout(()=>{hint.style.opacity=0},4200);
+setTimeout(()=>{speak("oi… acho que és tu que vai cuidar de mim agora.","primeiro contato",5200)},1600);
+</script>
+</body>
+</html>

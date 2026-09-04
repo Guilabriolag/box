@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Gzero — Aquário de Outro Planeta</title>
+<style>
+:root{
+ --void:#050311; --deep:#0b0a22; --nebula:#2a1b4d; --teal:#5df1c9; --pink:#ff79d0;
+ --amber:#ffc46b; --ink:#eaf6ff; --dim:#7d84b8; --glass:rgba(14,12,34,.62);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{height:100%;overscroll-behavior:none}
+body{margin:0;background:var(--void);color:var(--ink);font-family:"Courier New",ui-monospace,monospace;overflow:hidden}
+#app{position:relative;height:100dvh;width:100%;max-width:520px;margin:auto;overflow:hidden}
+svg{width:100%;height:100%;display:block;touch-action:none}
+
+/* ---- topbar chip ---- */
+.chip{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:5;
+ display:flex;gap:8px;align-items:center;background:var(--glass);backdrop-filter:blur(8px);
+ border:1px solid rgba(93,241,201,.25);border-radius:999px;padding:6px 14px;font-size:11px;color:var(--teal);
+ letter-spacing:.5px}
+.chip b{color:var(--ink);font-weight:700}
+.pulse-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px var(--teal);animation:blink 1.6s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* ---- handles ---- */
+.handle{position:absolute;left:50%;transform:translateX(-50%);z-index:20;touch-action:none;cursor:grab;
+ display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 22px}
+.handle .bar{width:44px;height:5px;border-radius:5px;background:rgba(234,246,255,.35)}
+.handle.top{top:0}
+.handle.bottom{bottom:0}
+.handle .lbl{font-size:9px;color:var(--dim);letter-spacing:1px}
+
+/* ---- panels ---- */
+.panel{position:absolute;left:0;right:0;z-index:15;background:var(--glass);backdrop-filter:blur(14px);
+ border:1px solid rgba(93,241,201,.18);transition:transform .38s cubic-bezier(.2,.9,.25,1.15);padding:14px 16px 18px}
+.panel.dragging{transition:none}
+.panel-top{top:0;border-radius:0 0 22px 22px;transform:translateY(-101%)}
+.panel-top.open{transform:translateY(0)}
+.panel-bottom{bottom:0;border-radius:22px 22px 0 0;transform:translateY(101%)}
+.panel-bottom.open{transform:translateY(0)}
+
+.clockrow{display:flex;justify-content:space-between;align-items:baseline;margin:22px 0 14px;padding-bottom:10px;
+ border-bottom:1px dashed rgba(93,241,201,.2)}
+.clockrow .time{font-size:30px;color:var(--ink);letter-spacing:1px}
+.clockrow .date{text-align:right;font-size:11px;color:var(--dim);line-height:1.5}
+.clockrow .date b{color:var(--teal);text-transform:capitalize}
+
+label{display:block;color:var(--dim);font-size:9px;margin-bottom:3px;letter-spacing:1px;text-transform:uppercase}
+input{width:100%;border:1px solid rgba(93,241,201,.3);background:rgba(2,6,14,.65);color:var(--ink);
+ border-radius:9px;padding:8px 9px;font-family:inherit;font-size:13px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px}
+
+.toggle{display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(2,6,14,.5);
+ border:1px solid rgba(93,241,201,.15);border-radius:14px;padding:9px 4px;font-size:9px;color:var(--dim);
+ letter-spacing:.4px;text-align:center}
+.sw{width:38px;height:20px;border-radius:20px;background:rgba(125,132,184,.3);position:relative;transition:.2s}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#dfe6ff;transition:.2s}
+.toggle.on .sw{background:linear-gradient(90deg,var(--teal),var(--pink))}
+.toggle.on .sw::after{left:20px;background:#fff}
+.toggle.on{color:var(--ink)}
+
+.tidebtn{margin-top:12px;width:100%;border:1px solid rgba(255,196,107,.4);background:rgba(255,196,107,.08);
+ color:var(--amber);border-radius:10px;padding:9px;font-family:inherit;font-weight:700;font-size:12px;letter-spacing:.5px}
+
+.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px}
+.stat{background:rgba(2,6,14,.55);border:1px solid rgba(93,241,201,.12);border-radius:10px;padding:7px}
+.stat span{display:block;color:var(--dim);font-size:8px;letter-spacing:.5px}
+.stat b{color:var(--teal);font-size:13px}
+
+.frag{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin-top:6px}
+.frag button{border:1px solid rgba(93,241,201,.25);background:rgba(2,6,14,.6);color:var(--dim);
+ border-radius:8px;padding:6px 0;font-family:inherit;font-size:10px}
+.frag button.active{outline:1.5px solid var(--teal);color:var(--teal);box-shadow:0 0 10px rgba(93,241,201,.4)}
+
+.loglabel{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.log{font-size:10px;max-height:70px;overflow:auto;color:#8fa2c0;white-space:pre-wrap;margin-top:6px;
+ background:rgba(2,6,14,.4);border-radius:8px;padding:6px}
+
+.hint{position:absolute;bottom:118px;left:0;right:0;text-align:center;font-size:10px;color:var(--dim);
+ letter-spacing:.5px;z-index:3;pointer-events:none;transition:opacity .6s}
+</style>
+</head>
+<body>
+<div id="app">
+ <svg id="svg" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+   <radialGradient id="voidGrad" cx="50%" cy="38%" r="75%">
+    <stop offset="0%" stop-color="#131240"/><stop offset="55%" stop-color="#070518"/><stop offset="100%" stop-color="#020103"/>
+   </radialGradient>
+   <radialGradient id="planetGrad" cx="38%" cy="35%" r="65%">
+    <stop offset="0%" stop-color="#ffd9a8"/><stop offset="45%" stop-color="#e8794f"/><stop offset="100%" stop-color="#5b1c3a"/>
+   </radialGradient>
+   <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+    <feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+   </filter>
+   <filter id="softblur"><feGaussianBlur stdDeviation="18"/></filter>
+  </defs>
+
+  <rect x="0" y="0" width="400" height="800" fill="url(#voidGrad)"/>
+  <g id="nebulae" opacity=".55"></g>
+  <g id="stars"></g>
+  <g id="planet">
+   <ellipse cx="330" cy="120" rx="150" ry="46" fill="none" stroke="#ffcf9e" stroke-width="4" opacity=".35" transform="rotate(-18 330 120)"/>
+   <circle cx="330" cy="120" r="70" fill="url(#planetGrad)"/>
+   <ellipse cx="330" cy="120" rx="150" ry="46" fill="none" stroke="#ffe6c2" stroke-width="6" opacity=".5" transform="rotate(-18 330 120)" stroke-dasharray="2 10"/>
+  </g>
+  <g id="corals"></g>
+  <g id="spores"></g>
+
+  <g id="creature"></g>
+  <circle id="grabRing" cx="0" cy="0" r="20" fill="none" stroke="#eaf6ff" stroke-width="1.4" opacity="0"/>
+ </svg>
+
+ <div class="chip"><span class="pulse-dot"></span> <span id="chipName">—</span> · <b id="chipState">viva</b></div>
+
+ <div class="hint" id="hint">toque e arraste a criatura · puxe as abas ↑ ↓</div>
+
+ <!-- painel superior: perfil / cadastro / relógio -->
+ <div class="handle top" id="handleTop"><div class="lbl">perfil</div><div class="bar"></div></div>
+ <div class="panel panel-top" id="panelTop">
+  <div class="clockrow">
+   <div class="time" id="clockTime">--:--</div>
+   <div class="date">semana <b id="clockWeek">—</b><br><span id="clockDate">—/—</span> · <b id="clockYear">—</b></div>
+  </div>
+  <div class="grid2">
+   <div><label>nome da criatura</label><input id="nome" placeholder="auto"></div>
+   <div><label>entidade</label><input id="entity" value="X"></div>
+  </div>
+  <div class="grid2">
+   <div><label>espaço</label><input id="space" value="S01"></div>
+   <div><label>chave</label><input id="key" value="K01"></div>
+  </div>
+  <button class="tidebtn" onclick="changeTide()">🌊 mudar a maré (idtempo <span id="tideval">T01</span>)</button>
+  <div class="grid4">
+   <div class="toggle on" id="tgTurbo" onclick="toggle(this,'turbo')"><div class="sw"></div>turbo</div>
+   <div class="toggle" id="tgRest" onclick="toggle(this,'rest')"><div class="sw"></div>repouso</div>
+   <div class="toggle on" id="tgHud" onclick="toggle(this,'hud')"><div class="sw"></div>hud</div>
+   <div class="toggle on" id="tgTrail" onclick="toggle(this,'trail')"><div class="sw"></div>rastro</div>
+  </div>
+ </div>
+
+ <!-- gaveta inferior: larvas / atributos -->
+ <div class="handle bottom" id="handleBottom"><div class="bar"></div><div class="lbl">atributos</div></div>
+ <div class="panel panel-bottom" id="panelBottom">
+  <label>larva / estágio</label>
+  <div class="frag" id="frags"></div>
+  <div class="statgrid">
+   <div class="stat"><span>espécie</span><b id="stShape">—</b></div>
+   <div class="stat"><span>bioluz</span><b id="stHue">—</b></div>
+   <div class="stat"><span>orientação</span><b id="stAngle">—</b></div>
+   <div class="stat"><span>carapaça</span><b id="stWidth">—</b></div>
+   <div class="stat"><span>pulso</span><b id="stFreq">—</b></div>
+   <div class="stat"><span>nado</span><b id="stSpeed">—</b></div>
+  </div>
+  <div class="loglabel"><label style="margin:0">observações</label></div>
+  <div class="log" id="log"></div>
+ </div>
+</div>
+
+<script>
+const ns="http://www.w3.org/2000/svg";
+const $=id=>document.getElementById(id);
+const cx=200, cy=330;
+
+/* ================= núcleo determinístico ================= */
+const fragments=["00","01","02","03","04","05","06","07","08","09","11","12","13","21","22","23","31","32","33","99"];
+let current="01", tide="T01";
+function hash(s){let h=2166136261>>>0;for(let c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)>>>0}return h>>>0}
+function rehash(h,salt){return hash(h.toString(16)+"|"+salt)}
+const shapeNames=["circle","triangle","diamond","cross","arc","hex","star"];
+const speciesName={circle:"Medusozoário",triangle:"Trilobita espinhoso",diamond:"Anomalocáride",
+ cross:"Hidrozoário radial",arc:"Ctenóforo achatado",hex:"Radiolário blindado",star:"Sifonóforo estelar"};
+const lobes={circle:0,triangle:3,diamond:4,cross:8,arc:2,hex:6,star:10};
+const aspect={circle:1,triangle:.95,diamond:.82,cross:1,arc:.62,hex:1,star:1.12};
+
+function resolve(f=current){
+ const seed=`${entity.value}|${space.value}|${tide}|${key.value}|${f}`, h=hash(seed);
+ const shape=shapeNames[h%shapeNames.length];
+ const jitter=[];
+ for(let i=0;i<5;i++){const jh=rehash(h,"j"+i);jitter.push({freq:2+(jh%7),phase:(jh%628)/100,amp:.02+((jh>>3)%40)/1000})}
+ return {
+  h, rep:h.toString(16).padStart(8,"0"), shape, jitter,
+  hue:h%360, angle:h%360, width:1+(h%8), freq:180+(h%700),
+  speed:.25+(h%100)/100, amp:35+(h%90), state:(h&1)?"1":"0",
+  tent: 5+(h%4), R: 58+(h%14)
+ };
+}
+function alienName(h){
+ const a=["Xy","Vor","Qel","Zha","Nyx","Thal","Kry","Or","Vel","Ith","Sur","Mal","Fen","Grix","Ael"];
+ const b=["ath","on","ix","ux","ara","eth","oth","yn","ora","esh","um","ai"];
+ return a[h%a.length]+b[(h>>5)%b.length];
+}
+
+/* ================= física de "puxar/esticar" ================= */
+let spring={x:0,y:0,vx:0,vy:0}, dragging=false, pointerId=null;
+const MAXPULL=95, STIFF=90, DAMP=9.5;
+
+function jitterAt(angle,jitterArr){let s=0;for(const j of jitterArr)s+=Math.sin(j.freq*angle+j.phase)*j.amp;return s}
+function bodyRadius(angle,r,t){
+ const R=r.R;
+ let m=1;
+ if(lobes[r.shape]>0) m+=.16*Math.cos(lobes[r.shape]*angle+r.h%6);
+ m+=.05*Math.sin(3*angle+t*.6);
+ m+=jitterAt(angle,r.jitter);
+ return R*m;
+}
+function pullBump(angle){
+ const mag=Math.hypot(spring.x,spring.y);
+ if(mag<1)return {bump:0,ang:0,mag:0};
+ const pullAng=Math.atan2(spring.y,spring.x);
+ let diff=angle-pullAng; while(diff>Math.PI)diff-=2*Math.PI; while(diff<-Math.PI)diff+=2*Math.PI;
+ const spread=.55;
+ return {bump:mag*Math.exp(-(diff*diff)/(2*spread*spread)),ang:pullAng,mag};
+}
+function smoothPath(pts){
+ let d=`M ${(pts[0].x+pts[pts.length-1].x)/2} ${(pts[0].y+pts[pts.length-1].y)/2}`;
+ for(let i=0;i<pts.length;i++){const p=pts[i],n=pts[(i+1)%pts.length];const mx=(p.x+n.x)/2,my=(p.y+n.y)/2;d+=` Q ${p.x} ${p.y} ${mx} ${my}`}
+ return d+" Z";
+}
+
+/* ================= criatura ================= */
+let bodyPath,core,tentEls=[],partEls=[],curR=null;
+function buildCreature(r){
+ curR=r;
+ const g=$("creature"); g.innerHTML="";
+ const col=`hsl(${r.hue} 85% 66%)`, colDeep=`hsl(${r.hue} 70% 38%)`;
+ bodyPath=document.createElementNS(ns,"path");
+ bodyPath.setAttribute("fill",`hsla(${r.hue},80%,45%,.24)`);
+ bodyPath.setAttribute("stroke",col);bodyPath.setAttribute("stroke-width",r.width);
+ bodyPath.setAttribute("filter","url(#glow)");
+ g.appendChild(bodyPath);
+
+ core=document.createElementNS(ns,"circle");
+ core.setAttribute("r",9);core.setAttribute("fill",col);core.setAttribute("filter","url(#glow)");
+ g.appendChild(core);
+
+ tentEls=[];
+ for(let i=0;i<r.tent;i++){
+  const t=document.createElementNS(ns,"path");
+  t.setAttribute("fill","none");t.setAttribute("stroke",colDeep);
+  t.setAttribute("stroke-width",Math.max(1,r.width*.5));t.setAttribute("stroke-linecap","round");
+  t.setAttribute("opacity",".8");
+  g.appendChild(t); tentEls.push(t);
+ }
+ partEls=[];
+ for(let i=0;i<10;i++){const p=document.createElementNS(ns,"circle");p.setAttribute("r",1.3+(i%3)*.7);p.setAttribute("fill",col);p.setAttribute("opacity",".8");g.appendChild(p);partEls.push(p)}
+}
+function drawFrame(t){
+ const r=curR; if(!r)return;
+ const N=40, pts=[];
+ for(let i=0;i<N;i++){
+  const a=i/N*Math.PI*2;
+  let rad=bodyRadius(a,r,t);
+  const pb=pullBump(a); rad+=pb.bump;
+  pts.push({x:cx+Math.cos(a)*rad, y:cy+Math.sin(a)*rad*aspect[r.shape]});
+ }
+ bodyPath.setAttribute("d",smoothPath(pts));
+ const cOff={x:spring.x*.14,y:spring.y*.14};
+ core.setAttribute("cx",cx+cOff.x);core.setAttribute("cy",cy+cOff.y);
+ core.setAttribute("r",7+3*Math.abs(Math.sin(t*r.freq/60)));
+
+ const mag=Math.hypot(spring.x,spring.y), pullAng=Math.atan2(spring.y,spring.x);
+ tentEls.forEach((tent,i)=>{
+  const baseA=Math.PI*.15 + (i/(tentEls.length-1||1))*Math.PI*.7 + Math.PI*.5;
+  const rootR=bodyRadius(baseA,r,t)*.92;
+  const rootX=cx+Math.cos(baseA)*rootR, rootY=cy+Math.sin(baseA)*rootR*aspect[r.shape];
+  let diff=baseA-pullAng; while(diff>Math.PI)diff-=2*Math.PI; while(diff<-Math.PI)diff+=2*Math.PI;
+  const near=Math.exp(-(diff*diff)/(2*.6*.6));
+  const extra=mag*near*.9;
+  const len=r.R*1.35+(r.h%30)+extra;
+  const wig=Math.sin(t*r.speed*3+i*1.3)*16;
+  const endX=cx+Math.cos(baseA)*len + spring.x*near*.5;
+  const endY=cy+Math.sin(baseA)*len + spring.y*near*.5 + Math.sin(t*r.speed*2+i)*10;
+  const midX=cx+Math.cos(baseA)*len*.55+wig, midY=cy+Math.sin(baseA)*len*.55+wig*.6;
+  tent.setAttribute("d",`M${rootX} ${rootY} Q${midX} ${midY} ${endX} ${endY}`);
+ });
+ partEls.forEach((p,i)=>{const a=t*r.speed+(i/partEls.length)*Math.PI*2;p.setAttribute("cx",cx+cOff.x+Math.cos(a)*r.amp);p.setAttribute("cy",cy+cOff.y+Math.sin(a)*r.amp)});
+}
+
+/* ================= fundo: estrelas / nébulas / corais / esporos ================= */
+function makeStars(){const g=$("stars");g.innerHTML="";for(let i=0;i<70;i++){const c=document.createElementNS(ns,"circle");
+ c.setAttribute("cx",Math.random()*400);c.setAttribute("cy",Math.random()*640);c.setAttribute("r",Math.random()*1.4+.3);
+ c.setAttribute("fill","#eaf6ff");c.style.animation=`blink ${(2+Math.random()*3).toFixed(2)}s infinite`;c.style.animationDelay=(Math.random()*3).toFixed(2)+"s";
+ g.appendChild(c)}}
+function makeNebulae(){const g=$("nebulae");g.innerHTML="";const cols=["#5df1c9","#ff79d0","#7a5cff"];
+ for(let i=0;i<3;i++){const e=document.createElementNS(ns,"ellipse");e.setAttribute("cx",80+i*140);e.setAttribute("cy",180+i*90);
+  e.setAttribute("rx",130);e.setAttribute("ry",90);e.setAttribute("fill",cols[i]);e.setAttribute("filter","url(#softblur)");e.setAttribute("opacity",".18");g.appendChild(e)}}
+function makeCorals(){const g=$("corals");g.innerHTML="";
+ for(let i=0;i<8;i++){const x=20+i*50+((i*29)%30),h=60+((i*47)%90);
+  const p=document.createElementNS(ns,"path");p.setAttribute("stroke",`hsla(${280+i*10},70%,60%,.4)`);p.setAttribute("stroke-width","5");
+  p.setAttribute("fill","none");p.setAttribute("stroke-linecap","round");p.dataset.x=x;p.dataset.h=h;p.dataset.i=i;g.appendChild(p)}}
+let spores=[];
+function makeSpores(){const g=$("spores");g.innerHTML="";spores=[];
+ for(let i=0;i<24;i++){const c=document.createElementNS(ns,"circle");const d={x:Math.random()*400,y:Math.random()*800,r:.6+Math.random()*1.6,phase:Math.random()*6,sp:.2+Math.random()*.4,drift:(Math.random()-.5)*.5};
+  c.setAttribute("r",d.r);c.setAttribute("fill","#8fe6d2");spores.push({el:c,...d});g.appendChild(c)}}
+
+/* ================= loop principal ================= */
+let flags={turbo:true,rest:false,hud:true,trail:true};
+let last=performance.now();
+function loop(now){
+ const dt=Math.min(.05,(now-last)/1000); last=now;
+ const t=now/1000*(flags.turbo?1.7:1)*(flags.rest?.3:1);
+
+ // spring física
+ const tx=dragging?spring.tx:0, ty=dragging?spring.ty:0;
+ spring.vx+=((tx-spring.x)*STIFF - spring.vx*DAMP)*dt;
+ spring.vy+=((ty-spring.y)*STIFF - spring.vy*DAMP)*dt;
+ spring.x+=spring.vx*dt; spring.y+=spring.vy*dt;
+
+ drawFrame(t);
+
+ document.querySelectorAll("#corals path").forEach(p=>{const x=+p.dataset.x,h=+p.dataset.h,i=+p.dataset.i,sway=Math.sin(t*.4+i)*10;
+  p.setAttribute("d",`M${x} 800 Q${x-14+sway} ${800-h*.5} ${x+sway*.4} ${800-h} Q${x+14+sway} ${800-h*.5} ${x} 800`)});
+ if(flags.trail){
+  spores.forEach(d=>{d.y-=d.sp*(flags.rest?.3:1);d.x+=Math.sin(t*.6+d.phase)*d.drift*.4;if(d.y<-5){d.y=805;d.x=Math.random()*400}
+   d.el.setAttribute("cx",d.x);d.el.setAttribute("cy",d.y);d.el.setAttribute("opacity",flags.rest?.15:.35+.4*Math.abs(Math.sin(t*1.1+d.phase)))});
+ }
+ $("planet").setAttribute("transform",`rotate(${Math.sin(t*.05)*3} 330 120)`);
+ requestAnimationFrame(loop);
+}
+
+/* ================= interação de arrastar/esticar a criatura ================= */
+const svg=$("svg");
+function svgPoint(evt){
+ const pt=svg.createSVGPoint(); pt.x=evt.clientX; pt.y=evt.clientY;
+ const m=svg.getScreenCTM().inverse(); return pt.matrixTransform(m);
+}
+svg.addEventListener("pointerdown",e=>{
+ const p=svgPoint(e); const d=Math.hypot(p.x-cx,p.y-cy);
+ if(d<170){dragging=true;pointerId=e.pointerId;svg.setPointerCapture(pointerId);$("grabRing").setAttribute("opacity",".8");hint.style.opacity=0}
+});
+svg.addEventListener("pointermove",e=>{
+ if(!dragging||e.pointerId!==pointerId)return;
+ const p=svgPoint(e); let dx=p.x-cx, dy=p.y-cy; const m=Math.hypot(dx,dy);
+ if(m>MAXPULL){dx=dx/m*MAXPULL;dy=dy/m*MAXPULL}
+ spring.tx=dx;spring.ty=dy;
+ $("grabRing").setAttribute("cx",cx+dx);$("grabRing").setAttribute("cy",cy+dy);
+});
+function release(e){if(e.pointerId!==pointerId)return;dragging=false;pointerId=null;$("grabRing").setAttribute("opacity",0)}
+svg.addEventListener("pointerup",release); svg.addEventListener("pointercancel",release);
+
+/* ================= observação / cadastro ================= */
+function observe(add=true){
+ const r=resolve(); buildCreature(r);
+ const name=(nome.value.trim())||alienName(r.h);
+ chipName.textContent=name; chipState.textContent=flags.rest?"dormindo":"viva";
+ stShape.textContent=speciesName[r.shape]; stHue.textContent=r.hue+"°"; stAngle.textContent=r.angle+"°";
+ stWidth.textContent=r.width+"mm"; stFreq.textContent=r.freq+"Hz"; stSpeed.textContent=r.speed.toFixed(2)+"kn";
+ if(add)addLog(`${name} | larva ${current} | maré ${tide} | assinatura ${r.rep} | ${speciesName[r.shape]}`);
+}
+function addLog(x){log.textContent=x+"\n"+log.textContent}
+function changeTide(){tide=tide==="T01"?"T02":tide==="T02"?"T03":"T01";tideval.textContent=tide;observe();addLog("EVENTO | maré mudou → "+tide)}
+function toggle(el,key){flags[key]=!flags[key];el.classList.toggle("on",flags[key]);
+ if(key==="hud"){handleBottom.style.display=flags.hud?"flex":"none";}
+ if(key==="rest"){chipState.textContent=flags.rest?"dormindo":"viva"}
+}
+
+/* ================= larvas ================= */
+const fragBox=$("frags");
+fragments.forEach(f=>{const b=document.createElement("button");b.textContent=f;
+ b.onclick=()=>{current=f;document.querySelectorAll(".frag button").forEach(x=>x.classList.remove("active"));b.classList.add("active");observe()};
+ fragBox.appendChild(b)});
+document.querySelector(".frag button:nth-child(2)").classList.add("active");
+[entity,space,key].forEach(x=>x.addEventListener("change",()=>observe()));
+nome.addEventListener("change",()=>observe());
+
+/* ================= relógio ================= */
+const dias=["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
+function tickClock(){const d=new Date();clockTime.textContent=d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+ clockWeek.textContent=dias[d.getDay()];clockDate.textContent=String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0");
+ clockYear.textContent=d.getFullYear()}
+tickClock(); setInterval(tickClock,1000);
+
+/* ================= gavetas arrastáveis ================= */
+function makeDraggable(handle,panel,edge){
+ let startY=0, startOpen=false, dragOffset=0, panelH=0;
+ function open(v){panel.classList.toggle("open",v)}
+ handle.addEventListener("click",()=>open(!panel.classList.contains("open")));
+ handle.addEventListener("pointerdown",e=>{
+  handle.setPointerCapture(e.pointerId); startY=e.clientY; startOpen=panel.classList.contains("open");
+  panelH=panel.offsetHeight||300; panel.classList.add("dragging");
+ });
+ handle.addEventListener("pointermove",e=>{
+  if(e.buttons===0)return; const dy=e.clientY-startY;
+  let revealed = edge==="top" ? (startOpen?panelH:0)+dy : (startOpen?panelH:0)-dy;
+  revealed=Math.max(0,Math.min(panelH,revealed));
+  panel.style.transform = edge==="top" ? `translateY(${revealed-panelH}px)` : `translateY(${panelH-revealed}px)`;
+ });
+ function end(e){
+  panel.classList.remove("dragging"); panel.style.transform="";
+  const rect=panel.getBoundingClientRect();
+  const revealed = edge==="top" ? rect.bottom : (window.innerHeight-rect.top);
+  open(revealed > panelH*.4);
+ }
+ handle.addEventListener("pointerup",end); handle.addEventListener("pointercancel",end);
+}
+makeDraggable(handleTop,panelTop,"top");
+makeDraggable(handleBottom,panelBottom,"bottom");
+
+/* ================= boot ================= */
+makeStars(); makeNebulae(); makeCorals(); makeSpores();
+observe(false);
+requestAnimationFrame(loop);
+setTimeout(()=>{hint.style.opacity=0},4200);
+</script>
+</body>
+</html>

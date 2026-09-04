@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>GZERO C-137 — Aquário Multiversal</title>
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#07100d;--panel:#0d1914e8;--line:#294f3d;--cyan:#62f5d0;
+  --acid:#9cff38;--pink:#ff64bc;--yellow:#ffe66d;--danger:#ff5b63;
+}
+html,body{margin:0;min-height:100%;background:
+radial-gradient(circle at 20% 10%,#143b2a 0 2px,transparent 3px),
+radial-gradient(circle at 80% 30%,#294e3d 0 1px,transparent 2px),
+#050806;color:#effff6;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;
+background:repeating-linear-gradient(0deg,transparent 0 3px,#baffd908 4px,#baffd908 5px)}
+.app{max-width:1500px;margin:auto;padding:10px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand{display:flex;align-items:center;gap:10px}
+.portalMini{width:38px;height:38px;border-radius:50%;border:2px solid var(--acid);
+box-shadow:0 0 18px #9cff3866,inset 0 0 14px #9cff3855;
+background:radial-gradient(circle,#d9ffb5,#4bcf73 25%,#132e1e 58%,#050806 60%);
+animation:spin 6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+h1{font-size:18px;margin:0;font-weight:900;letter-spacing:.03em}
+.sub{font:10px ui-monospace,monospace;color:#88a99a}
+.badge{border:1px solid #39634c;border-radius:20px;padding:7px 10px;background:#07100ddd;
+font:10px ui-monospace,monospace}
+.layout{display:grid;grid-template-columns:235px 1fr 235px;gap:9px;margin-top:9px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+box-shadow:0 12px 35px #000b,0 0 20px #69ff8d08;backdrop-filter:blur(8px)}
+.side{padding:11px}.section{margin-bottom:14px}
+h3{font-size:10px;letter-spacing:.14em;color:#8bb8a0;margin:0 0 7px}
+label{font-size:10px;color:#7d9b8b;display:block;margin:7px 0 3px}
+input{width:100%;background:#06100b;color:#f4fff8;border:1px solid #315441;border-radius:8px;padding:8px}
+.frags{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.frags button{background:#08140d;color:#a4c6b1;border:1px solid #2c4d3a;border-radius:6px;padding:6px 0;font:10px monospace}
+.frags button:hover{background:#163022}.frags button.active{border-color:var(--acid);color:#fff;
+box-shadow:0 0 13px #9cff3866;background:#16371d}
+.stage{height:67vh;min-height:450px;position:relative;overflow:hidden;background:#03110a}
+.water{position:absolute;inset:0;
+background:radial-gradient(ellipse at 52% 42%,#8cff4530,transparent 18%),
+radial-gradient(ellipse at 70% 0,#ff5eb52a,transparent 35%),
+linear-gradient(#071e17,#04130e 55%,#020805)}
+.water:after{content:"";position:absolute;inset:-40%;
+background:repeating-radial-gradient(ellipse at 50% 50%,transparent 0 55px,#a6ff9b08 57px 59px);
+animation:water 15s linear infinite}
+@keyframes water{to{transform:rotate(360deg)}}
+svg{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.hud{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;
+font:11px monospace;pointer-events:none}.pill{background:#07110de8;border:1px solid #426a51;
+padding:6px 8px;border-radius:9px}.pill b{color:var(--acid)}
+.hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
+font-size:10px;color:#b8d9c4;background:#06110de8;padding:7px 12px;border-radius:20px;
+pointer-events:none;white-space:nowrap;border:1px solid #294b39}
+.metric{padding:8px;margin-bottom:7px;border:1px solid #294b39;border-radius:9px;background:#06100b}
+.k{font-size:9px;color:#769485;text-transform:uppercase}.v{font:13px monospace;margin-top:3px}
+.bar{height:5px;background:#0b2016;margin-top:6px;border-radius:9px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--acid),var(--cyan),var(--pink))}
+.log{font:9px monospace;line-height:1.5;max-height:260px;overflow:auto;color:#a9c8b6}
+.factory{margin-top:9px;padding:10px}.factorygrid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}
+.box{border:1px solid #294b39;border-radius:10px;padding:9px;background:#06100b}
+.eq{font:10px monospace;line-height:1.6;color:#a9c9b6}.eq b{color:var(--acid)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.actions button{padding:8px;border-radius:8px;border:1px solid #3b614b;background:#0a1a11;color:#e7fff0}
+.primary{background:#31551c!important;border-color:var(--acid)!important;box-shadow:0 0 14px #9cff3822}
+.toggle{display:flex;gap:5px;flex-wrap:wrap}.toggle button{flex:1;padding:6px;border-radius:7px;
+border:1px solid #315441;background:#08140d;color:#b9d4c4}.toggle button.on{border-color:var(--pink);color:#fff}
+.notice{font:9px monospace;color:#91b29e;line-height:1.45;margin-top:6px}
+.portalRing{fill:none;stroke:#9cff38;stroke-width:5;opacity:.6;filter:url(#glow)}
+.spark{fill:#ffe66d}
+@media(max-width:1050px){.layout{grid-template-columns:210px 1fr}.side-right{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){
+ .top .badge{display:none}.layout{display:block}.side,.side-right{margin-bottom:8px}
+ .side{display:grid;grid-template-columns:1fr 1fr;gap:8px}.section:first-child{grid-column:1/-1}
+ .stage{height:58vh;min-height:390px}.factorygrid{grid-template-columns:1fr 1fr}
+ .side-right{display:grid;grid-template-columns:1fr 1fr}.event{grid-column:1/-1}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+  <div class="brand">
+    <div class="portalMini"></div>
+    <div><h1>GZERO C-137 / ALPH@BETO — AQUÁRIO MULTIVERSAL</h1>
+    <div class="sub">um laboratório alienígena de manifestação · versão desenho sci-fi</div></div>
+  </div>
+  <div class="badge">WA01 OBSERVA · WB01 RESOLVE · DIM <b id="bt">C-137</b></div>
+</header>
+
+<div class="layout">
+<aside class="panel side">
+<section class="section"><h3>CONTEXTUALIZADOR</h3>
+<label>ENTITY</label><input id="entity" value="BIO-AQUA">
+<label>SPACE</label><input id="space" value="C-137">
+<label>IDTIME</label><input id="time" value="T01">
+<label>KEY</label><input id="key" value="K01">
+</section>
+<section class="section"><h3>ALPH@BETO / 00—99</h3><div class="frags" id="frags"></div></section>
+<section class="section"><h3>DIMENSÃO</h3>
+<div class="toggle"><button class="on" id="dim1">C-137</button><button id="dim2">X-∞</button></div>
+<div class="notice">Cada troca de dimensão altera o contexto do fragmento.</div>
+</section>
+</aside>
+
+<main>
+<div class="panel stage" id="stage">
+<div class="water"></div>
+<svg id="svg" viewBox="0 0 1000 600">
+<defs>
+ <filter id="glow"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <radialGradient id="g"><stop offset="0" stop-color="#fff"/><stop offset=".25" stop-color="#9cff38"/>
+ <stop offset=".6" stop-color="#50eaff"/><stop offset=".84" stop-color="#ff5ed7"/><stop offset="1" stop-color="#492dff"/></radialGradient>
+ <linearGradient id="goo" x1="0" x2="1"><stop stop-color="#9cff38"/><stop offset=".5" stop-color="#52f3b6"/><stop offset="1" stop-color="#ff64bc"/></linearGradient>
+</defs>
+<g id="portal"></g><g id="creature"></g><g id="particles"></g>
+</svg>
+<div class="hud"><div class="pill">FRAGMENTO <b id="hf">01</b></div><div class="pill">STATE <b id="hs">0</b></div></div>
+<div class="hint">TOQUE · ARRASTE · ESTIQUE · JOGUE COM O BICHINHO</div>
+</div>
+
+<div class="panel factory"><div class="factorygrid">
+<div class="box"><h3>FÁBRICA DE MANIFESTAÇÃO</h3>
+<div class="eq"><b>FRAGMENTO</b> + KEY + IDTIME<br>+ ENTITY + SPACE<br>↓<br><b>CRIATURA / ESTADO / EVENTO</b></div>
+</div>
+<div class="box"><h3>PARÂMETROS</h3>
+<label>Amplitude <output id="ao">0.70</output></label>
+<input id="amp" type="range" min=".1" max="1" step=".01" value=".7">
+<label>Fluidez <output id="fo">0.80</output></label>
+<input id="flow" type="range" min=".1" max="1" step=".01" value=".8">
+</div>
+<div class="box"><h3>DNA VISUAL</h3>
+<div class="eq">forma: <b id="shape">—</b><br>
+hue: <b id="hue">—</b>°<br>ângulo: <b id="angle">—</b>°<br>
+freq: <b id="freq">—</b> Hz<br>espessura: <b id="width">—</b> px</div>
+</div>
+<div class="box"><h3>CONTROLE</h3><div class="actions">
+<button onclick="nextTime()">IDTIME +</button><button onclick="nextKey()">KEY +</button>
+<button onclick="randomFrag()">ALEATÓRIO</button><button class="primary" onclick="manifest()">MANIFESTAR</button>
+</div></div>
+</div></div>
+</main>
+
+<aside class="panel side-right">
+<div class="metric"><div class="k">Representação</div><div class="v" id="rep">—</div></div>
+<div class="metric"><div class="k">Intensidade</div><div class="v" id="inten">—</div><div class="bar"><i id="ib"></i></div></div>
+<div class="metric"><div class="k">Confiança</div><div class="v" id="conf">—</div><div class="bar"><i id="cb"></i></div></div>
+<div class="metric"><div class="k">Humor do espécime</div><div class="v" id="mood">—</div></div>
+<div class="metric event"><div class="k">Rastro de observações / eventos</div><div class="log" id="log"></div></div>
+</aside>
+</div>
+</div>
+
+<script>
+const fragments=Array.from({length:100},(_,i)=>String(i).padStart(2,"0"));
+let current="01",target={x:500,y:300},pos={x:500,y:300},boost=0,anim=0;
+let dimension="C-137",dragging=false;
+
+function hash(s){let h=2166136261>>>0;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)>>>0}return h>>>0}
+function resolve(){
+ const seed=entity.value+"|"+space.value+"|"+time.value+"|"+key.value+"|"+current+"|"+dimension,h=hash(seed);
+ const shapes=["GELATINA","ESPIRAL","PRESUNTO","ÓRBITA","PLASMA","HEX","AMOEBA","TENTÁCULO"];
+ const moods=["CURIOSO","FAMINTO","EUFÓRICO","CONFUSO","SONOLENTO","HOSTIL","FELIZ"];
+ return {
+  h,rep:h.toString(16).padStart(8,"0").toUpperCase(),shape:shapes[h%shapes.length],
+  hue:h%360,angle:h%360,width:1+h%7,freq:180+h%620,speed:.35+h%90/100,
+  intensity:h%100/100,conf:.70+h%30/100,state:h&1?"1":"0",amp:.25+h%75/100,
+  mood:moods[(h>>>8)%moods.length]
+ }
+}
+function log(s){const l=document.getElementById("log");l.textContent+=s+"\n";l.scrollTop=l.scrollHeight}
+function drawPortal(){
+ const ns="http://www.w3.org/2000/svg",root=document.getElementById("portal");root.innerHTML="";
+ const c=document.createElementNS(ns,"circle");c.setAttribute("cx",500);c.setAttribute("cy",300);c.setAttribute("r",130);
+ c.setAttribute("class","portalRing");root.appendChild(c);
+ for(let i=0;i<12;i++){const p=document.createElementNS(ns,"circle");p.setAttribute("cx",500+Math.cos(i*.52)*155);
+ p.setAttribute("cy",300+Math.sin(i*.52)*155);p.setAttribute("r",2+i%3);p.setAttribute("class","spark");root.appendChild(p)}
+}
+function draw(r){
+ const ns="http://www.w3.org/2000/svg",root=document.getElementById("creature");root.innerHTML="";
+ const g=document.createElementNS(ns,"g");
+ const body=document.createElementNS(ns,"ellipse");body.setAttribute("cx",500);body.setAttribute("cy",300);
+ body.setAttribute("rx",82);body.setAttribute("ry",52);body.setAttribute("fill","url(#g)");
+ body.setAttribute("opacity",".30");body.setAttribute("filter","url(#glow)");
+ const core=document.createElementNS(ns,"circle");core.setAttribute("cx",500);core.setAttribute("cy",300);
+ core.setAttribute("r",18);core.setAttribute("fill","url(#g)");core.setAttribute("filter","url(#glow)");
+ const eye1=document.createElementNS(ns,"circle");eye1.setAttribute("cx",485);eye1.setAttribute("cy",293);
+ eye1.setAttribute("r",8);eye1.setAttribute("fill","#f7fff8");
+ const eye2=document.createElementNS(ns,"circle");eye2.setAttribute("cx",515);eye2.setAttribute("cy",293);
+ eye2.setAttribute("r",8);eye2.setAttribute("fill","#f7fff8");
+ const pupil1=document.createElementNS(ns,"circle");pupil1.setAttribute("cx",486);pupil1.setAttribute("cy",295);
+ pupil1.setAttribute("r",3);pupil1.setAttribute("fill","#111");
+ const pupil2=document.createElementNS(ns,"circle");pupil2.setAttribute("cx",516);pupil2.setAttribute("cy",295);
+ pupil2.setAttribute("r",3);pupil2.setAttribute("fill","#111");
+ g.append(body,core,eye1,eye2,pupil1,pupil2);
+
+ for(let i=0;i<18;i++){
+  let p=document.createElementNS(ns,"circle");p.setAttribute("r",2+i%3);
+  p.setAttribute("fill",`hsl(${r.hue} 90% 65%)`);p.dataset.i=i;g.appendChild(p)
+ }
+ for(let i=0;i<8;i++){
+  let p=document.createElementNS(ns,"path");p.setAttribute("fill","none");
+  p.setAttribute("stroke",i%2?`hsl(${(r.hue+80)%360} 90% 70%)`:`hsl(${r.hue} 90% 65%)`);
+  p.setAttribute("stroke-width",r.width);p.setAttribute("opacity",.28+i*.08);p.dataset.i=i;g.appendChild(p)
+ }
+ root.appendChild(g);
+ const start=performance.now(),id=++anim;
+ function tick(now){
+  if(id!==anim)return;
+  const t=(now-start)/1000;
+  pos.x+=(target.x-pos.x)*.035;pos.y+=(target.y-pos.y)*.035;
+  const stretchX=1+Math.min(.75,Math.abs(target.x-pos.x)/250);
+  const stretchY=1+Math.min(.65,Math.abs(target.y-pos.y)/220);
+  g.setAttribute("transform",`translate(${pos.x-500} ${pos.y-300}) rotate(${r.angle+Math.sin(t)*8} 500 300) scale(${stretchX} ${stretchY})`);
+  const a=45+r.amp*75+boost*55;
+  [...g.querySelectorAll("circle")].forEach((p,i)=>{
+   if(i<6)return;
+   const q=t*r.speed+i/16*Math.PI*2;
+   p.setAttribute("cx",500+Math.cos(q)*a);p.setAttribute("cy",300+Math.sin(q)*a*.6);
+   p.setAttribute("opacity",.45+.45*Math.sin(q*2))
+  });
+  [...g.querySelectorAll("path")].forEach((p,i)=>{
+   p.setAttribute("d",`M ${405-i*7} ${300+(i-4)*10} Q ${500+Math.sin(t*1.4+i)*60}
+   ${170+i*22+Math.sin(t*2+i)*25} ${595+i*7} ${300+(i-4)*10}`)
+  });
+  core.setAttribute("r",18+5*Math.sin(t*r.freq/90)*(Number(amp.value)+.5));
+  eye1.setAttribute("cx",485+Math.sin(t)*2);eye2.setAttribute("cx",515+Math.sin(t)*2);
+  requestAnimationFrame(tick)
+ }
+ requestAnimationFrame(tick)
+}
+function observe(reason="OBS"){
+ const r=resolve();hf.textContent=current;hs.textContent=r.state;rep.textContent=r.rep;
+ shape.textContent=r.shape;hue.textContent=r.hue;angle.textContent=r.angle;freq.textContent=r.freq;
+ width.textContent=r.width;inten.textContent=r.intensity.toFixed(2);conf.textContent=r.conf.toFixed(2);
+ mood.textContent=r.mood;ib.style.width=r.intensity*100+"%";cb.style.width=r.conf*100+"%";
+ bt.textContent=dimension;drawPortal();draw(r);
+ log(reason+" | F="+current+" | "+time.value+" | "+key.value+" | DIM="+dimension+" | REP="+r.rep+" | STATE="+r.state)
+}
+function nextTime(){time.value=time.value==="T01"?"T02":time.value==="T02"?"T03":"T01";observe("EVENT IDTIME")}
+function nextKey(){key.value=key.value==="K01"?"K02":key.value==="K02"?"K03":"K01";observe("EVENT KEY")}
+function randomFrag(){current=fragments[Math.floor(Math.random()*100)];sync();observe("EVENT FRAGMENT")}
+function manifest(){boost=1;setTimeout(()=>boost=0,900);observe("MANIFESTAÇÃO")}
+function sync(){document.querySelectorAll(".frags button").forEach(b=>b.classList.toggle("active",b.textContent===current))}
+document.getElementById("frags").innerHTML=fragments.map(f=>"<button>"+f+"</button>").join("");
+document.querySelectorAll(".frags button").forEach(b=>b.onclick=()=>{current=b.textContent;sync();observe("SELEÇÃO")});
+[entity,space,time,key].forEach(x=>x.addEventListener("input",()=>observe("CONTEXTO")));
+amp.oninput=()=>ao.textContent=Number(amp.value).toFixed(2);
+flow.oninput=()=>fo.textContent=Number(flow.value).toFixed(2);
+
+dim1.onclick=()=>{dimension="C-137";dim1.classList.add("on");dim2.classList.remove("on");observe("DIMENSÃO")};
+dim2.onclick=()=>{dimension="X-∞";dim2.classList.add("on");dim1.classList.remove("on");observe("DIMENSÃO")};
+
+stage.addEventListener("pointerdown",e=>{
+ dragging=true;stage.setPointerCapture?.(e.pointerId);
+ const r=svg.getBoundingClientRect();target.x=(e.clientX-r.left)/r.width*1000;target.y=(e.clientY-r.top)/r.height*600;
+ boost=1;log("INTERAÇÃO | TOQUE | x="+target.x.toFixed(0)+" y="+target.y.toFixed(0));
+});
+stage.addEventListener("pointermove",e=>{
+ if(!dragging)return;const r=svg.getBoundingClientRect();
+ target.x=(e.clientX-r.left)/r.width*1000;target.y=(e.clientY-r.top)/r.height*600;
+});
+stage.addEventListener("pointerup",()=>{dragging=false;boost=0});
+stage.addEventListener("pointercancel",()=>{dragging=false;boost=0});
+
+sync();observe("INIT");
+</script>
+</body>
+</html>

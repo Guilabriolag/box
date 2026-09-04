@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gzero — Aquário Cambriano // Outra Dimensão</title>
+<style>
+*{box-sizing:border-box}
+@keyframes drift{0%{background-position:0 0,0 0}100%{background-position:400px 900px,-300px 600px}}
+@keyframes shimmer{0%,100%{opacity:.5}50%{opacity:1}}
+body{
+ margin:0;background:
+  radial-gradient(circle at 20% 15%,#0f2c3a 0%,transparent 45%),
+  radial-gradient(circle at 85% 75%,#1a1440 0%,transparent 50%),
+  linear-gradient(180deg,#020509 0%,#03101a 40%,#04151f 70%,#010306 100%);
+ color:#cdf7ec;font-family:"Courier New",ui-monospace,monospace;min-height:100vh}
+#app{max-width:1250px;margin:auto;padding:18px}
+.top{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+h1{font-size:21px;margin:0;letter-spacing:.5px;
+ background:linear-gradient(90deg,#5df1c9,#7fc4ff,#e08bff,#5df1c9);
+ -webkit-background-clip:text;background-clip:text;color:transparent;
+ background-size:300% 100%;animation:shimmer 6s linear infinite,drift 12s linear infinite}
+.muted{color:#5f9c94;font-size:12px}
+.card{background:linear-gradient(160deg,rgba(9,26,32,.85),rgba(4,12,18,.9));
+ border:1px solid rgba(93,241,201,.18);border-radius:16px;padding:14px;margin-top:12px;
+ box-shadow:0 0 22px rgba(20,180,150,.06) inset}
+.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+label{display:block;color:#5f9c94;font-size:10px;margin-bottom:4px;letter-spacing:1px;text-transform:uppercase}
+input,button{width:100%;border:1px solid rgba(93,241,201,.3);background:rgba(2,10,14,.7);
+ color:#cdf7ec;border-radius:10px;padding:9px;font-family:inherit}
+button{cursor:pointer;font-weight:700;transition:.15s;letter-spacing:.5px}
+button:hover{background:rgba(93,241,201,.15);box-shadow:0 0 12px rgba(93,241,201,.35)}
+.frag{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+.frag button.active{outline:2px solid #5df1c9;box-shadow:0 0 14px rgba(93,241,201,.6);color:#5df1c9}
+.stage{position:relative;height:430px;overflow:hidden;border-radius:14px;
+ background:
+  radial-gradient(ellipse at 50% 110%,rgba(15,60,70,.6),transparent 60%),
+  radial-gradient(circle at 50% 45%,#08222c 0%,#020a10 75%);
+ border:1px solid rgba(93,241,201,.15)}
+svg{width:100%;height:100%;display:block}
+.hud{position:absolute;left:15px;top:13px;font:11px ui-monospace,monospace;line-height:1.6;
+ color:#8fe6d2;text-shadow:0 0 6px rgba(93,241,201,.5)}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}
+.stat{background:rgba(2,10,14,.7);border:1px solid rgba(93,241,201,.12);border-radius:9px;padding:9px}
+.stat b{display:block;font-size:15px;color:#5df1c9}.stat span{color:#5f9c94;font-size:10px;letter-spacing:.5px}
+.log{font:11px ui-monospace,monospace;max-height:145px;overflow:auto;white-space:pre-wrap;color:#7fb5aa}
+@media(max-width:800px){.controls{grid-template-columns:1fr 1fr}.frag{grid-template-columns:repeat(5,1fr)}.stats{grid-template-columns:repeat(3,1fr)}.stage{height:360px}}
+</style>
+</head>
+<body>
+<div id="app">
+ <div class="top"><div><h1>Gzero / Alph@beto — Aquário Cambriano de Outra Dimensão</h1><div class="muted">fragmento → contexto → observação → criatura manifestada</div></div><div class="muted">WA01 → WB01 → WP01</div></div>
+
+ <div class="card controls">
+  <div><label>Entidade</label><input id="entity" value="X"></div>
+  <div><label>Espaço</label><input id="space" value="S01"></div>
+  <div><label>Idtempo</label><input id="time" value="T01"></div>
+  <div><label>Chave</label><input id="key" value="K01"></div>
+ </div>
+
+ <div class="card">
+  <label>Fragmentos (larvas)</label>
+  <div class="frag" id="frags"></div>
+ </div>
+
+ <div class="card stage">
+  <svg id="svg" viewBox="0 0 1000 430" preserveAspectRatio="xMidYMid meet">
+   <defs>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+     <feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="waterVignette" cx="50%" cy="45%" r="65%">
+     <stop offset="0%" stop-color="#0c2b34" stop-opacity="0"/>
+     <stop offset="100%" stop-color="#010508" stop-opacity=".8"/>
+    </radialGradient>
+   </defs>
+   <g id="deepbg"></g>
+   <g id="plankton"></g>
+   <g id="scene"></g>
+   <rect x="0" y="0" width="1000" height="430" fill="url(#waterVignette)" pointer-events="none"/>
+  </svg>
+  <div class="hud">
+   <div>LARVA <b id="hfrag">01</b></div>
+   <div>ASSINATURA <b id="hrep">—</b></div>
+   <div>ESTADO <b id="hstate">—</b></div>
+  </div>
+ </div>
+
+ <div class="card stats">
+  <div class="stat"><span>ESPÉCIE</span><b id="shape">—</b></div>
+  <div class="stat"><span>BIOLUMINESCÊNCIA</span><b id="hue">—</b></div>
+  <div class="stat"><span>ORIENTAÇÃO</span><b id="angle">—</b></div>
+  <div class="stat"><span>CARAPAÇA</span><b id="width">—</b></div>
+  <div class="stat"><span>PULSO</span><b id="freq">—</b></div>
+  <div class="stat"><span>NADO</span><b id="speed">—</b></div>
+ </div>
+
+ <div class="card controls">
+  <button onclick="changeTime()">Idtempo → maré seguinte</button>
+  <button onclick="changeKey()">Chave → próxima</button>
+  <button onclick="replay()">Reproduzir manifestação</button>
+  <button onclick="repeat100()">Testar 100×</button>
+ </div>
+
+ <div class="card"><label>Cadeia de observações / eventos abissais</label><div class="log" id="log"></div></div>
+</div>
+
+<script>
+const fragments=["00","01","02","03","04","05","06","07","08","09","11","12","13","21","22","23","31","32","33","99"];
+let current="01", animationId=0;
+const ns="http://www.w3.org/2000/svg";
+
+/* ---- núcleo determinístico (inalterado) ---- */
+function hash(s){let h=2166136261>>>0;for(let c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)>>>0}return h>>>0}
+function resolve(f=current){
+ const seed=`${entity.value}|${space.value}|${time.value}|${key.value}|${f}`,h=hash(seed);
+ const shapes=["circle","triangle","diamond","cross","arc","hex","star"];
+ return {
+  h, rep:h.toString(16).padStart(8,"0"), shape:shapes[h%shapes.length],
+  hue:h%360, angle:h%360, width:1+(h%8), freq:180+(h%700),
+  speed:.25+(h%100)/100, amp:35+(h%90), state:(h&1)?"1":"0", seed
+ };
+}
+const speciesName={circle:"Medusozoário",triangle:"Trilobita espinhoso",diamond:"Anomalocáride",
+ cross:"Hidrozoário cruzado",arc:"Ctenóforo em arco",hex:"Radiolário blindado",star:"Sifonóforo estelar"};
+
+/* ---- cenário de fundo (algas/rochas, gerado uma vez) ---- */
+function makeDeepBg(){
+ const bg=document.getElementById("deepbg"); bg.innerHTML="";
+ for(let i=0;i<7;i++){
+  const x=60+i*130+((i*37)%50), h=90+((i*53)%110);
+  const p=document.createElementNS(ns,"path");
+  p.setAttribute("d",`M${x} 430 Q${x-18} ${430-h*0.5} ${x} ${430-h} Q${x+18} ${430-h*0.5} ${x} 430`);
+  p.setAttribute("fill","none");p.setAttribute("stroke",`hsla(${170+i*8},55%,30%,.35)`);
+  p.setAttribute("stroke-width","6");p.setAttribute("stroke-linecap","round");
+  p.dataset.base=x;p.dataset.h=h;p.dataset.i=i;
+  bg.appendChild(p);
+ }
+}
+/* ---- plâncton bioluminescente flutuante ---- */
+let planktonData=[];
+function makePlankton(){
+ const box=document.getElementById("plankton"); box.innerHTML=""; planktonData=[];
+ for(let i=0;i<28;i++){
+  const c=document.createElementNS(ns,"circle");
+  const d={x:Math.random()*1000,y:Math.random()*430,r:.6+Math.random()*1.8,
+   phase:Math.random()*Math.PI*2,sp:.15+Math.random()*.35,drift:(Math.random()-.5)*.4};
+  c.setAttribute("r",d.r);c.setAttribute("fill","#8fe6d2");
+  planktonData.push({el:c,...d}); box.appendChild(c);
+ }
+}
+
+/* ---- manifestação da criatura a partir do resolve() ---- */
+function makeSVG(r){
+ const scene=document.getElementById("scene"); scene.innerHTML="";
+ const cx=500,cy=220, col=`hsl(${r.hue} 85% 65%)`, colDeep=`hsl(${r.hue} 70% 35%)`;
+ const g=document.createElementNS(ns,"g"); g.setAttribute("transform",`rotate(${r.angle} ${cx} ${cy})`);
+
+ // corpo central orgânico (blob por tipo, no lugar da forma geométrica pura)
+ let body;
+ const R=64;
+ if(r.shape==="circle"){ // medusa - sino pulsante + tentáculos
+  body=document.createElementNS(ns,"path");
+  body.setAttribute("d",`M${cx-R} ${cy} Q${cx-R} ${cy-R*1.15} ${cx} ${cy-R*1.15} Q${cx+R} ${cy-R*1.15} ${cx+R} ${cy}
+   Q${cx+R*.5} ${cy+R*.35} ${cx} ${cy+R*.15} Q${cx-R*.5} ${cy+R*.35} ${cx-R} ${cy} Z`);
+ } else if(r.shape==="triangle"){ // trilobita
+  body=document.createElementNS(ns,"path");
+  body.setAttribute("d",`M${cx} ${cy-R} Q${cx+R*1.1} ${cy+R*.2} ${cx+R*.55} ${cy+R}
+   Q${cx} ${cy+R*.7} ${cx-R*.55} ${cy+R} Q${cx-R*1.1} ${cy+R*.2} ${cx} ${cy-R} Z`);
+ } else if(r.shape==="diamond"){ // anomalocáride
+  body=document.createElementNS(ns,"path");
+  body.setAttribute("d",`M${cx} ${cy-R*1.2} Q${cx+R*1.3} ${cy} ${cx} ${cy+R*1.2} Q${cx-R*1.3} ${cy} ${cx} ${cy-R*1.2} Z`);
+ } else if(r.shape==="cross"){ // hidrozoário cruzado
+  body=document.createElementNS(ns,"path");
+  body.setAttribute("d",`M${cx} ${cy-R} Q${cx+R} ${cy-R} ${cx+R} ${cy} Q${cx+R} ${cy+R} ${cx} ${cy+R}
+   Q${cx-R} ${cy+R} ${cx-R} ${cy} Q${cx-R} ${cy-R} ${cx} ${cy-R} Z`);
+ } else if(r.shape==="arc"){ // ctenóforo
+  body=document.createElementNS(ns,"path");
+  body.setAttribute("d",`M${cx-R*1.2} ${cy+R*.4} Q${cx} ${cy-R*1.3} ${cx+R*1.2} ${cy+R*.4} Q${cx} ${cy+R*.1} ${cx-R*1.2} ${cy+R*.4} Z`);
+ } else if(r.shape==="hex"){ // radiolário
+  body=document.createElementNS(ns,"path");
+  const pts=[];for(let i=0;i<6;i++){const a=i/6*Math.PI*2;pts.push(`${cx+Math.cos(a)*R},${cy+Math.sin(a)*R}`)}
+  body.setAttribute("d",`M${pts.join(" L")} Z`);
+ } else { // sifonóforo estelar
+  body=document.createElementNS(ns,"path");
+  const pts=[];for(let i=0;i<10;i++){const a=i/10*Math.PI*2,rad=i%2?R*.45:R*1.1;pts.push(`${cx+Math.cos(a)*rad},${cy+Math.sin(a)*rad}`)}
+  body.setAttribute("d",`M${pts.join(" L")} Z`);
+ }
+ body.setAttribute("fill",`hsla(${r.hue},80%,45%,.22)`);
+ body.setAttribute("stroke",col);body.setAttribute("stroke-width",r.width);
+ body.setAttribute("filter","url(#glow)");
+ g.appendChild(body);
+
+ // núcleo pulsante
+ const core=document.createElementNS(ns,"circle");
+ core.setAttribute("cx",cx);core.setAttribute("cy",cy);core.setAttribute("r",8);
+ core.setAttribute("fill",col);core.setAttribute("filter","url(#glow)");core.id="core";
+ g.appendChild(core);
+
+ // tentáculos ondulantes
+ const tentG=document.createElementNS(ns,"g");tentG.id="tentacles";
+ const nTent=5+(r.h%4);
+ for(let i=0;i<nTent;i++){
+  const t=document.createElementNS(ns,"path");
+  t.setAttribute("fill","none");t.setAttribute("stroke",colDeep);
+  t.setAttribute("stroke-width",Math.max(1,r.width*.5));t.setAttribute("stroke-linecap","round");
+  t.setAttribute("opacity",".75");t.dataset.i=i;t.dataset.n=nTent;
+  tentG.appendChild(t);
+ }
+ g.appendChild(tentG);
+
+ // partículas orbitais (plâncton local da criatura)
+ for(let i=0;i<12;i++){const p=document.createElementNS(ns,"circle");p.setAttribute("r",1.4+(i%3)*.8);p.setAttribute("fill",col);p.setAttribute("opacity",".85");p.setAttribute("cx",cx);p.setAttribute("cy",cy);p.dataset.i=i;g.appendChild(p)}
+
+ scene.appendChild(g);
+ const start=performance.now(), id=++animationId;
+ function tick(now){
+  if(id!==animationId)return;
+  const t=(now-start)/1000;
+  const pulse=1+.12*Math.sin(t*r.freq/70);
+  g.setAttribute("transform",`rotate(${r.angle+t*r.speed*22} ${cx} ${cy}) scale(${pulse})`);
+  core.setAttribute("r",6+3*Math.abs(Math.sin(t*r.freq/60)));
+  [...g.querySelectorAll("g#tentacles path")].forEach(t=>{
+   const i=+t.dataset.i,n=+t.dataset.n,baseA=(i/n)*Math.PI*2+r.angle*Math.PI/180*0;
+   const rootX=cx+Math.cos(baseA)*R*.6, rootY=cy+Math.sin(baseA)*R*.6;
+   const wig=Math.sin(t0()+t*r.speed*3+i)*18;
+   function t0(){return i*1.3}
+   const len=R*1.6+ (r.h%40);
+   const endX=cx+Math.cos(baseA)*len, endY=cy+Math.sin(baseA)*len+Math.sin(t*r.speed*2+i)*14;
+   const midX=cx+Math.cos(baseA)*len*.55+wig, midY=cy+Math.sin(baseA)*len*.55+wig*.6;
+   t.setAttribute("d",`M${rootX} ${rootY} Q${midX} ${midY} ${endX} ${endY}`);
+  });
+  [...g.querySelectorAll("circle")].forEach((p,i)=>{if(p===core)return;const a=t*r.speed+(i/12)*Math.PI*2;p.setAttribute("cx",cx+Math.cos(a)*r.amp);p.setAttribute("cy",cy+Math.sin(a)*r.amp)});
+  requestAnimationFrame(tick);
+ }
+ requestAnimationFrame(tick);
+}
+
+/* ---- animação ambiente contínua (algas + plâncton), independente da criatura ---- */
+function ambientLoop(now){
+ const t=now/1000;
+ document.querySelectorAll("#deepbg path").forEach(p=>{
+  const x=+p.dataset.base,h=+p.dataset.h,i=+p.dataset.i,sway=Math.sin(t*.5+i)*14;
+  p.setAttribute("d",`M${x} 430 Q${x-18+sway} ${430-h*0.5} ${x+sway*.4} ${430-h} Q${x+18+sway} ${430-h*0.5} ${x} 430`);
+ });
+ planktonData.forEach(d=>{
+  d.y-=d.sp*0.6; d.x+=Math.sin(t*.6+d.phase)*d.drift;
+  if(d.y<-5){d.y=435;d.x=Math.random()*1000}
+  d.el.setAttribute("cx",d.x);d.el.setAttribute("cy",d.y);
+  d.el.setAttribute("opacity",.35+.45*Math.abs(Math.sin(t*1.2+d.phase)));
+ });
+ requestAnimationFrame(ambientLoop);
+}
+
+function observe(add=true){
+ const r=resolve();
+ hfrag.textContent=current;hrep.textContent=r.rep;hstate.textContent=r.state;
+ shape.textContent=speciesName[r.shape];hue.textContent=r.hue+"°";angle.textContent=r.angle+"°";
+ width.textContent=r.width+" mm";freq.textContent=r.freq+" Hz";speed.textContent=r.speed.toFixed(2)+" nós";
+ makeSVG(r);
+ if(add)addLog(`OBSERVAÇÃO | larva ${current} | ${time.value} | ${key.value} | assinatura ${r.rep} | estado ${r.state} | ${speciesName[r.shape]}`);
+}
+function addLog(x){log.textContent+=x+"\n";log.scrollTop=999999}
+function changeTime(){time.value=time.value==="T01"?"T02":time.value==="T02"?"T03":"T01";observe();addLog("EVENTO | maré (idtempo) mudou → "+time.value)}
+function changeKey(){key.value=key.value==="K01"?"K02":key.value==="K02"?"K03":"K01";observe();addLog("EVENTO | chave alterada → "+key.value)}
+function replay(){observe();addLog("EVENTO | manifestação reproduzida")}
+function repeat100(){const a=resolve().rep, ok=Array.from({length:100},()=>resolve().rep===a).every(Boolean);addLog(`TESTE 100× | ${ok?"PASS":"FAIL"} | ${a}`);alert(ok?"PASS — 100/100 manifestações idênticas.":"FAIL — divergência detectada.")}
+
+const fragBox=document.getElementById("frags");
+fragments.forEach(f=>{const b=document.createElement("button");b.textContent=f;b.onclick=()=>{current=f;document.querySelectorAll(".frag button").forEach(x=>x.classList.remove("active"));b.classList.add("active");observe()};fragBox.appendChild(b)});
+document.querySelector(".frag button:nth-child(2)").classList.add("active");
+[entity,space,time,key].forEach(x=>x.addEventListener("change",()=>observe()));
+
+makeDeepBg();
+makePlankton();
+requestAnimationFrame(ambientLoop);
+observe(false);
+</script>
+</body>
+</html>

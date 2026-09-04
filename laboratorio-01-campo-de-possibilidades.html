@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Laboratório 01 — Campo de Possibilidades</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#071018;color:#e9f2f7;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+body{display:flex;flex-direction:column}
+header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #243640;background:#0a151d}
+h1{font-size:15px;margin:0;font-weight:700;letter-spacing:.08em;text-transform:uppercase} .sub{font-size:11px;color:#8fa7b3;margin-top:3px}
+button,select,input{font:inherit}button{background:#12232d;color:#eaf5f8;border:1px solid #31505e;border-radius:8px;padding:8px 11px;cursor:pointer}button:hover{background:#18303b}
+main{min-height:0;flex:1;display:grid;grid-template-columns:minmax(0,1fr) 330px}
+#stage{position:relative;min-width:0;min-height:0}canvas{width:100%;height:100%;display:block}
+aside{border-left:1px solid #243640;background:#0b161e;overflow:auto;padding:12px}
+section{border:1px solid #253b46;border-radius:10px;padding:10px;margin-bottom:10px;background:#0d1b24}
+section h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#a8c1cc;margin:0 0 9px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:7px 0;font-size:12px}.row label{color:#9bb0ba}
+input[type=range]{width:130px}input[type=number]{width:72px;background:#09131a;color:#fff;border:1px solid #34505c;border-radius:6px;padding:5px}
+select{background:#09131a;color:#fff;border:1px solid #34505c;border-radius:6px;padding:5px}
+.badge{font-size:10px;padding:3px 6px;border:1px solid #3a5966;border-radius:20px;color:#b9d0d8}
+#log{font-family:ui-monospace,SFMono-Regular,monospace;font-size:10px;line-height:1.5;color:#a9c0ca;max-height:190px;overflow:auto}
+.metric{display:grid;grid-template-columns:1fr 1fr;gap:7px}.metric div{background:#09141b;border-radius:7px;padding:7px}.metric b{display:block;font-size:15px}.metric span{font-size:9px;color:#78929e}
+.help{font-size:10px;line-height:1.5;color:#819aa5}
+footer{height:34px;padding:8px 12px;border-top:1px solid #243640;background:#081219;color:#718994;font-size:10px}
+@media(max-width:850px){main{grid-template-columns:1fr}aside{position:absolute;right:8px;top:72px;width:min(330px,calc(100% - 16px));max-height:calc(100% - 116px);border:1px solid #29414c;border-radius:12px;box-shadow:0 12px 35px #0008}.mobileHide{display:none}}
+</style>
+</head>
+<body>
+<header>
+<div><h1>Laboratório 01 · Campo de Possibilidades</h1><div class="sub">encontro → seleção → trajetória realizada</div></div>
+<div><button id="run">▶ iniciar</button> <button id="step">passo</button> <button id="reset">reiniciar</button> <button id="export">JSON</button></div>
+</header>
+<main>
+<div id="stage"><canvas id="c"></canvas></div>
+<aside>
+<section><h2>Experimento</h2>
+<div class="row"><label>rodadas</label><input id="rounds" type="number" min="1" max="1000" value="30"></div>
+<div class="row"><label>opções por agente</label><input id="opts" type="number" min="2" max="8" value="3"></div>
+<div class="row"><label>influência do outro</label><input id="influence" type="range" min="0" max="1" step=".01" value=".65"><span id="inflv">0.65</span></div>
+<div class="row"><label>ruído / incerteza</label><input id="noise" type="range" min="0" max="1" step=".01" value=".08"><span id="noisev">0.08</span></div>
+</section>
+<section><h2>Agente A</h2>
+<div class="row"><label>regra</label><select id="ra"><option value="curious">curioso</option><option value="stay">mantém</option><option value="switch">troca</option><option value="copy">imita</option><option value="random">aleatório</option></select></div>
+<div class="row"><label>estado</label><span id="sa" class="badge">neutro</span></div>
+</section>
+<section><h2>Agente B</h2>
+<div class="row"><label>regra</label><select id="rb"><option value="copy">imita</option><option value="curious">curioso</option><option value="stay">mantém</option><option value="switch">troca</option><option value="random">aleatório</option></select></div>
+<div class="row"><label>estado</label><span id="sb" class="badge">neutro</span></div>
+</section>
+<section><h2>Observação</h2>
+<div class="metric"><div><b id="mEvents">0</b><span>eventos</span></div><div><b id="mPaths">0</b><span>trajetórias distintas</span></div><div><b id="mChoices">0</b><span>seleções</span></div><div><b id="mMeet">0</b><span>encontros</span></div></div>
+</section>
+<section><h2>Registro</h2><div id="log"></div></section>
+<section><h2>Hipótese</h2><div class="help">Não estamos tentando provar G0. O laboratório procura uma recorrência observável entre campo, encontro, estado, seleção e trajetória. A visualização é uma camada; o registro de eventos é outra.</div></section>
+</aside>
+</main>
+<footer>Arraste A/B. O círculo é uma representação do campo, não uma medida física. SVG/3D pode consumir o mesmo estado e o mesmo log.</footer>
+
+<script>
+const canvas=document.getElementById('c'), ctx=canvas.getContext('2d'), stage=document.getElementById('stage');
+let W=0,H=0,dpr=1;
+function resize(){dpr=Math.min(devicePixelRatio||1,2);W=stage.clientWidth;H=stage.clientHeight;canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);draw()} addEventListener('resize',resize);
+
+const state={
+ step:0,running:false, timer:null, events:[], paths:new Set(), choices:0,meet:0,
+ agents:[
+  {id:'A',x:.34,y:.53,r:.25,last:null,state:'neutro',rule:'curious',history:[]},
+  {id:'B',x:.66,y:.47,r:.25,last:null,state:'neutro',rule:'copy',history:[]}
+ ],
+ options:3, influence:.65, noise:.08
+};
+const $=id=>document.getElementById(id);
+$('ra').onchange=e=>state.agents[0].rule=e.target.value;
+$('rb').onchange=e=>state.agents[1].rule=e.target.value;
+$('opts').oninput=e=>state.options=+e.target.value;
+$('influence').oninput=e=>{state.influence=+e.target.value;$('inflv').textContent=state.influence.toFixed(2)};
+$('noise').oninput=e=>{state.noise=+e.target.value;$('noisev').textContent=state.noise.toFixed(2)};
+
+function optionAngle(i,n,phase){return phase + i*2*Math.PI/n}
+function choose(agent,other){
+ const n=state.options, last=other.last, prev=agent.last;
+ let choice=Math.floor(Math.random()*n);
+ if(agent.rule==='stay' && prev!=null) choice=prev;
+ if(agent.rule==='switch' && prev!=null) choice=(prev+1)%n;
+ if(agent.rule==='copy' && last!=null) choice=last;
+ if(agent.rule==='curious'){
+   if(last==null) choice=Math.floor(Math.random()*n);
+   else choice=(last + (Math.random()<.5?1:n-1))%n;
+ }
+ if(Math.random()<state.influence && last!=null && (agent.rule==='curious'||agent.rule==='random')) choice=last;
+ if(Math.random()<state.noise) choice=Math.floor(Math.random()*n);
+ return choice;
+}
+function step(){
+ const A=state.agents[0],B=state.agents[1];
+ const ca=choose(A,B), cb=choose(B,A);
+ const same=ca===cb;
+ const outcome=same?'convergência':'divergência';
+ A.state=same?'convergente':'separando'; B.state=same?'convergente':'separando';
+ A.last=ca;B.last=cb;A.history.push(ca);B.history.push(cb);
+ const event={id:`E${String(state.step+1).padStart(4,'0')}`,t:Date.now(),step:state.step+1,
+   encontro:['A','B'],estadoAnterior:[A.state,B.state],selecoes:{A:ca,B:cb},resultado:outcome,
+   diferenca:Math.abs(ca-cb),opcoes:norm(state.options)};
+ state.events.push(event);state.paths.add(`${A.history.slice(-6).join('')}/${B.history.slice(-6).join('')}`);
+ state.step++;state.choices+=2;state.meet++;
+ log(event);update();draw();
+ if(state.step>=+$('rounds').value){state.running=false;clearInterval(state.timer)}
+}
+function norm(n){return n}
+function log(e){
+ const d=document.createElement('div');d.textContent=`${e.id} · ${e.resultado} · A:${e.selecoes.A} B:${e.selecoes.B}`;
+ $('log').prepend(d);while($('log').children.length>45)$('log').lastChild.remove();
+}
+function reset(){
+ state.running=false;clearInterval(state.timer);state.step=0;state.events=[];state.paths.clear();state.choices=0;state.meet=0;
+ for(const a of state.agents){a.last=null;a.state='neutro';a.history=[]}
+ $('log').innerHTML='';update();draw();
+}
+function update(){
+ $('mEvents').textContent=state.events.length;$('mPaths').textContent=state.paths.size;$('mChoices').textContent=state.choices;$('mMeet').textContent=state.meet;
+ $('sa').textContent=state.agents[0].state;$('sb').textContent=state.agents[1].state;
+ $('run').textContent=state.running?'⏸ parar':'▶ iniciar';
+}
+$('step').onclick=step;$('reset').onclick=reset;
+$('run').onclick=()=>{state.running=!state.running;clearInterval(state.timer);if(state.running)state.timer=setInterval(()=>{if(state.step>=+$('rounds').value){state.running=false;clearInterval(state.timer);update();return}step()},280);update()};
+$('export').onclick=()=>{const out={laboratorio:'campo-de-possibilidades-01',hypothesis:'campo→encontro→seleção→trajetória',parameters:{options:state.options,influence:state.influence,noise:state.noise},events:state.events};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}));a.download='campo-de-possibilidades-01.json';a.click()};
+
+function field(cx,cy,r,phase,label){
+ ctx.save();ctx.translate(cx,cy);
+ ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.strokeStyle='#2c5666';ctx.lineWidth=1.2;ctx.stroke();
+ ctx.beginPath();ctx.arc(0,0,r*.78,0,Math.PI*2);ctx.setLineDash([3,6]);ctx.strokeStyle='#1d3b48';ctx.stroke();ctx.setLineDash([]);
+ const n=state.options;
+ for(let i=0;i<n;i++){let a=optionAngle(i,n,phase),x=Math.cos(a)*r*.78,y=Math.sin(a)*r*.78;
+  ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fillStyle='#78aebd';ctx.fill();
+  ctx.font='9px ui-monospace';ctx.fillStyle='#6f909b';ctx.fillText(String(i),x+7,y+3);
+ }
+ ctx.font='11px system-ui';ctx.fillStyle='#9db7c1';ctx.fillText(label,-r,-r-10);
+ ctx.restore();
+}
+function draw(){
+ ctx.clearRect(0,0,W,H);
+ const A=state.agents[0],B=state.agents[1], ax=A.x*W,ay=A.y*H,bx=B.x*W,by=B.y*H;
+ const rr=Math.min(W,H)*.24;
+ // trajectories
+ if(state.events.length){
+   ctx.beginPath();
+   state.events.forEach((e,i)=>{
+     const x=(ax+(bx-ax)*(i%2))*0.5 + (i%2?bx:ax)*0.5;
+     const y=(ay+(by-ay)*(i%2))*0.5 + (i%2?by:ay)*0.5;
+   });
+ }
+ // connecting relational field
+ const dx=bx-ax,dy=by-ay,d=Math.hypot(dx,dy),mx=(ax+bx)/2,my=(ay+by)/2;
+ const grad=ctx.createRadialGradient(mx,my,0,mx,my,Math.max(d,1));
+ grad.addColorStop(0,'rgba(120,190,205,.13)');grad.addColorStop(1,'rgba(20,50,65,0)');
+ ctx.fillStyle=grad;ctx.beginPath();ctx.arc(mx,my,Math.max(d,1),0,Math.PI*2);ctx.fill();
+ ctx.beginPath();ctx.moveTo(ax,ay);ctx.quadraticCurveTo(mx,my-35,bx,by);ctx.strokeStyle='#416d79';ctx.lineWidth=1.5;ctx.stroke();
+ field(ax,ay,rr,Math.PI*state.step*.035,'A');
+ field(bx,by,rr,Math.PI*state.step*.035+Math.PI,'B');
+ // selected paths
+ for(const a of state.agents){
+   if(a.last==null)continue;
+   const x=a.x*W,y=a.y*H,ang=optionAngle(a.last,state.options,(a.id==='A'?Math.PI*state.step*.035:Math.PI*state.step*.035+Math.PI));
+   const ex=x+Math.cos(ang)*rr*.78,ey=y+Math.sin(ang)*rr*.78;
+   ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(ex,ey);ctx.strokeStyle='#cfeaf0';ctx.lineWidth=2;ctx.stroke();
+   ctx.beginPath();ctx.arc(ex,ey,7,0,Math.PI*2);ctx.strokeStyle='#d9f3f7';ctx.stroke();
+ }
+ // agents
+ for(const a of state.agents){
+   const x=a.x*W,y=a.y*H;
+   ctx.beginPath();ctx.arc(x,y,12,0,Math.PI*2);ctx.fillStyle='#e7f5f7';ctx.fill();
+   ctx.font='bold 11px system-ui';ctx.fillStyle='#081219';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(a.id,x,y);ctx.textAlign='left';ctx.textBaseline='alphabetic';
+ }
+ // encounter point
+ ctx.beginPath();ctx.arc(mx,my,5+Math.min(state.step,20)*.3,0,Math.PI*2);ctx.strokeStyle='#88b8c4';ctx.stroke();
+ ctx.font='10px system-ui';ctx.fillStyle='#8ba7b1';ctx.fillText('ENCONTRO / RELAÇÃO',mx+10,my-8);
+}
+let drag=null;
+canvas.addEventListener('pointerdown',e=>{const r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+ for(const a of state.agents){if(Math.hypot(x-a.x*W,y-a.y*H)<24){drag=a;canvas.setPointerCapture(e.pointerId);break}}});
+canvas.addEventListener('pointermove',e=>{if(!drag)return;const r=canvas.getBoundingClientRect();drag.x=Math.max(.1,Math.min(.9,(e.clientX-r.left)/W));drag.y=Math.max(.1,Math.min(.9,(e.clientY-r.top)/H));draw()});
+canvas.addEventListener('pointerup',()=>drag=null);
+resize();update();draw();
+</script>
+</body>
+</html>

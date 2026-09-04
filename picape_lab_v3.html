@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>LABRIOLAG / PICAPE — PALCO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#050505; --line:#2a2a26; --text:#eeeeea; --muted:#7a7a72;
+    --white:#fffef2; --amber:#d99a32; --amber2:#f1c66a;
+    --field:#57c7ff; --glass:rgba(13,13,12,.9);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;}
+  html,body{margin:0;height:100%;background:var(--bg);overscroll-behavior:none;}
+  body{color:var(--text);font-family:'JetBrains Mono',monospace;height:100vh;height:100dvh;position:relative;overflow:hidden;}
+
+  /* ================= STAGE ================= */
+  .stage{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,#1a1a16 0%,#0a0a09 55%,#030303 100%);overflow:hidden;}
+  .stage-grid{position:absolute;inset:0;opacity:.1;
+    background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);
+    background-size:34px 34px;transform:perspective(600px) rotateX(3deg) translateZ(-60px);}
+  .stage-top{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;justify-content:space-between;align-items:center;
+    padding:14px 18px;font-size:9px;letter-spacing:.14em;color:var(--muted);pointer-events:none;}
+  .stage-top .brand{color:var(--white);}
+  .stage-top .brand span{color:var(--amber2);}
+  .stage-top .readout{color:var(--amber2);}
+
+  .organism-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+  .organism{width:min(58vw,360px);height:min(58vw,360px);transition:transform .5s cubic-bezier(.2,.8,.2,1);position:relative;}
+  .organism-group{position:absolute;inset:0;transition:opacity .8s ease, transform .8s ease;}
+  .organism-group.hidden{opacity:0;transform:scale(.78);}
+  .organism svg{width:100%;height:100%;overflow:visible;}
+  .core-body{transform-origin:center;animation:breathe 3.6s ease-in-out infinite;}
+  .orbit{transform-origin:center;animation:rotate 16s linear infinite;}
+  .orbit.reverse{animation-direction:reverse;animation-duration:11s;}
+  .particle{animation:particleFloat 3s ease-in-out infinite;}
+  @keyframes breathe{0%,100%{transform:scale(.9);}50%{transform:scale(1.1);}}
+  @keyframes rotate{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+  @keyframes particleFloat{0%,100%{opacity:.25;transform:translateY(0);}50%{opacity:1;transform:translateY(-9px);}}
+  .lattice{animation:latticeSpin 22s linear infinite;transform-origin:center;}
+  @keyframes latticeSpin{from{transform:rotate(0deg);}to{transform:rotate(-360deg);}}
+  .voiddot{animation:voidPulse 2.4s ease-in-out infinite;}
+  @keyframes voidPulse{0%,100%{opacity:.3;r:2;}50%{opacity:1;r:3.4;}}
+
+  .glass{position:absolute;inset:0;z-index:3;pointer-events:none;
+    background:linear-gradient(125deg,rgba(255,255,255,.035),transparent 30%,transparent 70%,rgba(255,255,255,.02));mix-blend-mode:screen;}
+
+  .hint{position:absolute;bottom:26px;left:0;right:0;text-align:center;font-size:10px;color:var(--muted);
+    letter-spacing:.5px;z-index:3;pointer-events:none;transition:opacity .6s;}
+
+  /* ================= HANDLES ================= */
+  .handle{position:absolute;left:50%;transform:translateX(-50%);z-index:20;touch-action:none;cursor:grab;
+    display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 24px;}
+  .handle .bar{width:44px;height:5px;border-radius:5px;background:rgba(238,238,234,.3);}
+  .handle.top{top:0;}
+  .handle.bottom{bottom:0;}
+  .handle .lbl{font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
+
+  /* ================= PANELS (bottom-sheet style) ================= */
+  .panel{position:absolute;left:0;right:0;z-index:15;background:var(--glass);backdrop-filter:blur(12px);
+    border:1px solid var(--line);transition:transform .38s cubic-bezier(.2,.9,.25,1.1);padding:16px 18px 20px;}
+  .panel.dragging{transition:none;}
+  .panel-top{top:0;border-radius:0 0 18px 18px;transform:translateY(-101%);max-height:46vh;overflow-y:auto;}
+  .panel-top.open{transform:translateY(0);}
+  .panel-bottom{bottom:0;border-radius:18px 18px 0 0;transform:translateY(101%);max-height:56vh;overflow-y:auto;
+    padding-bottom:calc(20px + env(safe-area-inset-bottom));}
+  .panel-bottom.open{transform:translateY(0);}
+
+  .panel-section{margin-bottom:20px;}
+  .panel-section:last-child{margin-bottom:0;}
+  .panel-section h3{margin:0 0 12px;font-size:9px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;}
+
+  /* DNA */
+  .dna-row{display:flex;align-items:center;gap:18px;}
+  .dna-knob{width:88px;height:88px;position:relative;cursor:ns-resize;flex-shrink:0;touch-action:none;}
+  .dna-knob svg{width:100%;height:100%;}
+  .knob-value{position:absolute;left:0;right:0;top:36px;text-align:center;color:var(--white);font-size:13px;}
+  .dna-hint{font-size:10px;color:var(--muted);line-height:1.6;}
+
+  /* MONITOR */
+  .monitor-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .monitor-box{min-height:80px;border:1px solid #242420;background:#050505;padding:8px;position:relative;}
+  .monitor-label{color:#55554e;font-size:7px;letter-spacing:1px;}
+  .vu{position:absolute;left:10px;right:10px;bottom:10px;height:10px;background:#11110f;border:1px solid #2b2b27;}
+  .vu span{display:block;height:100%;background:linear-gradient(90deg,#69501f,var(--amber),var(--white));}
+  #spectrum{width:100%;height:48px;position:absolute;bottom:5px;left:0;}
+
+  /* ENERGY */
+  .energy-number{color:var(--white);font-size:26px;}
+  .energy-unit{color:var(--amber);font-size:9px;}
+  .energy-bar{height:4px;background:#191917;margin:10px 0;position:relative;}
+  .energy-bar span{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#805b1e,var(--amber2));}
+  input[type=range]{-webkit-appearance:none;width:100%;height:2px;background:var(--line);outline:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--amber2);cursor:pointer;box-shadow:0 0 8px var(--amber);}
+
+  /* DYNAMICS */
+  .dyn-row{display:flex;align-items:center;gap:20px;}
+  .fader-track{position:relative;width:40px;height:110px;border-left:1px solid #41413b;border-right:1px solid #181816;flex-shrink:0;}
+  .fader-trace{position:absolute;left:17px;bottom:0;width:4px;background:linear-gradient(to top,transparent,rgba(217,154,50,.5));filter:blur(2px);opacity:.6;transition:height .5s cubic-bezier(.15,.8,.25,1);}
+  .fader-line{position:absolute;left:19px;top:0;bottom:0;width:2px;background:#3a3a35;}
+  .fader-handle{position:absolute;left:3px;width:34px;height:18px;border:1px solid #85857b;background:linear-gradient(180deg,#4c4c47,#1b1b19);}
+  #dynSlider{writing-mode:vertical-lr;direction:rtl;width:26px;height:110px;flex-shrink:0;}
+  .dyn-hint{font-size:10px;color:var(--muted);line-height:1.6;}
+
+  /* FLOW */
+  .flow-svg{width:100%;height:70px;}
+  .flow-line{fill:none;stroke:#4b4b45;stroke-width:1;}
+  .flow-pulse{fill:none;stroke:var(--amber);stroke-width:2;stroke-dasharray:2 10;animation:signalMove 1.2s linear infinite;}
+  @keyframes signalMove{to{stroke-dashoffset:-24;}}
+  .node{fill:#10100f;stroke:#77776d;stroke-width:1;}
+  .node-text{fill:#8d8d85;font-size:8px;}
+
+  /* MAGNETIC */
+  .magnetic{position:relative;height:64px;}
+  .magnetic-field{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;gap:16px;}
+  .magnetic-item{width:66px;height:38px;display:flex;align-items:center;justify-content:center;
+    border:1px solid #363631;background:#10100f;color:#8d8d85;font-size:8px;transition:transform .12s cubic-bezier(.15,.8,.25,1);}
+
+  /* ================= FAB + RADIAL ================= */
+  .fab{position:absolute;right:16px;bottom:88px;z-index:26;width:56px;height:56px;border-radius:50%;
+    border:1px solid #55554d;touch-action:none;
+    background:radial-gradient(circle,#34342e 0 10%,#171715 11% 28%,#0b0b0a 29% 60%,#11110f 61%);
+    box-shadow:0 4px 18px rgba(0,0,0,.5);}
+  .fab::before,.fab::after{content:"";position:absolute;inset:-9px;border:1px solid rgba(217,154,50,.28);border-radius:50%;
+    animation:coreOrbit 9s linear infinite;pointer-events:none;}
+  .fab::after{inset:-16px;border-color:rgba(255,255,255,.08);animation-duration:15s;animation-direction:reverse;}
+  @keyframes coreOrbit{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+  .fab-dot{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;
+    background:var(--amber2);box-shadow:0 0 12px var(--amber);pointer-events:none;}
+  .fab.pulsed .fab-dot{animation:fabPulse .4s ease;}
+  @keyframes fabPulse{0%{transform:translate(-50%,-50%) scale(1);}50%{transform:translate(-50%,-50%) scale(1.8);}100%{transform:translate(-50%,-50%) scale(1);}}
+
+  .radialmenu{position:absolute;z-index:27;pointer-events:none;}
+  .radialicon{position:absolute;width:48px;height:48px;border-radius:50%;border:1px solid rgba(217,154,50,.4);
+    background:linear-gradient(145deg,#1a1510,#0c0a08);font-size:9px;letter-spacing:.06em;color:var(--amber2);
+    display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;
+    opacity:0;transform:scale(.4);transition:transform .25s cubic-bezier(.3,1.4,.4,1),opacity .2s;pointer-events:none;}
+  .radialmenu.open .radialicon{opacity:1;transform:scale(1);pointer-events:auto;}
+
+  .radial-backdrop{position:absolute;inset:0;z-index:25;background:rgba(0,0,0,0);pointer-events:none;transition:background .25s;}
+  .radial-backdrop.open{background:rgba(0,0,0,.25);pointer-events:auto;}
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+  <div class="stage-grid"></div>
+  <div class="stage-top">
+    <div class="brand">PICAPE <span>/ palco</span></div>
+    <div class="readout"><span id="stageEnergy">50</span>% · <span id="stageState">MOVEMENT</span></div>
+  </div>
+
+  <div class="organism-wrap">
+    <div class="organism" id="organism">
+
+      <!-- CORE organism -->
+      <div class="organism-group" id="org-core">
+        <svg viewBox="0 0 300 300">
+          <defs>
+            <filter id="glow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <radialGradient id="coreGradient"><stop offset="0" stop-color="#fffef2"/><stop offset=".35" stop-color="#f1c66a"/><stop offset="1" stop-color="#6f4d18"/></radialGradient>
+          </defs>
+          <g class="orbit" opacity=".35" fill="none" stroke="#d99a32">
+            <ellipse cx="150" cy="150" rx="112" ry="48"/>
+            <ellipse cx="150" cy="150" rx="112" ry="48" transform="rotate(60 150 150)"/>
+            <ellipse cx="150" cy="150" rx="112" ry="48" transform="rotate(120 150 150)"/>
+          </g>
+          <g class="orbit reverse" opacity=".22" fill="none" stroke="#fffef2">
+            <ellipse cx="150" cy="150" rx="88" ry="35" transform="rotate(30 150 150)"/>
+            <ellipse cx="150" cy="150" rx="88" ry="35" transform="rotate(150 150 150)"/>
+          </g>
+          <g class="core-body" filter="url(#glow)">
+            <circle cx="150" cy="150" r="34" fill="url(#coreGradient)"/>
+            <circle cx="150" cy="150" r="46" fill="none" stroke="#d99a32" opacity=".4"/>
+            <circle cx="150" cy="150" r="58" fill="none" stroke="#fffef2" opacity=".08"/>
+          </g>
+          <g fill="#fffef2" class="particle">
+            <circle cx="150" cy="55" r="2"/><circle cx="218" cy="100" r="1.5"/>
+            <circle cx="230" cy="180" r="2"/><circle cx="78" cy="116" r="1.5"/>
+            <circle cx="91" cy="205" r="2"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- ORBIT organism (lattice / vector structure — genuinely different shape) -->
+      <div class="organism-group hidden" id="org-orbit">
+        <svg viewBox="0 0 300 300">
+          <g class="lattice" fill="none" stroke="#57c7ff" stroke-width="1">
+            <polygon points="150,40 240,95 240,205 150,260 60,205 60,95" opacity=".5"/>
+            <polygon points="150,80 205,113 205,187 150,220 95,187 95,113" opacity=".7"/>
+            <line x1="150" y1="40" x2="150" y2="80" opacity=".4"/>
+            <line x1="240" y1="95" x2="205" y2="113" opacity=".4"/>
+            <line x1="240" y1="205" x2="205" y2="187" opacity=".4"/>
+            <line x1="150" y1="260" x2="150" y2="220" opacity=".4"/>
+            <line x1="60" y1="205" x2="95" y2="187" opacity=".4"/>
+            <line x1="60" y1="95" x2="95" y2="113" opacity=".4"/>
+          </g>
+          <circle cx="150" cy="150" r="10" fill="#57c7ff" opacity=".9"/>
+        </svg>
+      </div>
+
+      <!-- VOID organism (sparse, minimal) -->
+      <div class="organism-group hidden" id="org-void">
+        <svg viewBox="0 0 300 300">
+          <circle class="voiddot" cx="150" cy="150" r="3" fill="#7a7a72"/>
+          <circle cx="150" cy="150" r="90" fill="none" stroke="#3a3a35" stroke-width="1" opacity=".4"/>
+          <circle cx="150" cy="150" r="130" fill="none" stroke="#232320" stroke-width=".5" opacity=".3"/>
+        </svg>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="glass"></div>
+  <div class="hint" id="hint">puxe as abas ↑ ↓ · segure o núcleo pra mais opções</div>
+</div>
+
+<!-- ============ TOP PANEL: IDENTIDADE (DNA + MONITOR) ============ -->
+<div class="handle top" id="handleTop"><div class="bar"></div><div class="lbl">identidade</div></div>
+<div class="panel panel-top" id="panelTop">
+  <div class="panel-section">
+    <h3>DNA / Estrutura</h3>
+    <div class="dna-row">
+      <div class="dna-knob" id="dnaKnob">
+        <svg viewBox="0 0 150 150">
+          <circle cx="75" cy="75" r="57" fill="none" stroke="#242420" stroke-width="2"/>
+          <circle id="dnaArc" cx="75" cy="75" r="57" fill="none" stroke="#d99a32" stroke-width="3" stroke-linecap="round" stroke-dasharray="358" stroke-dashoffset="179" transform="rotate(-90 75 75)"/>
+          <circle cx="75" cy="75" r="35" fill="#0c0c0b" stroke="#41413b"/>
+        </svg>
+        <div class="knob-value" id="dnaValue">50</div>
+      </div>
+      <div class="dna-hint">Arrasta pra cima/baixo. Identidade do organismo — não muda com energia nem com o pulso do núcleo.</div>
+    </div>
+  </div>
+  <div class="panel-section">
+    <h3>Monitor / Resposta</h3>
+    <div class="monitor-grid">
+      <div class="monitor-box"><div class="monitor-label">MASTER / LEVEL</div><div class="vu"><span id="vu" style="width:40%"></span></div></div>
+      <div class="monitor-box"><div class="monitor-label">SPECTRUM</div><canvas id="spectrum"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BOTTOM PANEL: PERFORMANCE ============ -->
+<div class="panel panel-bottom" id="panelBottom">
+  <div class="panel-section">
+    <h3>Energy / Força global</h3>
+    <div class="energy-number"><span id="energyValue">50</span><span class="energy-unit">%</span></div>
+    <div class="energy-bar"><span id="energyBar" style="width:50%"></span></div>
+    <input type="range" id="energySlider" min="0" max="100" value="50">
+  </div>
+  <div class="panel-section">
+    <h3>Dynamics / Fósforo</h3>
+    <div class="dyn-row">
+      <div class="fader-track">
+        <div class="fader-trace" id="faderTrace" style="height:55%"></div>
+        <div class="fader-line"></div>
+        <div class="fader-handle" id="fader" style="bottom:55%"></div>
+      </div>
+      <input type="range" min="0" max="100" value="55" id="dynSlider">
+      <div class="dyn-hint">O rastro âmbar decai devagar — memória do movimento, não só posição.</div>
+    </div>
+  </div>
+  <div class="panel-section">
+    <h3>Flow / Sinal</h3>
+    <svg class="flow-svg" viewBox="0 0 500 70">
+      <path class="flow-line" d="M40 35 H460"/>
+      <path class="flow-pulse" d="M40 35 H460"/>
+      <circle class="node" cx="40" cy="35" r="9"/><circle class="node" cx="250" cy="35" r="9"/><circle class="node" cx="460" cy="35" r="9"/>
+      <text class="node-text" x="28" y="58">INPUT</text><text class="node-text" x="232" y="58">FX</text><text class="node-text" x="438" y="58">MASTER</text>
+    </svg>
+  </div>
+  <div class="panel-section">
+    <h3>Magnetic / Campo</h3>
+    <div class="magnetic" id="magnetic">
+      <div class="magnetic-field">
+        <div class="magnetic-item" data-strength="1">FILTER</div>
+        <div class="magnetic-item" data-strength="1.4">DELAY</div>
+        <div class="magnetic-item" data-strength=".8">REVERB</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="handle bottom" id="handleBottom"><div class="lbl">performance</div><div class="bar"></div></div>
+
+<!-- ============ FAB + RADIAL ============ -->
+<div class="radial-backdrop" id="radialBackdrop"></div>
+<div class="radialmenu" id="radialMenu">
+  <button class="radialicon" id="riImpulso" data-action="impulso">IMPULSO</button>
+  <button class="radialicon" id="riMeta" data-action="metamorph">METAMORF.</button>
+  <button class="radialicon" id="riReset" data-action="reset">RESET</button>
+</div>
+<button class="fab" id="fab"><span class="fab-dot"></span></button>
+
+<script>
+(function(){
+  let energy = 50, dna = 50;
+  const stage = document.getElementById('stage');
+  const organism = document.getElementById('organism');
+  const stageEnergy = document.getElementById('stageEnergy');
+  const stageState = document.getElementById('stageState');
+  const hint = document.getElementById('hint');
+
+  function stateFromEnergy(e){ if(e<30) return 'REST'; if(e<75) return 'MOVEMENT'; return 'CLIMAX'; }
+
+  function setEnergy(v){
+    energy = Math.max(0, Math.min(100, Number(v)));
+    document.getElementById('energyValue').textContent = Math.round(energy);
+    document.getElementById('energyBar').style.width = energy + '%';
+    stageEnergy.textContent = Math.round(energy);
+    stageState.textContent = stateFromEnergy(energy);
+    organism.style.transform = 'scale(' + (.82 + energy/280) + ')';
+    document.getElementById('energySlider').value = energy;
+  }
+  document.getElementById('energySlider').addEventListener('input', e => setEnergy(e.target.value));
+
+  // ---------- DNA knob ----------
+  const dnaKnob = document.getElementById('dnaKnob');
+  const dnaArc = document.getElementById('dnaArc');
+  const dnaValue = document.getElementById('dnaValue');
+  function updateDNA(v){
+    dna = Math.max(0, Math.min(100, v));
+    dnaValue.textContent = Math.round(dna);
+    const c = 358;
+    dnaArc.style.strokeDashoffset = c - (c * dna/100);
+  }
+  let dnaDragging = false;
+  dnaKnob.addEventListener('pointerdown', e => { dnaDragging = true; dnaKnob.setPointerCapture(e.pointerId); });
+  dnaKnob.addEventListener('pointermove', e => { if(dnaDragging) updateDNA(dna - e.movementY * .7); });
+  dnaKnob.addEventListener('pointerup', () => dnaDragging = false);
+  updateDNA(50);
+
+  // ---------- Dynamics fader ----------
+  const dynSlider = document.getElementById('dynSlider');
+  const fader = document.getElementById('fader');
+  const trace = document.getElementById('faderTrace');
+  dynSlider.addEventListener('input', e => {
+    fader.style.bottom = e.target.value + '%';
+    trace.style.height = e.target.value + '%';
+  });
+
+  // ---------- Magnetic ----------
+  const magnetic = document.getElementById('magnetic');
+  const magItems = magnetic.querySelectorAll('.magnetic-item');
+  magnetic.addEventListener('pointermove', e => {
+    const rect = magnetic.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    magItems.forEach(item => {
+      const r = item.getBoundingClientRect();
+      const ix = r.left - rect.left + r.width/2, iy = r.top - rect.top + r.height/2;
+      const dx = mx - ix, dy = my - iy, dist = Math.hypot(dx, dy);
+      const strength = Number(item.dataset.strength), max = 110;
+      if(dist < max){
+        const force = (1 - dist/max) * 6 * strength;
+        item.style.transform = 'translate(' + (dx/max*force).toFixed(1) + 'px,' + (dy/max*force).toFixed(1) + 'px)';
+      } else item.style.transform = 'translate(0,0)';
+    });
+  });
+  magnetic.addEventListener('pointerleave', () => magItems.forEach(i => i.style.transform = 'translate(0,0)'));
+
+  // ---------- Monitor ----------
+  const canvas = document.getElementById('spectrum');
+  const ctx = canvas.getContext('2d');
+  function resizeCanvas(){
+    canvas.width = canvas.clientWidth * devicePixelRatio;
+    canvas.height = canvas.clientHeight * devicePixelRatio;
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  let t = 0;
+  function drawSpectrum(){
+    t += .025;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    ctx.clearRect(0,0,w,h);
+    ctx.beginPath();
+    for(let x=0;x<w;x+=4){
+      const n = x/w;
+      const wave = Math.sin(t*2+n*14), wave2 = Math.sin(t*3.7+n*29);
+      const amp = (.45+energy/130)*(0.5+Math.abs(wave)*.5);
+      const y = h - (amp*Math.abs(wave2)*h*.8);
+      x===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle = 'rgba(217,154,50,.85)'; ctx.lineWidth = 1; ctx.stroke();
+    requestAnimationFrame(drawSpectrum);
+  }
+  requestAnimationFrame(drawSpectrum);
+  setInterval(() => {
+    document.getElementById('vu').style.width = Math.min(100, 30+energy*.5+Math.random()*18) + '%';
+  }, 100);
+
+  // ---------- HANDLE-DRAGGABLE PANELS (bottom-sheet style) ----------
+  function getTranslateY(el){
+    const t = getComputedStyle(el).transform;
+    if(t === 'none') return 0;
+    return new DOMMatrixReadOnly(t).m42;
+  }
+  function attachHandle(handle, panel, edge){
+    let dragging = false, moved = false, startY = 0, startTranslate = 0, panelHeight = 0, isOpen = false;
+    handle.addEventListener('pointerdown', e => {
+      dragging = true; moved = false; startY = e.clientY;
+      panel.classList.add('dragging');
+      panelHeight = panel.getBoundingClientRect().height || 260;
+      startTranslate = getTranslateY(panel);
+      handle.setPointerCapture(e.pointerId);
+    });
+    handle.addEventListener('pointermove', e => {
+      if(!dragging) return;
+      const dy = e.clientY - startY;
+      if(Math.abs(dy) > 6) moved = true;
+      let next = startTranslate + dy;
+      next = edge === 'top' ? Math.min(0, Math.max(-panelHeight, next)) : Math.max(0, Math.min(panelHeight, next));
+      panel.style.transform = 'translateY(' + next + 'px)';
+    });
+    handle.addEventListener('pointerup', () => {
+      if(!dragging) return;
+      dragging = false;
+      panel.classList.remove('dragging');
+      if(!moved){
+        isOpen = !isOpen;
+      } else {
+        const current = getTranslateY(panel);
+        const threshold = panelHeight * 0.35;
+        isOpen = edge === 'top' ? current > -threshold : current < threshold;
+      }
+      panel.style.transform = isOpen ? 'translateY(0)' : (edge === 'top' ? 'translateY(-101%)' : 'translateY(101%)');
+      panel.classList.toggle('open', isOpen);
+    });
+  }
+  attachHandle(document.getElementById('handleTop'), document.getElementById('panelTop'), 'top');
+  attachHandle(document.getElementById('handleBottom'), document.getElementById('panelBottom'), 'bottom');
+
+  // ---------- ORGANISM METAMORPHOSIS ----------
+  const organisms = { core: document.getElementById('org-core'), orbit: document.getElementById('org-orbit'), void: document.getElementById('org-void') };
+  const order = ['core','orbit','void'];
+  let currentOrganism = 'core';
+  function setOrganism(name){
+    Object.keys(organisms).forEach(k => organisms[k].classList.toggle('hidden', k !== name));
+    currentOrganism = name;
+  }
+  function metamorph(){
+    const next = order[(order.indexOf(currentOrganism) + 1) % order.length];
+    setOrganism(next);
+  }
+
+  // ---------- DRAGGABLE FAB + RADIAL MENU (tap-vs-drag disambiguation) ----------
+  const fab = document.getElementById('fab');
+  const radialMenu = document.getElementById('radialMenu');
+  const radialBackdrop = document.getElementById('radialBackdrop');
+  let fabDrag = { active:false, moved:false, startX:0, startY:0, baseLeft:0, baseTop:0 };
+
+  function freeFab(){
+    if(fab.dataset.freed) return;
+    const rect = fab.getBoundingClientRect();
+    fab.style.left = rect.left + 'px'; fab.style.top = rect.top + 'px';
+    fab.style.right = 'auto'; fab.style.bottom = 'auto';
+    fab.dataset.freed = '1';
+  }
+  fab.addEventListener('pointerdown', e => {
+    freeFab();
+    fab.setPointerCapture(e.pointerId);
+    fabDrag = { active:true, moved:false, startX:e.clientX, startY:e.clientY,
+      baseLeft:parseFloat(fab.style.left), baseTop:parseFloat(fab.style.top) };
+  });
+  fab.addEventListener('pointermove', e => {
+    if(!fabDrag.active) return;
+    const dx = e.clientX - fabDrag.startX, dy = e.clientY - fabDrag.startY;
+    if(Math.hypot(dx,dy) > 8) fabDrag.moved = true;
+    if(fabDrag.moved){
+      fab.style.left = (fabDrag.baseLeft + dx) + 'px';
+      fab.style.top = (fabDrag.baseTop + dy) + 'px';
+      if(radialMenu.classList.contains('open')) positionRadial();
+    }
+  });
+  fab.addEventListener('pointerup', () => {
+    fabDrag.active = false;
+    if(!fabDrag.moved) toggleRadial();
+  });
+
+  function positionRadial(){
+    const rect = fab.getBoundingClientRect();
+    const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+    const icons = [document.getElementById('riImpulso'), document.getElementById('riMeta'), document.getElementById('riReset')];
+    const R = 82;
+    icons.forEach((icon, i) => {
+      const angle = -Math.PI/2 - .7 + i * .55;
+      icon.style.left = (cx + Math.cos(angle) * R - 24) + 'px';
+      icon.style.top = (cy + Math.sin(angle) * R - 24) + 'px';
+    });
+  }
+  function toggleRadial(){
+    const willOpen = !radialMenu.classList.contains('open');
+    if(willOpen){ positionRadial(); radialMenu.classList.add('open'); radialBackdrop.classList.add('open'); }
+    else { radialMenu.classList.remove('open'); radialBackdrop.classList.remove('open'); }
+  }
+  radialBackdrop.addEventListener('click', toggleRadial);
+  radialMenu.addEventListener('click', e => {
+    const btn = e.target.closest('.radialicon');
+    if(!btn) return;
+    const action = btn.dataset.action;
+    radialMenu.classList.remove('open');
+    radialBackdrop.classList.remove('open');
+    if(action === 'impulso'){
+      fab.classList.remove('pulsed'); void fab.offsetWidth; fab.classList.add('pulsed');
+      setEnergy(Math.min(100, energy + 15));
+    } else if(action === 'metamorph'){
+      metamorph();
+    } else if(action === 'reset'){
+      setEnergy(50);
+    }
+  });
+
+  setOrganism('core');
+  setEnergy(50);
+  setTimeout(() => hint.style.opacity = 0, 4200);
+})();
+</script>
+
+</body>
+</html>

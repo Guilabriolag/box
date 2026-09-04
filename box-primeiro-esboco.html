@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>BOX — Primeiro Esboço</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;width:100%;height:100%;overflow:hidden}
+  body{
+    font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:#080b12;color:#eef2f7;
+    display:flex;justify-content:center;
+  }
+  button,input{font:inherit}
+  .phone{
+    width:min(100vw,430px);height:100dvh;
+    background:#0d111a;
+    display:flex;flex-direction:column;
+    position:relative;overflow:hidden;
+  }
+  header{
+    height:58px;flex:0 0 58px;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 17px;border-bottom:1px solid #202734;
+    background:rgba(13,17,26,.94);z-index:5;
+  }
+  .brand{font-size:20px;font-weight:800;letter-spacing:.16em}
+  .menu{
+    width:36px;height:36px;border:0;border-radius:50%;
+    background:#171d28;color:#cdd5e0;font-size:21px;line-height:1;
+  }
+  .search-wrap{padding:12px 14px 10px;flex:0 0 auto}
+  .search{
+    height:46px;border:1px solid #2a3341;border-radius:14px;
+    background:#151b25;color:#fff;width:100%;
+    padding:0 15px 0 43px;outline:none;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.015);
+  }
+  .search:focus{border-color:#53647d}
+  .search-icon{
+    position:absolute;left:28px;top:25px;font-size:18px;color:#8995a6;pointer-events:none
+  }
+  main{min-height:0;flex:1;display:flex;flex-direction:column;gap:10px;padding:0 14px 14px}
+  .visor{
+    position:relative;min-height:300px;flex:1.55;
+    border:1px solid #273140;border-radius:20px;
+    overflow:hidden;background:#070a10;
+    box-shadow:0 16px 45px rgba(0,0,0,.28);
+  }
+  #scene{position:absolute;inset:0}
+  .visor-label{
+    position:absolute;left:13px;top:12px;z-index:2;
+    padding:6px 9px;border-radius:9px;
+    background:rgba(7,10,16,.65);backdrop-filter:blur(8px);
+    color:#8995a6;font-size:11px;letter-spacing:.12em;text-transform:uppercase
+  }
+  .hint{
+    position:absolute;right:12px;top:12px;z-index:2;
+    color:#6e7b8e;font-size:11px;background:rgba(7,10,16,.55);
+    padding:6px 8px;border-radius:9px
+  }
+  .context{
+    flex:0 0 auto;min-height:82px;
+    border:1px solid #222b38;border-radius:16px;
+    background:#111721;padding:13px 14px;
+  }
+  .context-title{font-size:12px;color:#7f8b9d;text-transform:uppercase;letter-spacing:.1em}
+  .context-text{margin-top:7px;font-size:15px;color:#dbe2eb}
+  .lab{
+    flex:0 0 74px;border:1px dashed #2a3443;border-radius:16px;
+    display:flex;align-items:center;justify-content:center;
+    color:#687587;font-size:13px;position:relative;overflow:hidden
+  }
+  .lab::before{content:"";position:absolute;inset:0;
+    background:radial-gradient(circle at 50% 0%,rgba(100,120,150,.07),transparent 65%)}
+  .results{
+    flex:0 0 auto;border-top:1px solid #202734;
+    padding:10px 3px 2px;display:flex;justify-content:space-between;align-items:center;
+    color:#a8b3c2;font-size:12px
+  }
+  .results strong{color:#e4e9ef;font-weight:600}
+  .chips{display:flex;gap:6px}
+  .chip{
+    border:1px solid #283241;background:#141a24;color:#9ca8b8;
+    border-radius:999px;padding:6px 9px;font-size:11px
+  }
+  .empty{display:none}
+  @media (max-height:650px){
+    .visor{min-height:230px}
+    .lab{flex-basis:58px}
+  }
+</style>
+</head>
+<body>
+<div class="phone">
+  <header>
+    <div class="brand">BOX</div>
+    <button class="menu" aria-label="Menu">⋮</button>
+  </header>
+
+  <div class="search-wrap" style="position:relative">
+    <span class="search-icon">⌕</span>
+    <input id="search" class="search" autocomplete="off"
+      placeholder="O que você procura?" aria-label="Buscar">
+  </div>
+
+  <main>
+    <section class="visor" aria-label="Visor 3D">
+      <div id="scene"></div>
+      <div class="visor-label">visor · 3D</div>
+      <div class="hint">toque / arraste</div>
+    </section>
+
+    <section class="context">
+      <div class="context-title">contexto</div>
+      <div id="contextText" class="context-text">Explore as peças que aparecem no visor.</div>
+    </section>
+
+    <section class="lab">
+      <span>área experimental · ainda sem função definida</span>
+    </section>
+
+    <section class="results">
+      <span><strong id="resultCount">6</strong> manifestações</span>
+      <div class="chips">
+        <span class="chip">visual</span>
+        <span class="chip">3D</span>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+const sceneHost = document.querySelector("#scene");
+const search = document.querySelector("#search");
+const contextText = document.querySelector("#contextText");
+const resultCount = document.querySelector("#resultCount");
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x070a10);
+
+const camera = new THREE.PerspectiveCamera(45, 1, .1, 100);
+camera.position.set(0, 1.2, 7.2);
+
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+sceneHost.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.enablePan = false;
+controls.minDistance = 4.5;
+controls.maxDistance = 10;
+controls.maxPolarAngle = Math.PI * .78;
+
+scene.add(new THREE.HemisphereLight(0xb8c8e8, 0x141923, 1.7));
+
+const key = new THREE.DirectionalLight(0xffffff, 2.4);
+key.position.set(3,6,4);
+key.castShadow = true;
+scene.add(key);
+
+const rim = new THREE.PointLight(0x6688ff, 18, 12);
+rim.position.set(-3,1,-3);
+scene.add(rim);
+
+const floor = new THREE.Mesh(
+  new THREE.CircleGeometry(5.8, 64),
+  new THREE.MeshStandardMaterial({color:0x101722,roughness:.85,metalness:.05})
+);
+floor.rotation.x = -Math.PI/2;
+floor.position.y = -1.65;
+floor.receiveShadow = true;
+scene.add(floor);
+
+const group = new THREE.Group();
+scene.add(group);
+
+const items = [];
+
+function mat(color, rough=.55, metal=.05){
+  return new THREE.MeshStandardMaterial({color,roughness:rough,metalness:metal});
+}
+
+function makeBurger(){
+  const g = new THREE.Group();
+  const buns = mat(0xd58b3e,.8);
+  const meat = mat(0x54301d,1);
+  const cheese = mat(0xf2bd32,.55);
+  const lettuce = mat(0x55a94b,.8);
+  const tomato = mat(0xd84b3f,.65);
+
+  const bottom = new THREE.Mesh(new THREE.CylinderGeometry(.8,.88,.32,32),buns);
+  bottom.position.y=-.72;
+  const patty = new THREE.Mesh(new THREE.CylinderGeometry(.84,.86,.32,32),meat);
+  patty.position.y=-.30;
+  const ch = new THREE.Mesh(new THREE.BoxGeometry(1.72,.12,1.72),cheese);
+  ch.position.y=.01;
+  ch.rotation.y=.2;
+  const letc = new THREE.Mesh(new THREE.CylinderGeometry(.88,.78,.12,32),lettuce);
+  letc.position.y=.15;
+  const tom = new THREE.Mesh(new THREE.CylinderGeometry(.78,.82,.15,32),tomato);
+  tom.position.y=.30;
+  const top = new THREE.Mesh(new THREE.SphereGeometry(.91,.32,24),buns);
+  top.scale.y=.62;
+  top.position.y=.67;
+
+  [bottom,patty,ch,letc,tom,top].forEach(m=>{m.castShadow=true;m.receiveShadow=true;g.add(m)});
+  return g;
+}
+
+function makeHospital(){
+  const g=new THREE.Group();
+  const white=mat(0xdfe6ef,.7), red=mat(0xc94c56,.55);
+  const body=new THREE.Mesh(new THREE.BoxGeometry(1.35,1.35,1.05),white);
+  body.position.y=-.5;
+  const roof=new THREE.Mesh(new THREE.BoxGeometry(1.5,.18,1.18),white);
+  roof.position.y=.22;
+  const v=new THREE.Mesh(new THREE.BoxGeometry(.22,.65,.08),red);
+  const h=new THREE.Mesh(new THREE.BoxGeometry(.65,.22,.08),red);
+  v.position.set(0,.72,.57);h.position.set(0,.72,.57);
+  [body,roof,v,h].forEach(m=>{m.castShadow=true;g.add(m)});
+  return g;
+}
+
+function makeBus(){
+  const g=new THREE.Group();
+  const blue=mat(0x4f83c2,.65), glass=mat(0x24384d,.25,.25);
+  const b=new THREE.Mesh(new THREE.BoxGeometry(1.65,.72,.72),blue);
+  b.position.y=-.35;
+  const w=new THREE.Mesh(new THREE.BoxGeometry(1.25,.30,.74),glass);
+  w.position.set(0,.02,.01);
+  const wheelMat=mat(0x171b22,1);
+  [-.55,.55].forEach(x=>{
+    const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,.12,20),wheelMat);
+    wheel.rotation.z=Math.PI/2; wheel.position.set(x,-.73,.42); g.add(wheel);
+  });
+  [b,w].forEach(m=>{m.castShadow=true;g.add(m)});
+  return g;
+}
+
+function makeShop(){
+  const g=new THREE.Group();
+  const wall=mat(0xb86d45,.8), roof=mat(0x594437,.9), sign=mat(0xe0b34c,.55);
+  const b=new THREE.Mesh(new THREE.BoxGeometry(1.25,1.05,1.05),wall);
+  b.position.y=-.65;
+  const r=new THREE.Mesh(new THREE.ConeGeometry(.9,.45,4),roof);
+  r.position.y=.1;r.rotation.y=Math.PI/4;
+  const s=new THREE.Mesh(new THREE.BoxGeometry(.8,.2,.08),sign);
+  s.position.set(0,-.25,.56);
+  [b,r,s].forEach(m=>{m.castShadow=true;g.add(m)});
+  return g;
+}
+
+function makeTree(){
+  const g=new THREE.Group();
+  const trunk=mat(0x68432c,.95), leaf=mat(0x4e8d57,.9);
+  const t=new THREE.Mesh(new THREE.CylinderGeometry(.12,.17,.75,12),trunk);
+  t.position.y=-.85;
+  const l=new THREE.Mesh(new THREE.SphereGeometry(.65,20,14),leaf);
+  l.position.y=-.05;
+  [t,l].forEach(m=>{m.castShadow=true;g.add(m)});
+  return g;
+}
+
+function makeFish(){
+  const g=new THREE.Group();
+  const body=mat(0x5aa7b7,.4,.1);
+  const b=new THREE.Mesh(new THREE.SphereGeometry(.5,24,16),body);
+  b.scale.set(1.25,.65,.55);
+  const tail=new THREE.Mesh(new THREE.ConeGeometry(.35,.55,3),body);
+  tail.rotation.z=-Math.PI/2;tail.position.x=-.62;
+  b.castShadow=tail.castShadow=true;
+  g.add(b,tail);
+  return g;
+}
+
+const factories = {
+  "alimentação":makeBurger, "burger":makeBurger, "hamburguer":makeBurger,
+  "saúde":makeHospital, "hospital":makeHospital, "farmácia":makeHospital,
+  "transporte":makeBus, "ônibus":makeBus, "bus":makeBus,
+  "comércio":makeShop, "loja":makeShop, "mercado":makeShop,
+  "natureza":makeTree, "árvore":makeTree,
+  "animal":makeFish, "peixe":makeFish
+};
+
+const defaults=[
+  ["burger",makeBurger],["saúde",makeHospital],["transporte",makeBus],
+  ["comércio",makeShop],["natureza",makeTree],["animal",makeFish]
+];
+
+function clearItems(){
+  items.splice(0).forEach(o=>group.remove(o.object));
+}
+
+function show(list, query=""){
+  clearItems();
+  const cols=list.length<=3 ? list.length : 3;
+  list.forEach((entry,i)=>{
+    const obj=entry[1]();
+    const row=Math.floor(i/cols);
+    const col=i%cols;
+    const total=Math.min(cols,list.length);
+    obj.position.set((col-(total-1)/2)*2.15, .05-row*1.85, 0);
+    obj.userData.label=entry[0];
+    obj.userData.target=obj.position.clone();
+    obj.scale.setScalar(.78);
+    group.add(obj);
+    items.push({object:obj,phase:Math.random()*Math.PI*2});
+  });
+  resultCount.textContent=list.length;
+  contextText.textContent=query
+    ? `Manifestação para “${query}”. Toque e explore o visor.`
+    : "Explore as peças que aparecem no visor.";
+}
+
+show(defaults);
+
+function resize(){
+  const w=sceneHost.clientWidth,h=sceneHost.clientHeight;
+  camera.aspect=w/h;camera.updateProjectionMatrix();
+  renderer.setSize(w,h,false);
+}
+new ResizeObserver(resize).observe(sceneHost);
+resize();
+
+let clock=new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  const t=clock.getElapsedTime();
+  items.forEach((it,i)=>{
+    const o=it.object;
+    o.rotation.y += .0025;
+    o.position.y = o.userData.target.y + Math.sin(t*1.15+it.phase)*.055;
+  });
+  controls.update();
+  renderer.render(scene,camera);
+}
+animate();
+
+function performSearch(value){
+  const q=value.trim().toLowerCase();
+  if(!q){show(defaults);return}
+  const found=[];
+  Object.entries(factories).forEach(([key,fn])=>{
+    if(key.includes(q) || q.includes(key)) found.push([key,fn]);
+  });
+  // remove duplicates by factory
+  const unique=[];
+  const seen=new Set();
+  found.forEach(x=>{if(!seen.has(x[1])){seen.add(x[1]);unique.push(x)}});
+  if(unique.length) show(unique.slice(0,6),q);
+  else {
+    show([[q,makeShop]],q);
+    contextText.textContent=`Nenhuma peça exata foi encontrada. A BOX abriu uma manifestação provisória para “${q}”.`;
+  }
+}
+
+let timer;
+search.addEventListener("input",()=>{
+  clearTimeout(timer);
+  timer=setTimeout(()=>performSearch(search.value),120);
+});
+search.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){e.preventDefault();performSearch(search.value)}
+});
+
+// Pequena interação direta com as peças.
+renderer.domElement.addEventListener("pointerdown",()=>{
+  items.forEach((it,i)=>it.object.rotation.y += .25*(i%2?1:-1));
+});
+</script>
+</body>
+</html>

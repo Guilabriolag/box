@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gzero Alph@beto — Aquário Multiversal</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#061006;color:#dfffe5;font-family:system-ui,sans-serif;overflow-x:hidden}
+.app{max-width:1450px;margin:auto;padding:10px}
+.top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+h1{font-size:19px;margin:0;color:#b7ff4a;text-shadow:0 0 10px #71ff3955}
+.sub{font-size:11px;color:#8fb68d}
+.badge{border:1px solid #65d329;border-radius:20px;padding:7px 10px;font:11px monospace;background:#071b08}
+.layout{display:grid;grid-template-columns:235px 1fr 230px;gap:9px;margin-top:9px}
+.panel{background:#071607e8;border:2px solid #4c8d31;border-radius:15px;box-shadow:0 12px 35px #000c}
+.side{padding:11px}.section{margin-bottom:14px}
+h3{font-size:10px;letter-spacing:.12em;color:#a6dc74;margin:0 0 7px}
+label{font-size:10px;color:#89a980;display:block;margin:7px 0 3px}
+input{width:100%;background:#020802;color:#dffff0;border:1px solid #3e7130;border-radius:8px;padding:8px}
+.frags{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.frags button{background:#0a1909;color:#9edb82;border:1px solid #37652c;border-radius:6px;padding:6px 0;font:10px monospace}
+.frags button.active{border-color:#c4ff45;color:#fff;box-shadow:0 0 12px #a8ff3b77;background:#17320d}
+.stage{height:67vh;min-height:440px;position:relative;overflow:hidden;background:#041006}
+.water{position:absolute;inset:0;background:
+radial-gradient(circle at 50% 48%,#b5ff4530 0 2%,transparent 14%),
+radial-gradient(ellipse at 50% 0,#77ff4630,transparent 42%),
+linear-gradient(#0c3416,#061b0c 58%,#020803)}
+.water:before{content:"";position:absolute;inset:-30%;
+background:repeating-radial-gradient(ellipse at center,transparent 0 70px,#9cff4620 72px 74px,transparent 76px 150px);
+animation:portal 12s linear infinite}
+.water:after{content:"";position:absolute;inset:0;
+background:repeating-linear-gradient(170deg,transparent 0 42px,#b8ff700b 43px,#b8ff700b 45px);
+animation:wave 8s linear infinite}
+@keyframes wave{to{background-position:0 90px}}
+@keyframes portal{to{transform:rotate(360deg)}}
+svg{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.hud{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;font:11px monospace;pointer-events:none}
+.pill{background:#041005dd;border:1px solid #5b9d37;padding:6px 8px;border-radius:8px}
+.hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:10px;color:#b7d9ac;background:#041005e8;padding:6px 11px;border-radius:20px;pointer-events:none;white-space:nowrap}
+.metric{padding:8px;margin-bottom:7px;border:1px solid #37612c;border-radius:9px;background:#030903}
+.k{font-size:9px;color:#789873;text-transform:uppercase}.v{font:13px monospace;margin-top:3px}
+.bar{height:4px;background:#10230d;margin-top:6px;border-radius:9px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#b8ff3d,#5effa0,#8b5cff)}
+.log{font:9px monospace;line-height:1.5;max-height:250px;overflow:auto;color:#acd0a3}
+.factory{margin-top:9px;padding:10px}
+.factorygrid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}
+.box{border:1px solid #37612c;border-radius:10px;padding:9px;background:#030903}
+.eq{font:10px monospace;line-height:1.6;color:#acd0a3}.eq b{color:#baff4a}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.actions button{padding:8px;border-radius:8px;border:1px solid #4d8138;background:#0a1b09;color:#dfffe5}
+.primary{background:#28520f!important;border-color:#b8ff3d!important;color:#fff!important}
+.portal-ring{fill:none;stroke:#b8ff4a;stroke-width:3;opacity:.7;stroke-dasharray:12 9}
+@media(max-width:1050px){.layout{grid-template-columns:210px 1fr}.side-right{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){.top .badge{display:none}.layout{display:block}.side,.side-right{margin-bottom:8px}.side{display:grid;grid-template-columns:1fr 1fr;gap:8px}.section:first-child{grid-column:1/-1}.stage{height:58vh;min-height:390px}.factorygrid{grid-template-columns:1fr 1fr}.side-right{display:grid;grid-template-columns:1fr 1fr}.event{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+<div><h1>G ZERO / ALPH@BETO — AQUÁRIO MULTIVERSAL</h1>
+<div class="sub">fragmento → portal → observador → resolvedor → criatura alienígena</div></div>
+<div class="badge">WA01 OBSERVA · WB01 RESOLVE · <b id="bt">T01</b></div>
+</header>
+
+<div class="layout">
+<aside class="panel side">
+<section class="section"><h3>PORTAL / CONTEXTO</h3>
+<label>ENTITY</label><input id="entity" value="ALIEN-BIO">
+<label>SPACE</label><input id="space" value="DIM-01">
+<label>IDTIME</label><input id="time" value="T01">
+<label>KEY</label><input id="key" value="K01">
+</section>
+<section class="section"><h3>ALPH@BETO — FRAGMENTOS</h3><div class="frags" id="frags"></div></section>
+</aside>
+
+<main>
+<div class="panel stage" id="stage">
+<div class="water"></div>
+<svg id="svg" viewBox="0 0 1000 600">
+<defs>
+<filter id="glow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<radialGradient id="g"><stop offset="0" stop-color="#f4fff0"/><stop offset=".25" stop-color="#b8ff3d"/>
+<stop offset=".62" stop-color="#62ff91"/><stop offset="1" stop-color="#8d55ff"/></radialGradient>
+</defs>
+<g id="portal"></g><g id="creature"></g></svg>
+<div class="hud"><div class="pill">FRAGMENTO <b id="hf">01</b></div><div class="pill">STATE <b id="hs">0</b></div></div>
+<div class="hint">TOQUE · PUXE · ARRASTE · ESTIQUE O BICHO</div>
+</div>
+
+<div class="panel factory"><div class="factorygrid">
+<div class="box"><h3>GERADOR MULTIVERSAL</h3><div class="eq"><b>F</b> + KEY + IDTIME<br>+ ENTITY + SPACE<br>↓<br><b>MANIFESTAÇÃO</b></div></div>
+<div class="box"><h3>PARÂMETROS</h3>
+<label>Amplitude <output id="ao">0.70</output></label><input id="amp" type="range" min=".1" max="1" step=".01" value=".7">
+<label>Fluidez <output id="fo">0.80</output></label><input id="flow" type="range" min=".1" max="1" step=".01" value=".8"></div>
+<div class="box"><h3>FORMA</h3><div class="eq">tipo: <b id="shape">—</b><br>hue: <b id="hue">—</b>°<br>ângulo: <b id="angle">—</b>°<br>freq: <b id="freq">—</b> Hz<br>espessura: <b id="width">—</b> px</div></div>
+<div class="box"><h3>AÇÃO</h3><div class="actions"><button onclick="nextTime()">IDTIME +</button><button onclick="nextKey()">KEY +</button><button onclick="randomFrag()">ALEATÓRIO</button><button class="primary" onclick="manifest()">MANIFESTAR</button></div></div>
+</div></div>
+</main>
+
+<aside class="panel side-right">
+<div class="metric"><div class="k">Representação</div><div class="v" id="rep">—</div></div>
+<div class="metric"><div class="k">Intensidade</div><div class="v" id="inten">—</div><div class="bar"><i id="ib"></i></div></div>
+<div class="metric"><div class="k">Confiança</div><div class="v" id="conf">—</div><div class="bar"><i id="cb"></i></div></div>
+<div class="metric event"><div class="k">Cadeia de observações / eventos</div><div class="log" id="log"></div></div>
+</aside>
+</div>
+</div>
+
+<script>
+const fragments=Array.from({length:100},(_,i)=>String(i).padStart(2,"0"));
+let current="01",target={x:500,y:300},pos={x:500,y:300},boost=0,anim=0,drag=false;
+function hash(s){let h=2166136261>>>0;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)>>>0}return h>>>0}
+function resolve(){
+ const seed=entity.value+"|"+space.value+"|"+time.value+"|"+key.value+"|"+current,h=hash(seed);
+ const shapes=["BLIP","AMOEBA","PORTAL","MUTANTE","ÓRBITA","TENTÁCULO","GLIFO"];
+ return {h,rep:h.toString(16).padStart(8,"0"),shape:shapes[h%7],hue:h%360,angle:h%360,
+ width:1+h%8,freq:180+h%620,speed:.35+h%90/100,intensity:h%100/100,
+ conf:.70+h%30/100,state:h&1?"1":"0",amp:.25+h%75/100};
+}
+function log(s){const l=document.getElementById("log");l.textContent+=s+"\n";l.scrollTop=l.scrollHeight}
+function draw(r){
+ const ns="http://www.w3.org/2000/svg",root=document.getElementById("creature"),pr=document.getElementById("portal");
+ root.innerHTML="";pr.innerHTML="";
+ const ring=document.createElementNS(ns,"ellipse");ring.setAttribute("cx",500);ring.setAttribute("cy",300);
+ ring.setAttribute("rx",150);ring.setAttribute("ry",105);ring.setAttribute("class","portal-ring");pr.appendChild(ring);
+ const g=document.createElementNS(ns,"g");
+ const outer=document.createElementNS(ns,"ellipse");outer.setAttribute("cx",500);outer.setAttribute("cy",300);
+ outer.setAttribute("rx",82);outer.setAttribute("ry",52);outer.setAttribute("fill","url(#g)");
+ outer.setAttribute("opacity",".2");outer.setAttribute("filter","url(#glow)");
+ const core=document.createElementNS(ns,"circle");core.setAttribute("cx",500);core.setAttribute("cy",300);
+ core.setAttribute("r",18);core.setAttribute("fill","url(#g)");core.setAttribute("filter","url(#glow)");
+ g.append(outer,core);
+ for(let i=0;i<18;i++){let p=document.createElementNS(ns,"circle");p.setAttribute("r",2+i%3);
+ p.setAttribute("fill",`hsl(${r.hue} 90% 65%)`);g.appendChild(p)}
+ for(let i=0;i<7;i++){let p=document.createElementNS(ns,"path");p.setAttribute("fill","none");
+ p.setAttribute("stroke",`hsl(${(r.hue+i*18)%360} 90% 65%)`);p.setAttribute("stroke-width",r.width);
+ p.setAttribute("opacity",.3+i*.08);g.appendChild(p)}
+ root.appendChild(g);
+ const start=performance.now(),id=++anim;
+ function tick(now){
+  if(id!==anim)return;
+  const t=(now-start)/1000;
+  pos.x+=(target.x-pos.x)*.025;pos.y+=(target.y-pos.y)*.025;
+  const stretch=drag?1.35:1;
+  g.setAttribute("transform",`translate(${pos.x-500} ${pos.y-300}) rotate(${r.angle+Math.sin(t)*8} 500 300) scale(${stretch},${2-stretch*.72})`);
+  const a=(45+r.amp*75+boost*45);
+  [...g.querySelectorAll("circle")].forEach((p,i)=>{
+   if(i<2)return;
+   const q=t*r.speed+i/16*Math.PI*2;
+   p.setAttribute("cx",500+Math.cos(q)*a);
+   p.setAttribute("cy",300+Math.sin(q)*a*.6);
+   p.setAttribute("opacity",.5+.4*Math.sin(q*2))
+  });
+  [...g.querySelectorAll("path")].forEach((p,i)=>
+   p.setAttribute("d",`M ${405-i*5} ${300+(i-3)*10} Q 500 ${180+i*18+Math.sin(t*2+i)*25} ${595+i*5} ${300+(i-3)*10}`));
+  core.setAttribute("r",18+5*Math.sin(t*r.freq/90)*(Number(amp.value)+.5));
+  ring.setAttribute("transform",`rotate(${t*18} 500 300)`);
+  requestAnimationFrame(tick)
+ }
+ requestAnimationFrame(tick)
+}
+function observe(reason="OBS"){
+ const r=resolve();hf.textContent=current;hs.textContent=r.state;rep.textContent=r.rep;
+ shape.textContent=r.shape;hue.textContent=r.hue;angle.textContent=r.angle;freq.textContent=r.freq;width.textContent=r.width;
+ inten.textContent=r.intensity.toFixed(2);conf.textContent=r.conf.toFixed(2);
+ ib.style.width=r.intensity*100+"%";cb.style.width=r.conf*100+"%";bt.textContent=time.value;
+ draw(r);log(reason+" | F="+current+" | "+time.value+" | "+key.value+" | REP="+r.rep+" | STATE="+r.state)
+}
+function nextTime(){time.value=time.value==="T01"?"T02":time.value==="T02"?"T03":"T01";observe("EVENT IDTIME")}
+function nextKey(){key.value=key.value==="K01"?"K02":key.value==="K02"?"K03":"K01";observe("EVENT KEY")}
+function randomFrag(){current=fragments[Math.floor(Math.random()*100)];sync();observe("EVENT FRAGMENT")}
+function manifest(){boost=1;setTimeout(()=>boost=0,900);observe("MANIFESTAÇÃO")}
+function sync(){document.querySelectorAll(".frags button").forEach(b=>b.classList.toggle("active",b.textContent===current))}
+document.getElementById("frags").innerHTML=fragments.map(f=>"<button>"+f+"</button>").join("");
+document.querySelectorAll(".frags button").forEach(b=>b.onclick=()=>{current=b.textContent;sync();observe("SELEÇÃO")});
+[entity,space,time,key].forEach(x=>x.addEventListener("input",()=>observe("CONTEXTO")));
+amp.oninput=()=>ao.textContent=Number(amp.value).toFixed(2);
+flow.oninput=()=>fo.textContent=Number(flow.value).toFixed(2);
+stage.addEventListener("pointerdown",e=>{drag=true;const r=svg.getBoundingClientRect();
+target.x=(e.clientX-r.left)/r.width*1000;target.y=(e.clientY-r.top)/r.height*600;boost=1;
+log("INTERAÇÃO | x="+target.x.toFixed(0)+" y="+target.y.toFixed(0)});
+stage.addEventListener("pointermove",e=>{if(!drag)return;const r=svg.getBoundingClientRect();
+target.x=(e.clientX-r.left)/r.width*1000;target.y=(e.clientY-r.top)/r.height*600});
+stage.addEventListener("pointerup",()=>{drag=false;boost=0});
+stage.addEventListener("pointercancel",()=>{drag=false;boost=0});
+sync();observe("INIT");
+</script>
+</body>
+</html>

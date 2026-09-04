@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>AQUÁRIO 6 — MERGULHO / DRONE v2</title>
+<style>
+:root{
+  --teal:#5df1c9; --pink:#ff79d0; --amber:#ffc46b; --ink:#eaf6ff; --dim:#7d84b8;
+  --glass:rgba(14,12,34,.55);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{height:100%;margin:0;overscroll-behavior:none;background:#050311}
+body{font-family:"Courier New",ui-monospace,monospace;color:var(--ink);overflow:hidden}
+#app{position:relative;height:100dvh;width:100%}
+canvas{display:block;touch-action:none}
+button{font-family:inherit;border:none}
+
+/* ---------- topbar ---------- */
+.topbar{position:absolute;top:0;left:0;right:0;z-index:10;display:flex;justify-content:space-between;
+  padding:12px 16px;font-size:10px;letter-spacing:.12em;color:var(--dim);pointer-events:none}
+.topbar b{color:var(--teal)}
+.crosshair{position:absolute;left:50%;top:50%;width:14px;height:14px;transform:translate(-50%,-50%);
+  z-index:9;pointer-events:none;opacity:.6}
+.crosshair::before,.crosshair::after{content:"";position:absolute;background:var(--teal)}
+.crosshair::before{left:50%;top:0;width:1px;height:100%;transform:translateX(-50%)}
+.crosshair::after{top:50%;left:0;height:1px;width:100%;transform:translateY(-50%)}
+
+/* ---------- HUD ---------- */
+.hud{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:10;display:flex;flex-direction:column;
+  align-items:center;gap:5px;font-size:10px;color:var(--dim);letter-spacing:.06em;pointer-events:none}
+.hud-row{display:flex;gap:14px;background:var(--glass);backdrop-filter:blur(6px);padding:6px 14px;
+  border-radius:999px;border:1px solid rgba(93,241,201,.18)}
+.hud b{color:var(--amber)}
+.hud .need-fome{color:var(--pink)}
+.hud .need-diversao{color:var(--teal)}
+
+/* ---------- joystick ---------- */
+.joyzone{position:absolute;left:0;bottom:0;width:46%;height:46%;z-index:20;touch-action:none}
+.joypad{position:absolute;left:26px;bottom:26px;width:104px;height:104px;border-radius:50%;
+  border:1px solid rgba(93,241,201,.35);background:rgba(9,8,24,.5);backdrop-filter:blur(4px)}
+.joynub{position:absolute;left:50%;top:50%;width:44px;height:44px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff,var(--teal) 45%,#0b3a30 100%);
+  box-shadow:0 0 14px rgba(93,241,201,.6);transform:translate(-50%,-50%);transition:transform .08s linear}
+.joylbl{position:absolute;left:26px;bottom:134px;font-size:9px;color:var(--dim);letter-spacing:.1em}
+
+/* ---------- subir/descer ---------- */
+.vertctl{position:absolute;right:20px;bottom:110px;z-index:20;display:flex;flex-direction:column;gap:10px}
+.vertbtn{width:52px;height:52px;border-radius:50%;border:1px solid rgba(255,196,107,.4);
+  background:rgba(9,8,24,.55);backdrop-filter:blur(4px);color:var(--amber);font-size:18px;line-height:1}
+.vertbtn:active{background:rgba(255,196,107,.18)}
+
+/* ---------- olhar ---------- */
+.lookzone{position:absolute;right:0;top:0;bottom:0;width:100%;z-index:5;touch-action:none}
+
+.hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:15;text-align:center;
+  font-size:11px;color:var(--dim);letter-spacing:.08em;background:var(--glass);padding:10px 18px;
+  border-radius:10px;border:1px solid rgba(93,241,201,.2);transition:opacity .6s;pointer-events:none}
+
+/* ---------- inventário ---------- */
+.invbtn{position:absolute;right:16px;top:52px;z-index:22;width:44px;height:44px;border-radius:50%;
+  border:1px solid rgba(255,121,208,.4);background:rgba(9,8,24,.55);backdrop-filter:blur(4px);
+  color:var(--pink);font-size:18px}
+.invdrawer{position:absolute;right:16px;top:104px;z-index:22;display:flex;flex-direction:column;gap:8px;
+  background:var(--glass);backdrop-filter:blur(10px);border:1px solid rgba(255,121,208,.25);border-radius:14px;
+  padding:10px;transform:translateX(120%);transition:transform .3s cubic-bezier(.2,.9,.3,1.2);opacity:0}
+.invdrawer.open{transform:translateX(0);opacity:1}
+.invitem{display:flex;flex-direction:column;align-items:center;gap:3px;background:rgba(2,6,14,.5);
+  border:1px solid rgba(93,241,201,.15);border-radius:10px;padding:8px 10px;color:var(--ink);font-size:9px;
+  letter-spacing:.4px;width:64px}
+.invitem span{color:var(--dim);font-size:8px}
+.throwbtn{position:absolute;left:50%;bottom:64px;transform:translateX(-50%);z-index:23;
+  background:linear-gradient(135deg,var(--pink),#ff9f5a);color:#1a0a14;font-weight:700;font-size:11px;
+  padding:10px 18px;border-radius:999px;letter-spacing:.4px;box-shadow:0 4px 16px rgba(255,121,208,.35)}
+.throwbtn.hidden{display:none}
+
+/* ---------- salvar memória ---------- */
+.savebtn{position:absolute;right:16px;top:16px;z-index:22;width:auto;height:auto;padding:0;background:none}
+.savebtn .icon{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;
+  border:1px solid rgba(93,241,255,.4);background:rgba(9,8,24,.55);backdrop-filter:blur(4px);color:var(--cyanhud,#5df1ff);font-size:17px}
+.savebtn{top:auto;bottom:180px}
+.savetoast{position:absolute;left:50%;bottom:230px;transform:translateX(-50%) translateY(10px);z-index:24;
+  background:var(--glass);border:1px solid rgba(93,241,201,.3);border-radius:10px;padding:8px 14px;font-size:10px;
+  color:var(--teal);opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;white-space:nowrap}
+.savetoast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar"><div>AQUÁRIO 6 <b>/ mergulho</b></div><div>modo <b>DRONE</b></div></div>
+  <div class="crosshair"></div>
+  <div class="hint" id="hint">arrasta a tela pra olhar · joystick pra nadar<br>mochila no canto pra ração/brinquedo</div>
+
+  <div class="lookzone" id="lookzone"></div>
+
+  <div class="joylbl">NADAR</div>
+  <div class="joyzone" id="joyzone">
+    <div class="joypad" id="joypad"><div class="joynub" id="joynub"></div></div>
+  </div>
+
+  <div class="vertctl">
+    <button class="vertbtn" id="btnUp">▲</button>
+    <button class="vertbtn" id="btnDown">▼</button>
+  </div>
+
+  <button class="invbtn" id="invBtn">🎒</button>
+  <div class="invdrawer" id="invDrawer">
+    <button class="invitem" data-type="racao">🍖<span>Ração</span></button>
+    <button class="invitem" data-type="brinquedo">⭐<span>Brinquedo</span></button>
+  </div>
+  <button class="throwbtn hidden" id="throwBtn">🎯 lançar</button>
+
+  <button class="savebtn" id="saveBtn"><span class="icon">💾</span></button>
+  <div class="savetoast" id="saveToast">memória salva</div>
+
+  <div class="hud">
+    <div class="hud-row">
+      <div>PROF. <b id="hudDepth">0.0</b>m</div>
+      <div>VEL. <b id="hudSpeed">0.0</b></div>
+    </div>
+    <div class="hud-row">
+      <div class="need-fome">FOME <b id="hudFome">60</b></div>
+      <div class="need-diversao">DIVERSÃO <b id="hudDiv">60</b></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+
+/* ================= util ================= */
+const clamp = (v, min = 0, max = 100) => Math.max(min, Math.min(max, v));
+const round = (v, d = 2) => +v.toFixed(d);
+
+/* ================= cena base ================= */
+const app = document.getElementById("app");
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(app.clientWidth, app.clientHeight);
+app.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+const waterColor = new THREE.Color(0x061a2e);
+scene.background = waterColor;
+scene.fog = new THREE.FogExp2(waterColor.getHex(), 0.028);
+
+const camera = new THREE.PerspectiveCamera(70, app.clientWidth / app.clientHeight, 0.1, 200);
+const droneRig = new THREE.Object3D();
+droneRig.position.set(0, 0, 18);
+droneRig.add(camera);
+scene.add(droneRig);
+
+const headlight = new THREE.PointLight(0x9fe8ff, 1.4, 22, 2);
+camera.add(headlight);
+scene.add(new THREE.AmbientLight(0x274064, 0.9));
+const sun = new THREE.DirectionalLight(0x6fb7ff, 0.5);
+sun.position.set(10, 30, 10);
+scene.add(sun);
+
+/* ================= limites ================= */
+const BOUNDS = { x: 26, yTop: -2, yBottom: -30, z: 26 };
+
+const walls = new THREE.Mesh(
+  new THREE.BoxGeometry(BOUNDS.x * 2, (BOUNDS.yTop - BOUNDS.yBottom), BOUNDS.z * 2),
+  new THREE.MeshBasicMaterial({ color: 0x0c2b46, wireframe: true, transparent: true, opacity: 0.18 })
+);
+walls.position.y = (BOUNDS.yTop + BOUNDS.yBottom) / 2;
+scene.add(walls);
+
+const floorGeo = new THREE.PlaneGeometry(BOUNDS.x * 2, BOUNDS.z * 2, 24, 24);
+floorGeo.rotateX(-Math.PI / 2);
+const floor = new THREE.Mesh(floorGeo, new THREE.MeshStandardMaterial({ color: 0x0a1f33, roughness: 1 }));
+floor.position.y = BOUNDS.yBottom;
+scene.add(floor);
+
+const coralMat = new THREE.MeshStandardMaterial({ color: 0x7a3f9e, roughness: 0.8 });
+for (let i = 0; i < 14; i++) {
+  const h = 1.2 + Math.random() * 3.2;
+  const coral = new THREE.Mesh(new THREE.ConeGeometry(0.4 + Math.random() * 0.5, h, 6), coralMat);
+  coral.position.set(
+    (Math.random() - 0.5) * BOUNDS.x * 1.7,
+    BOUNDS.yBottom + h / 2,
+    (Math.random() - 0.5) * BOUNDS.z * 1.7
+  );
+  scene.add(coral);
+}
+
+/* ================= partículas ================= */
+const PARTICLE_COUNT = 260;
+const particleGeo = new THREE.BufferGeometry();
+const positions = new Float32Array(PARTICLE_COUNT * 3);
+for (let i = 0; i < PARTICLE_COUNT; i++) {
+  positions[i * 3] = (Math.random() - 0.5) * BOUNDS.x * 2;
+  positions[i * 3 + 1] = BOUNDS.yBottom + Math.random() * (BOUNDS.yTop - BOUNDS.yBottom);
+  positions[i * 3 + 2] = (Math.random() - 0.5) * BOUNDS.z * 2;
+}
+particleGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+const particles = new THREE.Points(particleGeo, new THREE.PointsMaterial({ color: 0x8fe6d2, size: 0.12, transparent: true, opacity: 0.55 }));
+scene.add(particles);
+
+/* ================= organismo ================= */
+const organismGroup = new THREE.Group();
+const core = new THREE.Mesh(
+  new THREE.IcosahedronGeometry(1.1, 2),
+  new THREE.MeshStandardMaterial({ color: 0xf1c66a, emissive: 0x6f4d18, emissiveIntensity: 0.6, roughness: 0.35, metalness: 0.1 })
+);
+organismGroup.add(core);
+const glow = new THREE.PointLight(0xffc46b, 1.1, 8, 2);
+organismGroup.add(glow);
+
+// anel de percepção — acende quando o organismo "percebe" o drone (só visão, sem áudio nessa v1)
+const awareRing = new THREE.Mesh(
+  new THREE.RingGeometry(1.35, 1.5, 40),
+  new THREE.MeshBasicMaterial({ color: 0x5df1ff, transparent: true, opacity: 0, side: THREE.DoubleSide })
+);
+awareRing.rotation.x = -Math.PI / 2;
+organismGroup.add(awareRing);
+
+organismGroup.position.set(0, BOUNDS.yBottom * 0.4, -4);
+scene.add(organismGroup);
+
+/* ---- necessidades + traço de personalidade (percepção do organismo) ---- */
+const needs = { fome: 60, diversao: 60 };
+const traits = { curiosidade: 0.3 + Math.random() * 0.55 }; // <0.5 arisco · >0.5 curioso
+const AWARE_RADIUS = 9, CLOSE_RADIUS = 3.4;
+let awareOfDrone = false, awareLevel = 0;
+
+/* ---- vagar (sem perceber nada, comportamento de base) ---- */
+let wanderTarget = organismGroup.position.clone();
+let wanderTimer = 0;
+function pickWanderTarget() {
+  wanderTarget.set(
+    (Math.random() - 0.5) * BOUNDS.x * 1.2,
+    BOUNDS.yBottom * 0.75 + Math.random() * BOUNDS.yBottom * -0.7,
+    (Math.random() - 0.5) * BOUNDS.z * 1.2
+  );
+  wanderTimer = 4 + Math.random() * 4;
+}
+pickWanderTarget();
+
+/* ================= itens / inventário ================= */
+let items = [];
+const invBtn = document.getElementById("invBtn");
+const invDrawer = document.getElementById("invDrawer");
+const throwBtn = document.getElementById("throwBtn");
+let armedItem = null;
+
+invBtn.addEventListener("click", () => invDrawer.classList.toggle("open"));
+document.querySelectorAll(".invitem").forEach(btn => {
+  btn.addEventListener("click", () => {
+    armedItem = btn.dataset.type;
+    invDrawer.classList.remove("open");
+    throwBtn.classList.remove("hidden");
+    throwBtn.textContent = `🎯 lançar ${armedItem === "racao" ? "ração" : "brinquedo"}`;
+  });
+});
+throwBtn.addEventListener("click", () => {
+  if (!armedItem) return;
+  throwItem(armedItem);
+  armedItem = null;
+  throwBtn.classList.add("hidden");
+});
+
+function throwItem(type) {
+  const dir = new THREE.Vector3();
+  camera.getWorldDirection(dir);
+  const spawnPos = new THREE.Vector3();
+  camera.getWorldPosition(spawnPos);
+  spawnPos.addScaledVector(dir, 1.4);
+
+  const mesh = new THREE.Mesh(
+    type === "racao" ? new THREE.SphereGeometry(0.15, 8, 8) : new THREE.OctahedronGeometry(0.24),
+    new THREE.MeshStandardMaterial({
+      color: type === "racao" ? 0xc98a4b : 0x6bdc8f,
+      emissive: type === "racao" ? 0x4a2f10 : 0x1f4a2a, emissiveIntensity: 0.6
+    })
+  );
+  mesh.position.copy(spawnPos);
+  scene.add(mesh);
+  items.push({ type, mesh, vel: dir.clone().multiplyScalar(5.2).add(new THREE.Vector3(0, 0.5, 0)), age: 0, consumed: false });
+  pushMemoryEvent("item_lancado", { tipo: type });
+}
+
+function updateItems(dt) {
+  for (let i = items.length - 1; i >= 0; i--) {
+    const it = items[i];
+    it.age += dt;
+    it.vel.y -= 0.5 * dt;             // afunda devagar, como se tivesse flutuação
+    it.vel.multiplyScalar(Math.max(0, 1 - 0.7 * dt));
+    it.mesh.position.addScaledVector(it.vel, dt);
+    it.mesh.rotation.y += dt * 1.5;
+
+    const d = it.mesh.position.distanceTo(organismGroup.position);
+    if (!it.consumed && d < 1.0) {
+      it.consumed = true;
+      if (it.type === "racao") {
+        needs.fome = clamp(needs.fome + 30);
+        pushMemoryEvent("percebeu_racao", { fome: Math.round(needs.fome) });
+      } else {
+        needs.diversao = clamp(needs.diversao + 30);
+        pushMemoryEvent("percebeu_brinquedo", { diversao: Math.round(needs.diversao) });
+      }
+      pulseOrganism();
+      scene.remove(it.mesh);
+      items.splice(i, 1);
+      continue;
+    }
+    if (it.age > 20 || it.mesh.position.y < BOUNDS.yBottom) { scene.remove(it.mesh); items.splice(i, 1); }
+  }
+}
+
+let pulse = 0;
+function pulseOrganism() { pulse = 1; }
+
+/* ================= joystick ================= */
+const joyzone = document.getElementById("joyzone");
+const joypad = document.getElementById("joypad");
+const joynub = document.getElementById("joynub");
+const hint = document.getElementById("hint");
+const JOY_R = 40;
+let joyHeld = false, joyId = null, joyDir = { x: 0, y: 0 };
+
+function joyPoint(e) { const r = joypad.getBoundingClientRect(); return { x: e.clientX - (r.left + r.width / 2), y: e.clientY - (r.top + r.height / 2) }; }
+function moveJoy(e) {
+  let p = joyPoint(e);
+  const m = Math.hypot(p.x, p.y);
+  if (m > JOY_R) { p.x = (p.x / m) * JOY_R; p.y = (p.y / m) * JOY_R; }
+  joynub.style.transform = `translate(calc(-50% + ${p.x}px), calc(-50% + ${p.y}px))`;
+  joyDir = { x: p.x / JOY_R, y: p.y / JOY_R };
+}
+joyzone.addEventListener("pointerdown", e => { joyHeld = true; joyId = e.pointerId; joyzone.setPointerCapture(joyId); moveJoy(e); hint.style.opacity = 0; });
+joyzone.addEventListener("pointermove", e => { if (joyHeld && e.pointerId === joyId) moveJoy(e); });
+function joyRelease(e) { if (e.pointerId !== joyId) return; joyHeld = false; joyId = null; joynub.style.transform = "translate(-50%,-50%)"; joyDir = { x: 0, y: 0 }; }
+joyzone.addEventListener("pointerup", joyRelease);
+joyzone.addEventListener("pointercancel", joyRelease);
+
+/* ================= subir / descer ================= */
+let vertInput = 0;
+function holdVert(el, dir) {
+  el.addEventListener("pointerdown", e => { vertInput = dir; el.setPointerCapture(e.pointerId); });
+  el.addEventListener("pointerup", () => { if (vertInput === dir) vertInput = 0; });
+  el.addEventListener("pointercancel", () => { if (vertInput === dir) vertInput = 0; });
+}
+holdVert(document.getElementById("btnUp"), 1);
+holdVert(document.getElementById("btnDown"), -1);
+
+/* ================= olhar (com inércia) ================= */
+const lookzone = document.getElementById("lookzone");
+let lookHeld = false, lookId = null, lastLook = { x: 0, y: 0 }, lookVel = { x: 0, y: 0 };
+const LOOK_STIFF = 14, LOOK_DAMP = 6.5;
+let yawVel = 0, pitchVel = 0, yaw = 0, pitch = 0;
+
+lookzone.addEventListener("pointerdown", e => {
+  if (e.clientX < joyzone.getBoundingClientRect().right && e.clientY > joyzone.getBoundingClientRect().top) return;
+  lookHeld = true; lookId = e.pointerId; lastLook = { x: e.clientX, y: e.clientY };
+  lookzone.setPointerCapture(lookId); hint.style.opacity = 0;
+});
+lookzone.addEventListener("pointermove", e => {
+  if (!lookHeld || e.pointerId !== lookId) return;
+  const dx = e.clientX - lastLook.x, dy = e.clientY - lastLook.y;
+  lastLook = { x: e.clientX, y: e.clientY };
+  lookVel.x = dx * 0.0022; lookVel.y = dy * 0.0022;
+});
+function lookRelease(e) { if (e.pointerId !== lookId) return; lookHeld = false; lookId = null; }
+lookzone.addEventListener("pointerup", lookRelease);
+lookzone.addEventListener("pointercancel", lookRelease);
+
+/* ================= memória: gravador + exportador de clipe ================= */
+let memClock = 0, lastSample = 0;
+let memoryFrames = [], memoryEvents = [];
+const MEM_INTERVAL = 0.25, MEM_MAX_FRAMES = 1200; // ~5min de clipe
+
+function pushMemoryEvent(tipo, extra = {}) {
+  memoryEvents.push({ t: round(memClock), tipo, ...extra });
+}
+function sampleMemoryFrame() {
+  memoryFrames.push({
+    t: round(memClock),
+    drone: { x: round(droneRig.position.x), y: round(droneRig.position.y), z: round(droneRig.position.z), yaw: round(yaw), pitch: round(pitch) },
+    organismo: { x: round(organismGroup.position.x), y: round(organismGroup.position.y), z: round(organismGroup.position.z) },
+    necessidades: { fome: Math.round(needs.fome), diversao: Math.round(needs.diversao) },
+    percebendo: awareOfDrone
+  });
+  if (memoryFrames.length > MEM_MAX_FRAMES) memoryFrames.shift();
+}
+
+const saveBtn = document.getElementById("saveBtn");
+const saveToast = document.getElementById("saveToast");
+saveBtn.addEventListener("click", salvarMemoria);
+
+function salvarMemoria() {
+  const agora = new Date();
+  const nomeArq = `memoria_aquario6_${agora.toISOString().replace(/[:.]/g, "-")}.js`;
+  const dados = {
+    geradoEm: agora.toISOString(),
+    duracao: round(memClock),
+    frames: memoryFrames,
+    eventos: memoryEvents
+  };
+  const conteudo = `// MEMÓRIA — clipe gerado pelo Aquário 6 em ${agora.toLocaleString("pt-BR")}
+// Isso é só dados + um player mínimo. Qualquer motor (visual, áudio, o que vier depois)
+// pode consumir via reproduzir(), sem precisar saber como o clipe foi gravado —
+// mesmo contrato de evento do Núcleo, só que guardado em vez de renderizado na hora.
+
+export const clipe = ${JSON.stringify(dados, null, 2)};
+
+export function reproduzir(clipeAlvo, handlers = {}) {
+  const inicio = performance.now();
+  let fi = 0, ei = 0;
+  function tick() {
+    const passado = (performance.now() - inicio) / 1000;
+    while (fi < clipeAlvo.frames.length && clipeAlvo.frames[fi].t <= passado) {
+      handlers.onFrame && handlers.onFrame(clipeAlvo.frames[fi]); fi++;
+    }
+    while (ei < clipeAlvo.eventos.length && clipeAlvo.eventos[ei].t <= passado) {
+      handlers.onEvento && handlers.onEvento(clipeAlvo.eventos[ei]); ei++;
+    }
+    if (passado < clipeAlvo.duracao) requestAnimationFrame(tick);
+    else handlers.onFim && handlers.onFim();
+  }
+  tick();
+}
+`;
+  const blob = new Blob([conteudo], { type: "text/javascript" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = nomeArq; a.click();
+  URL.revokeObjectURL(url);
+
+  saveToast.classList.add("show");
+  setTimeout(() => saveToast.classList.remove("show"), 1800);
+}
+
+/* ================= loop ================= */
+const clock = new THREE.Clock();
+const hudDepth = document.getElementById("hudDepth");
+const hudSpeed = document.getElementById("hudSpeed");
+const hudFome = document.getElementById("hudFome");
+const hudDiv = document.getElementById("hudDiv");
+let velocity = new THREE.Vector3();
+const MAX_SPEED = 6.2, ACCEL = 10, DRAG = 3.4;
+
+function resize() {
+  camera.aspect = app.clientWidth / app.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(app.clientWidth, app.clientHeight);
+}
+window.addEventListener("resize", resize);
+
+function animate() {
+  const dt = Math.min(0.05, clock.getDelta());
+  const t = clock.elapsedTime;
+  memClock += dt;
+
+  // ---- olhar ----
+  yawVel += ((lookHeld ? lookVel.x * 60 : 0) - yawVel) * Math.min(1, LOOK_STIFF * dt);
+  pitchVel += ((lookHeld ? lookVel.y * 60 : 0) - pitchVel) * Math.min(1, LOOK_STIFF * dt);
+  yaw -= yawVel * dt; pitch -= pitchVel * dt;
+  pitch = Math.max(-1.15, Math.min(1.15, pitch));
+  yawVel *= Math.max(0, 1 - LOOK_DAMP * dt);
+  pitchVel *= Math.max(0, 1 - LOOK_DAMP * dt);
+  droneRig.rotation.y = yaw;
+  camera.rotation.x = pitch;
+
+  // ---- deslocamento ----
+  const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(droneRig.quaternion);
+  const right = new THREE.Vector3(1, 0, 0).applyQuaternion(droneRig.quaternion);
+  const moveDir = new THREE.Vector3().addScaledVector(forward, -joyDir.y).addScaledVector(right, joyDir.x);
+  if (moveDir.lengthSq() > 0.0001) moveDir.normalize().multiplyScalar(Math.min(1, Math.hypot(joyDir.x, joyDir.y)));
+  moveDir.y += vertInput;
+
+  velocity.addScaledVector(moveDir, ACCEL * dt);
+  if (velocity.length() > MAX_SPEED) velocity.setLength(MAX_SPEED);
+  velocity.multiplyScalar(Math.max(0, 1 - DRAG * dt));
+  droneRig.position.addScaledVector(velocity, dt);
+  droneRig.position.x = Math.max(-BOUNDS.x + 1, Math.min(BOUNDS.x - 1, droneRig.position.x));
+  droneRig.position.y = Math.max(BOUNDS.yBottom + 1, Math.min(BOUNDS.yTop - 0.5, droneRig.position.y));
+  droneRig.position.z = Math.max(-BOUNDS.z + 1, Math.min(BOUNDS.z - 1, droneRig.position.z));
+
+  // ---- necessidades decaem devagar ----
+  needs.fome = clamp(needs.fome - dt * 0.5);
+  needs.diversao = clamp(needs.diversao - dt * 0.35);
+
+  // ---- percepção de presença: organismo nota o drone, reage por personalidade ----
+  const distDrone = organismGroup.position.distanceTo(droneRig.position);
+  const nowAware = distDrone < AWARE_RADIUS;
+  if (nowAware !== awareOfDrone) {
+    awareOfDrone = nowAware;
+    pushMemoryEvent("presenca", { percebendo: awareOfDrone, distancia: round(distDrone) });
+  }
+  awareLevel += ((awareOfDrone ? 1 : 0) - awareLevel) * Math.min(1, 4 * dt);
+  awareRing.material.opacity = awareLevel * 0.5;
+  awareRing.scale.setScalar(1 + Math.sin(t * 2) * 0.05 * awareLevel);
+
+  // ---- vagar, com leve viés de curiosidade/timidez quando percebe o drone ----
+  wanderTimer -= dt;
+  const toTarget = wanderTarget.clone().sub(organismGroup.position);
+  if (toTarget.length() < 0.6 || wanderTimer <= 0) pickWanderTarget();
+  const wanderDir = toTarget.lengthSq() > 0.0001 ? toTarget.clone().normalize() : new THREE.Vector3();
+
+  let steer = wanderDir.clone();
+  if (awareOfDrone) {
+    const toDrone = droneRig.position.clone().sub(organismGroup.position);
+    const distNow = toDrone.length();
+    const towardDrone = toDrone.normalize();
+    if (traits.curiosidade > 0.5) {
+      steer.lerp(towardDrone, 0.35 * awareLevel);           // curioso: se aproxima
+    } else if (distNow < CLOSE_RADIUS) {
+      steer.lerp(towardDrone.clone().negate(), 0.5 * awareLevel); // arisco: foge se o drone chega perto
+    }
+  }
+  const speed = 1.4 * (1 + pulse * 0.6);
+  organismGroup.position.addScaledVector(steer.normalize(), Math.min(toTarget.length() + 1, speed * dt));
+
+  // ---- reação visual a item percebido ----
+  pulse = Math.max(0, pulse - dt * 1.4);
+  core.scale.setScalar(1 + Math.sin(t * 1.6) * 0.06 + pulse * 0.35);
+  core.rotation.y += dt * 0.3;
+
+  updateItems(dt);
+
+  // ---- partículas ----
+  const posAttr = particleGeo.attributes.position;
+  for (let i = 0; i < PARTICLE_COUNT; i++) posAttr.array[i * 3 + 1] += Math.sin(t * 0.4 + i) * 0.0015;
+  posAttr.needsUpdate = true;
+
+  // ---- gravação de memória ----
+  if (memClock - lastSample > MEM_INTERVAL) { lastSample = memClock; sampleMemoryFrame(); }
+
+  // ---- HUD ----
+  hudDepth.textContent = Math.max(0, (BOUNDS.yTop - droneRig.position.y)).toFixed(1);
+  hudSpeed.textContent = velocity.length().toFixed(1);
+  hudFome.textContent = Math.round(needs.fome);
+  hudDiv.textContent = Math.round(needs.diversao);
+
+  renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+}
+resize();
+animate();
+</script>
+</body>
+</html>
