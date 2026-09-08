@@ -1,84 +1,174 @@
-// BOX — Controle de Acesso + LOG v0
+// BOX — Validador de Autorizações v0
 
-const SALAS = {
-  "_01": {
-    codigo: "BOX-SALA01-KEY0"
-  }
-};
+const AUTORIZACOES = [];
 
 const LOGS = [];
 
-function registrarLog(sala, resultado, motivo) {
+
+// =====================================================
+// REGISTRO DE AUTORIZAÇÃO
+// =====================================================
+
+function registrarAutorizacao(autorizacao) {
+
+  AUTORIZACOES.push(autorizacao);
+
+  registrarLog(
+    autorizacao.sala,
+    "REGISTRO",
+    "autorização criada",
+    autorizacao.token
+  );
+
+  return autorizacao;
+}
+
+
+// =====================================================
+// LOG
+// =====================================================
+
+function registrarLog(
+  sala,
+  resultado,
+  motivo,
+  token = null
+) {
+
   const registro = {
+
     data: new Date().toISOString(),
+
     sala: sala,
+
     resultado: resultado,
-    motivo: motivo
+
+    motivo: motivo,
+
+    token: token
+
   };
 
+
   LOGS.push(registro);
+
 
   return registro;
 }
 
-function solicitarAcesso(sala, codigo) {
-  const configuracao = SALAS[sala];
 
-  if (!configuracao) {
-    const registro = registrarLog(
-      sala,
-      "DENY",
-      "sala inexistente"
+// =====================================================
+// VALIDAÇÃO
+// =====================================================
+
+function validarAutorizacao(
+  sala,
+  token
+) {
+
+  // -----------------------------------------------
+  // 1. verificar se o token existe
+  // -----------------------------------------------
+
+  const autorizacao =
+    AUTORIZACOES.find(
+      item => item.token === token
     );
 
-    return registro;
-  }
 
-  if (codigo !== configuracao.codigo) {
-    const registro = registrarLog(
+  if (!autorizacao) {
+
+    return registrarLog(
       sala,
       "DENY",
-      "credencial inválida"
+      "token desconhecido",
+      token
     );
 
-    return registro;
   }
 
-  const registro = registrarLog(
-    sala,
-    "ALLOW",
-    "credencial válida"
-  );
+
+  // -----------------------------------------------
+  // 2. verificar se pertence à sala
+  // -----------------------------------------------
+
+  if (autorizacao.sala !== sala) {
+
+    return registrarLog(
+      sala,
+      "DENY",
+      "token não autorizado para esta sala",
+      token
+    );
+
+  }
+
+
+  // -----------------------------------------------
+  // 3. verificar validade
+  // -----------------------------------------------
+
+  const agora =
+    new Date();
+
+  const expiracao =
+    new Date(
+      autorizacao.expira
+    );
+
+
+  if (agora > expiracao) {
+
+    return registrarLog(
+      sala,
+      "DENY",
+      "autorização expirada",
+      token
+    );
+
+  }
+
+
+  // -----------------------------------------------
+  // 4. acesso permitido
+  // -----------------------------------------------
 
   return {
-    ...registro,
-    acesso: true
+    ...registrarLog(
+      sala,
+      "ALLOW",
+      "autorização válida",
+      token
+    ),
+
+    acesso: true,
+
+    agente: autorizacao.agente,
+
+    expira: autorizacao.expira
+
   };
+
 }
+
+
+// =====================================================
+// CONSULTAR LOGS
+// =====================================================
 
 function consultarLogs() {
+
   return LOGS;
+
 }
 
 
-// TESTES AUTOMÁTICOS
+// =====================================================
+// CONSULTAR AUTORIZAÇÕES
+// =====================================================
 
-console.log(
-  "TESTE 1:",
-  solicitarAcesso("_01", "BOX-SALA01-KEY0")
-);
+function consultarAutorizacoes() {
 
-console.log(
-  "TESTE 2:",
-  solicitarAcesso("_01", "CODIGO-ERRADO")
-);
+  return AUTORIZACOES;
 
-console.log(
-  "TESTE 3:",
-  solicitarAcesso("_99", "BOX-SALA01-KEY0")
-);
-
-console.log(
-  "LOGS:",
-  consultarLogs()
-);
+}
