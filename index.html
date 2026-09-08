@@ -21,92 +21,100 @@
     body {
 
       margin: 0;
-      padding: 24px;
+
+      min-height: 100vh;
 
       background: #030303;
+
       color: #fffef2;
 
       font-family:
         "JetBrains Mono",
         "Courier New",
         monospace;
-
-      letter-spacing: 0.04em;
     }
 
     .box {
 
       width: 100%;
+
       max-width: 760px;
 
       margin: 0 auto;
 
       padding: 24px;
-
-      background: #0c0c0a;
-
-      border: 1px solid #6e6e66;
-
-      box-shadow:
-        0 0 30px rgba(217, 154, 50, 0.08);
     }
 
-    .cabecalho {
+    /* CABEÇALHO */
+
+    header {
 
       display: flex;
-      justify-content: space-between;
+
       align-items: center;
 
-      margin-bottom: 24px;
+      justify-content: space-between;
+
+      padding: 12px 0 20px;
 
       border-bottom: 1px solid #6e6e66;
 
-      padding-bottom: 16px;
+      margin-bottom: 30px;
     }
 
-    .marca {
+    .logo {
 
-      color: #d99a32;
-
-      font-size: 24px;
+      font-size: 32px;
 
       font-weight: bold;
 
-      letter-spacing: 0.15em;
+      letter-spacing: 0.16em;
+
+      color: #d99a32;
     }
 
-    .estado {
+    .campo {
+
+      font-size: 13px;
+
+      letter-spacing: 0.12em;
 
       color: #4cc9f0;
-
-      font-size: 12px;
-
-      letter-spacing: 0.12em;
     }
 
-    h2 {
+    /* TÍTULOS */
 
-      margin-top: 28px;
+    .titulo {
+
+      margin-bottom: 22px;
+
+      font-size: 22px;
+
+      font-weight: bold;
+
+      letter-spacing: 0.08em;
 
       color: #f1c66a;
+    }
 
-      font-size: 15px;
+    /* CAMPOS */
 
-      letter-spacing: 0.12em;
+    .campo-form {
+
+      margin-bottom: 20px;
     }
 
     label {
 
       display: block;
 
-      margin-top: 16px;
-      margin-bottom: 7px;
+      margin-bottom: 8px;
+
+      font-size: 13px;
+
+      letter-spacing: 0.12em;
 
       color: #6e6e66;
-
-      font-size: 12px;
-
-      text-transform: uppercase;
     }
 
     input,
@@ -114,11 +122,9 @@
 
       width: 100%;
 
-      padding: 13px;
+      min-height: 56px;
 
-      background: #030303;
-
-      color: #fffef2;
+      padding: 14px 16px;
 
       border: 1px solid #6e6e66;
 
@@ -126,9 +132,13 @@
 
       outline: none;
 
+      background: #0a0a09;
+
+      color: #fffef2;
+
       font-family: inherit;
 
-      font-size: 15px;
+      font-size: 18px;
     }
 
     input:focus,
@@ -137,30 +147,47 @@
       border-color: #d99a32;
 
       box-shadow:
-        0 0 10px rgba(217, 154, 50, 0.15);
+        0 0 14px rgba(217, 154, 50, 0.12);
     }
+
+    /* VALIDADE */
+
+    .validade {
+
+      display: grid;
+
+      grid-template-columns: 1fr 1.4fr;
+
+      gap: 12px;
+    }
+
+    /* BOTÕES */
 
     button {
 
       width: 100%;
 
-      margin-top: 20px;
+      min-height: 62px;
+
+      margin-top: 6px;
 
       padding: 14px;
-
-      background: #d99a32;
-
-      color: #030303;
 
       border: 0;
 
       border-radius: 0;
 
+      background: #d99a32;
+
+      color: #030303;
+
       font-family: inherit;
+
+      font-size: 16px;
 
       font-weight: bold;
 
-      letter-spacing: 0.12em;
+      letter-spacing: 0.10em;
 
       cursor: pointer;
     }
@@ -170,15 +197,22 @@
       background: #f1c66a;
     }
 
+    button:active {
+
+      transform: translateY(1px);
+    }
+
+    /* PAINEL */
+
     .painel {
 
       margin-top: 20px;
 
-      padding: 16px;
-
-      background: #030303;
+      padding: 18px;
 
       border: 1px solid #6e6e66;
+
+      background: #080807;
     }
 
     .linha {
@@ -189,47 +223,76 @@
 
       gap: 20px;
 
-      padding: 7px 0;
+      padding: 10px 0;
 
-      border-bottom: 1px solid rgba(110,110,102,0.25);
+      border-bottom:
+        1px solid
+        rgba(110, 110, 102, 0.25);
 
-      font-size: 13px;
+      font-size: 14px;
     }
 
     .linha:last-child {
+
       border-bottom: 0;
     }
 
     .chave {
+
       color: #6e6e66;
     }
 
     .valor {
+
       color: #fffef2;
+
       text-align: right;
+
       word-break: break-word;
     }
 
+    /* RESULTADO */
+
     #resultado {
 
-      margin-top: 20px;
+      margin-top: 22px;
 
-      padding: 16px;
+      min-height: 90px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      padding: 20px;
 
       border: 1px solid #6e6e66;
 
-      color: #f1c66a;
+      text-align: center;
 
-      min-height: 50px;
+      font-size: 20px;
+
+      font-weight: bold;
+
+      letter-spacing: 0.06em;
+
+      color: #f1c66a;
     }
+
+    /* LOG */
 
     #logs {
 
-      margin-top: 12px;
+      margin: 0;
 
-      padding: 16px;
+      padding: 18px;
 
-      background: #030303;
+      min-height: 120px;
+
+      overflow-x: auto;
+
+      background: #050505;
 
       border: 1px solid #6e6e66;
 
@@ -239,23 +302,27 @@
 
       word-break: break-word;
 
-      overflow-x: auto;
+      font-family: inherit;
 
       font-size: 12px;
 
       line-height: 1.6;
     }
 
+    /* SEPARADOR */
+
     .separador {
 
-      margin: 28px 0;
+      margin: 42px 0;
 
       border: 0;
 
       border-top: 1px solid #6e6e66;
     }
 
-    .aviso {
+    /* TEXTO AUXILIAR */
+
+    .auxiliar {
 
       margin-top: 10px;
 
@@ -266,6 +333,56 @@
       line-height: 1.6;
     }
 
+    /* MOBILE */
+
+    @media (max-width: 520px) {
+
+      .box {
+
+        padding: 18px;
+      }
+
+      .logo {
+
+        font-size: 27px;
+      }
+
+      .campo {
+
+        font-size: 10px;
+      }
+
+      .titulo {
+
+        font-size: 19px;
+      }
+
+      .validade {
+
+        grid-template-columns: 1fr;
+      }
+
+      input,
+      select {
+
+        min-height: 58px;
+
+        font-size: 17px;
+      }
+
+      button {
+
+        min-height: 64px;
+
+        font-size: 15px;
+      }
+
+      #resultado {
+
+        font-size: 17px;
+      }
+    }
+
   </style>
 
 </head>
@@ -273,18 +390,19 @@
 
 <body>
 
+
   <main class="box">
 
 
     <!-- CABEÇALHO -->
 
-    <header class="cabecalho">
+    <header>
 
-      <div class="marca">
+      <div class="logo">
         BOX
       </div>
 
-      <div class="estado">
+      <div class="campo">
         CAMPO ATIVO
       </div>
 
@@ -293,134 +411,177 @@
 
     <!-- REGISTRO -->
 
-    <h2>
-      REGISTRAR AUTORIZAÇÃO
-    </h2>
+    <section>
 
-
-    <label for="agente">
-      Agente
-    </label>
-
-    <input
-      id="agente"
-      type="text"
-      placeholder="Ex.: ChatGPT"
-    >
-
-
-    <label for="sala">
-      Sala / Setor
-    </label>
-
-    <input
-      id="sala"
-      type="text"
-      value="_01"
-      placeholder="_01"
-    >
-
-
-    <label for="token">
-      Código de autorização
-    </label>
-
-    <input
-      id="token"
-      type="text"
-      placeholder="BOX-..."
-    >
-
-
-    <label for="validade">
-      Validade em horas
-    </label>
-
-    <input
-      id="validade"
-      type="number"
-      value="24"
-      min="1"
-    >
-
-
-    <button onclick="registrar()">
-      REGISTRAR AUTORIZAÇÃO
-    </button>
-
-
-    <div class="aviso">
-
-      Esta etapa registra temporariamente a autorização
-      na memória desta página.
-
-    </div>
-
-
-    <!-- AUTORIZAÇÃO REGISTRADA -->
-
-    <section class="painel">
-
-      <div class="linha">
-
-        <span class="chave">
-          ESTADO
-        </span>
-
-        <span
-          class="valor"
-          id="estadoRegistro"
-        >
-          AGUARDANDO
-        </span>
-
+      <div class="titulo">
+        REGISTRAR AUTORIZAÇÃO
       </div>
 
 
-      <div class="linha">
+      <div class="campo-form">
 
-        <span class="chave">
+        <label for="agente">
           AGENTE
-        </span>
+        </label>
 
-        <span
-          class="valor"
-          id="agenteRegistro"
+        <input
+          id="agente"
+          type="text"
+          placeholder="Ex.: ChatGPT"
         >
-          —
-        </span>
 
       </div>
 
 
-      <div class="linha">
+      <div class="campo-form">
 
-        <span class="chave">
-          SALA
-        </span>
+        <label for="sala">
+          SALA / SETOR
+        </label>
 
-        <span
-          class="valor"
-          id="salaRegistro"
+        <input
+          id="sala"
+          type="text"
+          value="_01"
+          placeholder="_01"
         >
-          —
-        </span>
 
       </div>
 
 
-      <div class="linha">
+      <div class="campo-form">
 
-        <span class="chave">
-          EXPIRA
-        </span>
+        <label for="token">
+          CÓDIGO DE AUTORIZAÇÃO
+        </label>
 
-        <span
-          class="valor"
-          id="expiraRegistro"
+        <input
+          id="token"
+          type="text"
+          placeholder="BOX-..."
         >
-          —
-        </span>
+
+      </div>
+
+
+      <div class="campo-form">
+
+        <label>
+          VALIDADE
+        </label>
+
+        <div class="validade">
+
+          <input
+            id="validade"
+            type="number"
+            value="10"
+            min="0.001"
+            step="any"
+          >
+
+          <select id="unidade">
+
+            <option value="segundos">
+              SEGUNDOS
+            </option>
+
+            <option value="minutos">
+              MINUTOS
+            </option>
+
+            <option value="horas">
+              HORAS
+            </option>
+
+            <option value="dias">
+              DIAS
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      <button onclick="registrar()">
+        REGISTRAR AUTORIZAÇÃO
+      </button>
+
+
+      <div class="auxiliar">
+
+        A autorização será mantida na memória
+        enquanto esta página estiver aberta.
+
+      </div>
+
+
+      <div class="painel">
+
+        <div class="linha">
+
+          <span class="chave">
+            ESTADO
+          </span>
+
+          <span
+            class="valor"
+            id="estadoRegistro"
+          >
+            AGUARDANDO
+          </span>
+
+        </div>
+
+
+        <div class="linha">
+
+          <span class="chave">
+            AGENTE
+          </span>
+
+          <span
+            class="valor"
+            id="agenteRegistro"
+          >
+            —
+          </span>
+
+        </div>
+
+
+        <div class="linha">
+
+          <span class="chave">
+            SALA
+          </span>
+
+          <span
+            class="valor"
+            id="salaRegistro"
+          >
+            —
+          </span>
+
+        </div>
+
+
+        <div class="linha">
+
+          <span class="chave">
+            EXPIRA
+          </span>
+
+          <span
+            class="valor"
+            id="expiraRegistro"
+          >
+            —
+          </span>
+
+        </div>
 
       </div>
 
@@ -432,55 +593,70 @@
 
     <!-- ACESSO -->
 
-    <h2>
-      SOLICITAR ACESSO
-    </h2>
+    <section>
+
+      <div class="titulo">
+        SOLICITAR ACESSO
+      </div>
 
 
-    <label for="salaAcesso">
-      Sala / Setor
-    </label>
+      <div class="campo-form">
 
-    <input
-      id="salaAcesso"
-      type="text"
-      value="_01"
-      placeholder="_01"
-    >
+        <label for="salaAcesso">
+          SALA / SETOR
+        </label>
 
+        <input
+          id="salaAcesso"
+          type="text"
+          value="_01"
+          placeholder="_01"
+        >
 
-    <label for="tokenAcesso">
-      Código de autorização
-    </label>
-
-    <input
-      id="tokenAcesso"
-      type="text"
-      placeholder="BOX-..."
-    >
+      </div>
 
 
-    <button onclick="testarAcesso()">
-      SOLICITAR ACESSO
-    </button>
+      <div class="campo-form">
+
+        <label for="tokenAcesso">
+          CÓDIGO DE AUTORIZAÇÃO
+        </label>
+
+        <input
+          id="tokenAcesso"
+          type="text"
+          placeholder="BOX-..."
+        >
+
+      </div>
 
 
-    <div id="resultado">
-      AGUARDANDO SOLICITAÇÃO
-    </div>
+      <button onclick="testarAcesso()">
+        SOLICITAR ACESSO
+      </button>
+
+
+      <div id="resultado">
+        AGUARDANDO SOLICITAÇÃO
+      </div>
+
+    </section>
 
 
     <hr class="separador">
 
 
-    <!-- LOGS -->
+    <!-- TELEMETRIA -->
 
-    <h2>
-      TELEMETRIA / LOGS
-    </h2>
+    <section>
 
+      <div class="titulo">
+        TELEMETRIA / LOGS
+      </div>
 
-    <pre id="logs">Nenhum evento registrado.</pre>
+      <pre id="logs">Nenhum evento registrado.</pre>
+
+    </section>
 
 
   </main>
@@ -495,7 +671,59 @@
 
   <script>
 
+
+    function calcularExpiracao(
+      valor,
+      unidade
+    ) {
+
+      const agora = new Date();
+
+      let milissegundos = 0;
+
+
+      if (unidade === "segundos") {
+
+        milissegundos =
+          valor * 1000;
+
+      }
+
+
+      if (unidade === "minutos") {
+
+        milissegundos =
+          valor * 60 * 1000;
+
+      }
+
+
+      if (unidade === "horas") {
+
+        milissegundos =
+          valor * 60 * 60 * 1000;
+
+      }
+
+
+      if (unidade === "dias") {
+
+        milissegundos =
+          valor * 24 * 60 * 60 * 1000;
+
+      }
+
+
+      return new Date(
+        agora.getTime() +
+        milissegundos
+      );
+
+    }
+
+
     function registrar() {
+
 
       const agente =
         document
@@ -503,11 +731,13 @@
           .value
           .trim();
 
+
       const sala =
         document
           .getElementById("sala")
           .value
           .trim();
+
 
       const token =
         document
@@ -515,12 +745,19 @@
           .value
           .trim();
 
+
       const validade =
         Number(
           document
             .getElementById("validade")
             .value
         );
+
+
+      const unidade =
+        document
+          .getElementById("unidade")
+          .value;
 
 
       if (
@@ -532,11 +769,14 @@
       ) {
 
         document
-          .getElementById("estadoRegistro")
+          .getElementById(
+            "estadoRegistro"
+          )
           .textContent =
           "CAMPO INVÁLIDO";
 
         return;
+
       }
 
 
@@ -545,12 +785,9 @@
 
 
       const expira =
-        new Date(
-          criado.getTime() +
-          validade *
-          60 *
-          60 *
-          1000
+        calcularExpiracao(
+          validade,
+          unidade
         );
 
 
@@ -577,25 +814,33 @@
 
 
       document
-        .getElementById("estadoRegistro")
+        .getElementById(
+          "estadoRegistro"
+        )
         .textContent =
         "REGISTRADO";
 
 
       document
-        .getElementById("agenteRegistro")
+        .getElementById(
+          "agenteRegistro"
+        )
         .textContent =
         agente;
 
 
       document
-        .getElementById("salaRegistro")
+        .getElementById(
+          "salaRegistro"
+        )
         .textContent =
         sala;
 
 
       document
-        .getElementById("expiraRegistro")
+        .getElementById(
+          "expiraRegistro"
+        )
         .textContent =
         expira.toLocaleString(
           "pt-BR"
@@ -609,16 +854,21 @@
 
     function testarAcesso() {
 
+
       const sala =
         document
-          .getElementById("salaAcesso")
+          .getElementById(
+            "salaAcesso"
+          )
           .value
           .trim();
 
 
       const token =
         document
-          .getElementById("tokenAcesso")
+          .getElementById(
+            "tokenAcesso"
+          )
           .value
           .trim();
 
@@ -626,11 +876,14 @@
       if (!sala || !token) {
 
         document
-          .getElementById("resultado")
+          .getElementById(
+            "resultado"
+          )
           .textContent =
-          "CAMPO INVÁLIDO — INFORME SALA E TOKEN";
+          "CAMPO INVÁLIDO";
 
         return;
+
       }
 
 
@@ -644,14 +897,18 @@
       if (resposta.acesso) {
 
         document
-          .getElementById("resultado")
+          .getElementById(
+            "resultado"
+          )
           .textContent =
           "ALLOW — ACESSO AUTORIZADO";
 
       } else {
 
         document
-          .getElementById("resultado")
+          .getElementById(
+            "resultado"
+          )
           .textContent =
           resposta.resultado +
           " — " +
@@ -667,6 +924,7 @@
 
     function atualizarLogs() {
 
+
       const logs =
         consultarLogs();
 
@@ -674,7 +932,9 @@
       if (!logs.length) {
 
         document
-          .getElementById("logs")
+          .getElementById(
+            "logs"
+          )
           .textContent =
           "Nenhum evento registrado.";
 
@@ -684,7 +944,9 @@
 
 
       document
-        .getElementById("logs")
+        .getElementById(
+          "logs"
+        )
         .textContent =
         JSON.stringify(
           logs,
@@ -694,7 +956,9 @@
 
     }
 
+
   </script>
+
 
 </body>
 
