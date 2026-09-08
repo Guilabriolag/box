@@ -172,3 +172,52 @@ function consultarAutorizacoes() {
   return AUTORIZACOES;
 
 }
+// =====================================================
+// TESTE DO VALIDADOR
+// =====================================================
+
+const teste = registrarAutorizacao({
+
+  token: "BOX-TESTE-001",
+
+  agente: "ChatGPT",
+
+  sala: "_01",
+
+  criado: new Date().toISOString(),
+
+  expira: new Date(
+    Date.now() + 24 * 60 * 60 * 1000
+  ).toISOString()
+
+});
+
+
+console.log(
+  "AUTORIZAÇÃO REGISTRADA:",
+  teste
+);
+
+
+console.log(
+  "TESTE ALLOW:",
+  validarAutorizacao(
+    "_01",
+    "BOX-TESTE-001"
+  )
+);
+
+
+console.log(
+  "TESTE DENY:",
+  validarAutorizacao(
+    "_02",
+    "BOX-TESTE-001"
+  )
+);
+
+
+console.log(
+  "LOGS:",
+  consultarLogs()
+);
