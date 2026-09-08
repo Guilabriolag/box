@@ -1,4 +1,4 @@
-// BOX — Teste de Controle de Acesso v0
+// BOX — Controle de Acesso + LOG v0
 
 const SALAS = {
   "_01": {
@@ -6,44 +6,79 @@ const SALAS = {
   }
 };
 
+const LOGS = [];
+
+function registrarLog(sala, resultado, motivo) {
+  const registro = {
+    data: new Date().toISOString(),
+    sala: sala,
+    resultado: resultado,
+    motivo: motivo
+  };
+
+  LOGS.push(registro);
+
+  return registro;
+}
+
 function solicitarAcesso(sala, codigo) {
   const configuracao = SALAS[sala];
 
   if (!configuracao) {
-    return {
-      resultado: "DENY",
-      motivo: "sala inexistente"
-    };
+    const registro = registrarLog(
+      sala,
+      "DENY",
+      "sala inexistente"
+    );
+
+    return registro;
   }
 
   if (codigo !== configuracao.codigo) {
-    return {
-      resultado: "DENY",
-      motivo: "credencial inválida"
-    };
+    const registro = registrarLog(
+      sala,
+      "DENY",
+      "credencial inválida"
+    );
+
+    return registro;
   }
 
+  const registro = registrarLog(
+    sala,
+    "ALLOW",
+    "credencial válida"
+  );
+
   return {
-    resultado: "ALLOW",
-    motivo: "credencial válida",
-    sala: sala
+    ...registro,
+    acesso: true
   };
 }
 
-// TESTE 1 — código correto
+function consultarLogs() {
+  return LOGS;
+}
+
+
+// TESTES AUTOMÁTICOS
+
 console.log(
   "TESTE 1:",
   solicitarAcesso("_01", "BOX-SALA01-KEY0")
 );
 
-// TESTE 2 — código errado
 console.log(
   "TESTE 2:",
   solicitarAcesso("_01", "CODIGO-ERRADO")
 );
 
-// TESTE 3 — sala inexistente
 console.log(
   "TESTE 3:",
   solicitarAcesso("_99", "BOX-SALA01-KEY0")
+);
+
+console.log(
+  "LOGS:",
+  consultarLogs()
 );
