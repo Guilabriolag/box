@@ -3,962 +3,935 @@
 
 <head>
 
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
 
-  <title>BOX — Controle de Acesso</title>
+<title>BOX — Controle de Acesso</title>
 
-  <style>
+<style>
 
-    * {
-      box-sizing: border-box;
-    }
+* {
+  box-sizing: border-box;
+}
 
-    body {
+body {
 
-      margin: 0;
+  margin: 0;
 
-      min-height: 100vh;
+  background: #030303;
 
-      background: #030303;
+  color: #fffef2;
 
-      color: #fffef2;
+  font-family:
+    "JetBrains Mono",
+    "Courier New",
+    monospace;
 
-      font-family:
-        "JetBrains Mono",
-        "Courier New",
-        monospace;
-    }
+  text-transform: uppercase;
 
-    .box {
+  letter-spacing: 0.08em;
 
-      width: 100%;
+}
 
-      max-width: 760px;
+main {
 
-      margin: 0 auto;
+  width: 100%;
 
-      padding: 24px;
-    }
+  max-width: 900px;
 
-    /* CABEÇALHO */
+  margin: 0 auto;
 
-    header {
+  padding: 32px 20px 60px;
 
-      display: flex;
+}
 
-      align-items: center;
+header {
 
-      justify-content: space-between;
+  margin-bottom: 40px;
 
-      padding: 12px 0 20px;
+  border-bottom: 1px solid #6e6e66;
 
-      border-bottom: 1px solid #6e6e66;
+  padding-bottom: 20px;
 
-      margin-bottom: 30px;
-    }
+}
 
-    .logo {
+h1 {
 
-      font-size: 32px;
+  margin: 0;
 
-      font-weight: bold;
+  font-size: 32px;
 
-      letter-spacing: 0.16em;
+  font-weight: 700;
 
-      color: #d99a32;
-    }
+}
 
-    .campo {
+.subtitle {
 
-      font-size: 13px;
+  margin-top: 10px;
 
-      letter-spacing: 0.12em;
+  color: #6e6e66;
 
-      color: #4cc9f0;
-    }
+  font-size: 14px;
 
-    /* TÍTULOS */
+}
 
-    .titulo {
+section {
 
-      margin-bottom: 22px;
+  margin-bottom: 32px;
 
-      font-size: 22px;
+  border: 1px solid #6e6e66;
 
-      font-weight: bold;
+  padding: 24px;
 
-      letter-spacing: 0.08em;
+}
 
-      color: #f1c66a;
-    }
+h2 {
 
-    /* CAMPOS */
+  margin-top: 0;
 
-    .campo-form {
+  margin-bottom: 24px;
 
-      margin-bottom: 20px;
-    }
+  font-size: 18px;
 
-    label {
+  color: #d99a32;
 
-      display: block;
+}
 
-      margin-bottom: 8px;
+label {
 
-      font-size: 13px;
+  display: block;
 
-      letter-spacing: 0.12em;
+  margin-bottom: 8px;
 
-      color: #6e6e66;
-    }
+  color: #6e6e66;
 
-    input,
-    select {
+  font-size: 13px;
 
-      width: 100%;
+}
 
-      min-height: 56px;
+input,
+textarea {
 
-      padding: 14px 16px;
+  width: 100%;
 
-      border: 1px solid #6e6e66;
+  margin-bottom: 20px;
 
-      border-radius: 0;
+  padding: 14px;
 
-      outline: none;
+  border: 1px solid #6e6e66;
 
-      background: #0a0a09;
+  background: #030303;
 
-      color: #fffef2;
+  color: #fffef2;
 
-      font-family: inherit;
+  font-family: inherit;
 
-      font-size: 18px;
-    }
+  font-size: 16px;
 
-    input:focus,
-    select:focus {
+  letter-spacing: 0.04em;
 
-      border-color: #d99a32;
+}
 
-      box-shadow:
-        0 0 14px rgba(217, 154, 50, 0.12);
-    }
+input {
 
-    /* VALIDADE */
+  min-height: 58px;
 
-    .validade {
+}
 
-      display: grid;
+textarea {
 
-      grid-template-columns: 1fr 1.4fr;
+  min-height: 280px;
 
-      gap: 12px;
-    }
+  resize: vertical;
 
-    /* BOTÕES */
+  line-height: 1.6;
 
-    button {
+}
 
-      width: 100%;
+input:focus,
+textarea:focus {
 
-      min-height: 62px;
+  outline: none;
 
-      margin-top: 6px;
+  border-color: #d99a32;
 
-      padding: 14px;
+}
 
-      border: 0;
+button {
 
-      border-radius: 0;
+  width: 100%;
 
-      background: #d99a32;
+  min-height: 64px;
 
-      color: #030303;
+  border: 1px solid #d99a32;
 
-      font-family: inherit;
+  background: #d99a32;
 
-      font-size: 16px;
+  color: #030303;
 
-      font-weight: bold;
+  font-family: inherit;
 
-      letter-spacing: 0.10em;
+  font-size: 17px;
 
-      cursor: pointer;
-    }
+  font-weight: 700;
 
-    button:hover {
+  letter-spacing: 0.08em;
 
-      background: #f1c66a;
-    }
+  cursor: pointer;
 
-    button:active {
+}
 
-      transform: translateY(1px);
-    }
+button:hover {
 
-    /* PAINEL */
+  background: #f1c66a;
 
-    .painel {
+}
 
-      margin-top: 20px;
+button:active {
 
-      padding: 18px;
+  transform: translateY(1px);
 
-      border: 1px solid #6e6e66;
+}
 
-      background: #080807;
-    }
+#importar {
 
-    .linha {
+  border-color: #4cc9f0;
 
-      display: flex;
+  background: #4cc9f0;
 
-      justify-content: space-between;
+}
 
-      gap: 20px;
+#importar:hover {
 
-      padding: 10px 0;
+  background: #7bdcff;
 
-      border-bottom:
-        1px solid
-        rgba(110, 110, 102, 0.25);
+}
 
-      font-size: 14px;
-    }
+.resultado {
 
-    .linha:last-child {
+  margin-top: 24px;
 
-      border-bottom: 0;
-    }
+  padding-top: 24px;
 
-    .chave {
+  border-top: 1px solid #6e6e66;
 
-      color: #6e6e66;
-    }
+}
 
-    .valor {
+.linha {
 
-      color: #fffef2;
+  display: flex;
 
-      text-align: right;
+  justify-content: space-between;
 
-      word-break: break-word;
-    }
+  gap: 20px;
 
-    /* RESULTADO */
+  padding: 12px 0;
 
-    #resultado {
+  border-bottom: 1px solid #222;
 
-      margin-top: 22px;
+}
 
-      min-height: 90px;
+.nome {
 
-      display: flex;
+  color: #6e6e66;
 
-      align-items: center;
+  font-size: 13px;
 
-      justify-content: center;
+}
 
-      padding: 20px;
+.valor {
 
-      border: 1px solid #6e6e66;
+  text-align: right;
 
-      text-align: center;
+  font-size: 14px;
 
-      font-size: 20px;
+  word-break: break-all;
 
-      font-weight: bold;
+}
 
-      letter-spacing: 0.06em;
+.status {
 
-      color: #f1c66a;
-    }
+  margin-top: 20px;
 
-    /* LOG */
+  padding: 20px;
 
-    #logs {
+  border: 1px solid #4cc9f0;
 
-      margin: 0;
+  color: #4cc9f0;
 
-      padding: 18px;
+  font-size: 16px;
 
-      min-height: 120px;
+  line-height: 1.6;
 
-      overflow-x: auto;
+}
 
-      background: #050505;
+.log {
 
-      border: 1px solid #6e6e66;
+  margin-top: 20px;
 
-      color: #4cc9f0;
+  color: #f1c66a;
 
-      white-space: pre-wrap;
+  font-size: 13px;
 
-      word-break: break-word;
+  line-height: 1.6;
 
-      font-family: inherit;
+  word-break: break-word;
 
-      font-size: 12px;
+}
 
-      line-height: 1.6;
-    }
+.autorizacoes {
 
-    /* SEPARADOR */
+  margin-top: 20px;
 
-    .separador {
+  color: #6e6e66;
 
-      margin: 42px 0;
+  font-size: 12px;
 
-      border: 0;
+  line-height: 1.6;
 
-      border-top: 1px solid #6e6e66;
-    }
+}
 
-    /* TEXTO AUXILIAR */
+@media (max-width: 600px) {
 
-    .auxiliar {
+  main {
 
-      margin-top: 10px;
+    padding: 20px 14px 40px;
 
-      color: #6e6e66;
+  }
 
-      font-size: 11px;
+  h1 {
 
-      line-height: 1.6;
-    }
+    font-size: 25px;
 
-    /* MOBILE */
+  }
 
-    @media (max-width: 520px) {
+  section {
 
-      .box {
+    padding: 18px;
 
-        padding: 18px;
-      }
+  }
 
-      .logo {
+  .linha {
 
-        font-size: 27px;
-      }
+    display: block;
 
-      .campo {
+  }
 
-        font-size: 10px;
-      }
+  .valor {
 
-      .titulo {
+    margin-top: 6px;
 
-        font-size: 19px;
-      }
+    text-align: left;
 
-      .validade {
+  }
 
-        grid-template-columns: 1fr;
-      }
+  textarea {
 
-      input,
-      select {
+    min-height: 320px;
 
-        min-height: 58px;
+    font-size: 12px;
 
-        font-size: 17px;
-      }
+  }
 
-      button {
+}
 
-        min-height: 64px;
-
-        font-size: 15px;
-      }
-
-      #resultado {
-
-        font-size: 17px;
-      }
-    }
-
-  </style>
+</style>
 
 </head>
 
-
 <body>
 
+<main>
 
-  <main class="box">
 
+<header>
 
-    <!-- CABEÇALHO -->
+<h1>BOX</h1>
 
-    <header>
+<div class="subtitle">
+CONTROLE DE ACESSO
+</div>
 
-      <div class="logo">
-        BOX
-      </div>
+</header>
 
-      <div class="campo">
-        CAMPO ATIVO
-      </div>
 
-    </header>
+<!-- =====================================================
+     IMPORTAR AUTORIZAÇÃO
+===================================================== -->
 
+<section>
 
-    <!-- REGISTRO -->
+<h2>
+IMPORTAR AUTORIZAÇÃO
+</h2>
 
-    <section>
 
-      <div class="titulo">
-        REGISTRAR AUTORIZAÇÃO
-      </div>
+<label for="pacote">
 
+PACOTE DE AUTORIZAÇÃO
 
-      <div class="campo-form">
+</label>
 
-        <label for="agente">
-          AGENTE
-        </label>
 
-        <input
-          id="agente"
-          type="text"
-          placeholder="Ex.: ChatGPT"
-        >
+<textarea
+  id="pacote"
+  placeholder="COLE AQUI O PACOTE JSON GERADO PELO GERADOR"
+></textarea>
 
-      </div>
 
+<button
+  id="importar"
+  onclick="importarPacote()"
+>
 
-      <div class="campo-form">
+IMPORTAR AUTORIZAÇÃO
 
-        <label for="sala">
-          SALA / SETOR
-        </label>
+</button>
 
-        <input
-          id="sala"
-          type="text"
-          value="_01"
-          placeholder="_01"
-        >
 
-      </div>
+<div
+  class="log"
+  id="logImportacao"
+>
 
+AGUARDANDO PACOTE
 
-      <div class="campo-form">
+</div>
 
-        <label for="token">
-          CÓDIGO DE AUTORIZAÇÃO
-        </label>
 
-        <input
-          id="token"
-          type="text"
-          placeholder="BOX-..."
-        >
+</section>
 
-      </div>
 
+<!-- =====================================================
+     SOLICITAR ACESSO
+===================================================== -->
 
-      <div class="campo-form">
+<section>
 
-        <label>
-          VALIDADE
-        </label>
+<h2>
+SOLICITAR ACESSO
+</h2>
 
-        <div class="validade">
 
-          <input
-            id="validade"
-            type="number"
-            value="10"
-            min="0.001"
-            step="any"
-          >
+<label for="sala">
 
-          <select id="unidade">
+SALA / SETOR
 
-            <option value="segundos">
-              SEGUNDOS
-            </option>
+</label>
 
-            <option value="minutos">
-              MINUTOS
-            </option>
 
-            <option value="horas">
-              HORAS
-            </option>
+<input
+  id="sala"
+  type="text"
+  placeholder="EX: _01"
+>
 
-            <option value="dias">
-              DIAS
-            </option>
 
-          </select>
+<label for="token">
 
-        </div>
+TOKEN
 
-      </div>
+</label>
 
 
-      <button onclick="registrar()">
-        REGISTRAR AUTORIZAÇÃO
-      </button>
+<input
+  id="token"
+  type="text"
+  placeholder="BOX-..."
+>
 
 
-      <div class="auxiliar">
+<button
+  onclick="solicitarAcesso()"
+>
 
-        A autorização será mantida na memória
-        enquanto esta página estiver aberta.
+SOLICITAR ACESSO
 
-      </div>
+</button>
 
 
-      <div class="painel">
+<div
+  class="status"
+  id="resultadoAcesso"
+>
 
-        <div class="linha">
+AGUARDANDO SOLICITAÇÃO
 
-          <span class="chave">
-            ESTADO
-          </span>
+</div>
 
-          <span
-            class="valor"
-            id="estadoRegistro"
-          >
-            AGUARDANDO
-          </span>
 
-        </div>
+<div
+  class="resultado"
+  id="dadosAcesso"
+  style="display:none;"
+>
 
 
-        <div class="linha">
+<div class="linha">
 
-          <span class="chave">
-            AGENTE
-          </span>
+  <div class="nome">
+    RESULTADO
+  </div>
 
-          <span
-            class="valor"
-            id="agenteRegistro"
-          >
-            —
-          </span>
+  <div
+    class="valor"
+    id="resultado"
+  >
+    —
+  </div>
 
-        </div>
+</div>
 
 
-        <div class="linha">
+<div class="linha">
 
-          <span class="chave">
-            SALA
-          </span>
+  <div class="nome">
+    SALA
+  </div>
 
-          <span
-            class="valor"
-            id="salaRegistro"
-          >
-            —
-          </span>
+  <div
+    class="valor"
+    id="salaResultado"
+  >
+    —
+  </div>
 
-        </div>
+</div>
 
 
-        <div class="linha">
+<div class="linha">
 
-          <span class="chave">
-            EXPIRA
-          </span>
+  <div class="nome">
+    AGENTE
+  </div>
 
-          <span
-            class="valor"
-            id="expiraRegistro"
-          >
-            —
-          </span>
+  <div
+    class="valor"
+    id="agenteResultado"
+  >
+    —
+  </div>
 
-        </div>
+</div>
 
-      </div>
 
-    </section>
+<div class="linha">
 
+  <div class="nome">
+    EXPIRA
+  </div>
 
-    <hr class="separador">
+  <div
+    class="valor"
+    id="expiraResultado"
+  >
+    —
+  </div>
 
+</div>
 
-    <!-- ACESSO -->
 
-    <section>
+<div class="linha">
 
-      <div class="titulo">
-        SOLICITAR ACESSO
-      </div>
+  <div class="nome">
+    MOTIVO
+  </div>
 
+  <div
+    class="valor"
+    id="motivoResultado"
+  >
+    —
+  </div>
 
-      <div class="campo-form">
+</div>
 
-        <label for="salaAcesso">
-          SALA / SETOR
-        </label>
 
-        <input
-          id="salaAcesso"
-          type="text"
-          value="_01"
-          placeholder="_01"
-        >
+</div>
 
-      </div>
+</section>
 
 
-      <div class="campo-form">
+<!-- =====================================================
+     TELEMETRIA
+===================================================== -->
 
-        <label for="tokenAcesso">
-          CÓDIGO DE AUTORIZAÇÃO
-        </label>
+<section>
 
-        <input
-          id="tokenAcesso"
-          type="text"
-          placeholder="BOX-..."
-        >
+<h2>
+TELEMETRIA / LOGS
+</h2>
 
-      </div>
 
+<div
+  class="autorizacoes"
+  id="contadorAutorizacoes"
+>
 
-      <button onclick="testarAcesso()">
-        SOLICITAR ACESSO
-      </button>
+AUTORIZAÇÕES REGISTRADAS: 0
 
+</div>
 
-      <div id="resultado">
-        AGUARDANDO SOLICITAÇÃO
-      </div>
 
-    </section>
+<div
+  class="log"
+  id="telemetria"
+>
 
+AGUARDANDO EVENTOS
 
-    <hr class="separador">
+</div>
 
 
-    <!-- TELEMETRIA -->
+</section>
 
-    <section>
 
-      <div class="titulo">
-        TELEMETRIA / LOGS
-      </div>
+</main>
 
-      <pre id="logs">Nenhum evento registrado.</pre>
 
-    </section>
+<!-- =====================================================
+     VALIDADOR
+===================================================== -->
 
+<script src="acesso.js"></script>
 
-  </main>
 
+<script>
 
-  <!-- MOTOR DO BOX -->
 
-  <script src="acesso.js"></script>
+// =====================================================
+// IMPORTAR PACOTE
+// =====================================================
 
+function importarPacote() {
 
-  <!-- INTERFACE -->
-
-  <script>
-
-
-    function calcularExpiracao(
-      valor,
-      unidade
-    ) {
-
-      const agora = new Date();
-
-      let milissegundos = 0;
-
-
-      if (unidade === "segundos") {
-
-        milissegundos =
-          valor * 1000;
-
-      }
-
-
-      if (unidade === "minutos") {
-
-        milissegundos =
-          valor * 60 * 1000;
-
-      }
-
-
-      if (unidade === "horas") {
-
-        milissegundos =
-          valor * 60 * 60 * 1000;
-
-      }
-
-
-      if (unidade === "dias") {
-
-        milissegundos =
-          valor * 24 * 60 * 60 * 1000;
-
-      }
-
-
-      return new Date(
-        agora.getTime() +
-        milissegundos
-      );
-
-    }
-
-
-    function registrar() {
-
-
-      const agente =
-        document
-          .getElementById("agente")
-          .value
-          .trim();
-
-
-      const sala =
-        document
-          .getElementById("sala")
-          .value
-          .trim();
-
-
-      const token =
-        document
-          .getElementById("token")
-          .value
-          .trim();
-
-
-      const validade =
-        Number(
-          document
-            .getElementById("validade")
-            .value
-        );
-
-
-      const unidade =
-        document
-          .getElementById("unidade")
-          .value;
-
-
-      if (
-        !agente ||
-        !sala ||
-        !token ||
-        !validade ||
-        validade <= 0
-      ) {
-
-        document
-          .getElementById(
-            "estadoRegistro"
-          )
-          .textContent =
-          "CAMPO INVÁLIDO";
-
-        return;
-
-      }
-
-
-      const criado =
-        new Date();
-
-
-      const expira =
-        calcularExpiracao(
-          validade,
-          unidade
-        );
-
-
-      const autorizacao = {
-
-        token: token,
-
-        agente: agente,
-
-        sala: sala,
-
-        criado:
-          criado.toISOString(),
-
-        expira:
-          expira.toISOString()
-
-      };
-
-
-      registrarAutorizacao(
-        autorizacao
+  const campo =
+    document
+      .getElementById(
+        "pacote"
       );
 
 
-      document
-        .getElementById(
-          "estadoRegistro"
-        )
-        .textContent =
-        "REGISTRADO";
+  const texto =
+    campo
+      .value
+      .trim();
 
 
-      document
-        .getElementById(
-          "agenteRegistro"
-        )
-        .textContent =
-        agente;
+  if (!texto) {
+
+    document
+      .getElementById(
+        "logImportacao"
+      )
+      .textContent =
+      "PACOTE VAZIO";
+
+    return;
+
+  }
 
 
-      document
-        .getElementById(
-          "salaRegistro"
-        )
-        .textContent =
-        sala;
+  let pacote;
 
 
-      document
-        .getElementById(
-          "expiraRegistro"
-        )
-        .textContent =
-        expira.toLocaleString(
-          "pt-BR"
-        );
+  try {
+
+    pacote =
+      JSON.parse(
+        texto
+      );
+
+  }
+
+  catch (erro) {
+
+    document
+      .getElementById(
+        "logImportacao"
+      )
+      .textContent =
+      "ERRO — JSON INVÁLIDO";
+
+    atualizarTelemetria();
+
+    return;
+
+  }
 
 
-      atualizarLogs();
-
-    }
-
-
-    function testarAcesso() {
+  const resposta =
+    importarAutorizacao(
+      pacote
+    );
 
 
-      const sala =
-        document
-          .getElementById(
-            "salaAcesso"
-          )
-          .value
-          .trim();
+  if (
+    resposta.resultado ===
+    "ALLOW"
+  ) {
+
+    document
+      .getElementById(
+        "logImportacao"
+      )
+      .textContent =
+      "AUTORIZAÇÃO IMPORTADA COM SUCESSO";
 
 
-      const token =
-        document
-          .getElementById(
-            "tokenAcesso"
-          )
-          .value
-          .trim();
+    document
+      .getElementById(
+        "sala"
+      )
+      .value =
+      pacote.sala;
 
 
-      if (!sala || !token) {
+    document
+      .getElementById(
+        "token"
+      )
+      .value =
+      pacote.token;
 
-        document
-          .getElementById(
-            "resultado"
-          )
-          .textContent =
-          "CAMPO INVÁLIDO";
+  }
 
-        return;
+  else {
 
-      }
+    document
+      .getElementById(
+        "logImportacao"
+      )
+      .textContent =
+      "IMPORTAÇÃO NEGADA — " +
+      resposta.motivo;
 
-
-      const resposta =
-        validarAutorizacao(
-          sala,
-          token
-        );
-
-
-      if (resposta.acesso) {
-
-        document
-          .getElementById(
-            "resultado"
-          )
-          .textContent =
-          "ALLOW — ACESSO AUTORIZADO";
-
-      } else {
-
-        document
-          .getElementById(
-            "resultado"
-          )
-          .textContent =
-          resposta.resultado +
-          " — " +
-          resposta.motivo;
-
-      }
+  }
 
 
-      atualizarLogs();
+  atualizarTelemetria();
 
-    }
-
-
-    function atualizarLogs() {
+}
 
 
-      const logs =
-        consultarLogs();
+// =====================================================
+// SOLICITAR ACESSO
+// =====================================================
+
+function solicitarAcesso() {
+
+  const sala =
+    document
+      .getElementById(
+        "sala"
+      )
+      .value
+      .trim();
 
 
-      if (!logs.length) {
-
-        document
-          .getElementById(
-            "logs"
-          )
-          .textContent =
-          "Nenhum evento registrado.";
-
-        return;
-
-      }
+  const token =
+    document
+      .getElementById(
+        "token"
+      )
+      .value
+      .trim();
 
 
-      document
-        .getElementById(
-          "logs"
-        )
-        .textContent =
-        JSON.stringify(
-          logs,
-          null,
-          2
-        );
+  if (
+    !sala ||
+    !token
+  ) {
 
-    }
+    document
+      .getElementById(
+        "resultadoAcesso"
+      )
+      .textContent =
+      "CAMPO INVÁLIDO — INFORME SALA E TOKEN";
+
+    return;
+
+  }
 
 
-  </script>
+  const resposta =
+    validarAutorizacao(
+      sala,
+      token
+    );
 
+
+  document
+    .getElementById(
+      "dadosAcesso"
+    )
+    .style
+    .display =
+    "block";
+
+
+  document
+    .getElementById(
+      "resultado"
+    )
+    .textContent =
+    resposta.resultado;
+
+
+  document
+    .getElementById(
+      "salaResultado"
+    )
+    .textContent =
+    sala;
+
+
+  document
+    .getElementById(
+      "motivoResultado"
+    )
+    .textContent =
+    resposta.motivo;
+
+
+  if (
+    resposta.acesso ===
+    true
+  ) {
+
+    document
+      .getElementById(
+        "resultadoAcesso"
+      )
+      .textContent =
+      "ALLOW — ACESSO AUTORIZADO";
+
+
+    document
+      .getElementById(
+        "agenteResultado"
+      )
+      .textContent =
+      resposta.agente;
+
+
+    document
+      .getElementById(
+        "expiraResultado"
+      )
+      .textContent =
+      resposta.expira;
+
+  }
+
+  else {
+
+    document
+      .getElementById(
+        "resultadoAcesso"
+      )
+      .textContent =
+      "DENY — ACESSO NEGADO";
+
+
+    document
+      .getElementById(
+        "agenteResultado"
+      )
+      .textContent =
+      "—";
+
+
+    document
+      .getElementById(
+        "expiraResultado"
+      )
+      .textContent =
+      "—";
+
+  }
+
+
+  atualizarTelemetria();
+
+}
+
+
+// =====================================================
+// ATUALIZAR TELEMETRIA
+// =====================================================
+
+function atualizarTelemetria() {
+
+  const autorizacoes =
+    consultarAutorizacoes();
+
+
+  const logs =
+    consultarLogs();
+
+
+  document
+    .getElementById(
+      "contadorAutorizacoes"
+    )
+    .textContent =
+    "AUTORIZAÇÕES REGISTRADAS: " +
+    autorizacoes.length;
+
+
+  if (
+    logs.length === 0
+  ) {
+
+    document
+      .getElementById(
+        "telemetria"
+      )
+      .textContent =
+      "AGUARDANDO EVENTOS";
+
+    return;
+
+  }
+
+
+  const ultimo =
+    logs[
+      logs.length - 1
+    ];
+
+
+  document
+    .getElementById(
+      "telemetria"
+    )
+    .textContent =
+
+    "ÚLTIMO EVENTO — " +
+
+    ultimo.resultado +
+
+    " — " +
+
+    ultimo.motivo;
+
+}
+
+
+// =====================================================
+// ESTADO INICIAL
+// =====================================================
+
+atualizarTelemetria();
+
+
+</script>
 
 </body>
 
