@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOX — Teste de Acesso</title>
+</head>
+
+<body>
+
+  <h1>BOX</h1>
+  <h2>Teste de acesso</h2>
+
+  <label>
+    Sala:
+    <input id="sala" value="_01">
+  </label>
+
+  <br><br>
+
+  <label>
+    Código:
+    <input id="codigo" placeholder="Digite o código">
+  </label>
+
+  <br><br>
+
+  <button onclick="testarAcesso()">ENTRAR</button>
+
+  <h3 id="resultado"></h3>
+
+  <script src="acesso.js"></script>
+
+  <script>
+    function testarAcesso() {
+      const sala = document.getElementById("sala").value;
+      const codigo = document.getElementById("codigo").value;
+
+      const resposta = solicitarAcesso(sala, codigo);
+
+      document.getElementById("resultado").textContent =
+        resposta.resultado + " — " + resposta.motivo;
+    }
+  </script>
+
+</body>
+</html>
